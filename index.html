@@ -119,6 +119,12 @@
   .opt .k{width:18px;height:18px;flex:0 0 18px;display:grid;place-items:center;
           border:1px solid #5a5a5a;font-size:10.5px;color:var(--dim);margin-top:1px;}
   .opt:hover .k{border-color:var(--cyan);color:var(--cyan);}
+  /* 够不着的选项：看得见，点不了 */
+  .opt.locked{opacity:.34;cursor:not-allowed;border-style:dashed;}
+  .opt.locked:hover{border-color:#3d3d3d;background:#232323;}
+  .opt.locked:hover .k{border-color:#5a5a5a;color:var(--dim);}
+  .opt.locked .cf{color:var(--yellow);}
+  .opt.unlocked{border-color:var(--cyan);}
   .opt .t{flex:1;line-height:1.5;}
   .opt .cf{font-size:11px;color:var(--dim2);white-space:nowrap;margin-top:2px;}
 
@@ -432,7 +438,9 @@
       opts:[
         {t:'认真描完', eff:{skill:1}, r:'描完了。第二周他给了你另一套。'},
         {t:'问能不能做点别的', eff:{skill:1,hair:-1}, r:'他让你去做一份标书。你做了三天。'},
-        {t:'边描边看图纸在画什么', eff:{skill:2,hair:-1}, r:'你发现楼梯休息平台的标高标错了。他"嗯"了一声，没改。'}
+        {t:'边描边看图纸在画什么', eff:{skill:2,hair:-1}, r:'你发现楼梯休息平台的标高标错了。他"嗯"了一声，没改。'},
+        {t:'直接把标错的那处圈出来给他',
+         need:{skill:6}, eff:{work:1,hair:-1}, r:'他看了两分钟，说："你留下吧。"这是你第一次被人这么问。'}
       ]},
 
     rework: { name:'大五 · 改 图', form:'choice',
@@ -440,7 +448,9 @@
       opts:[
         {t:'大改一遍', eff:{work:1,hair:-2}, r:'你改了两周。最后那版你自己也说不清好在哪。'},
         {t:'小改两处', eff:{}, r:'你改了两处。检查那天他没提。'},
-        {t:'先把图纸补齐，方案不动', eff:{work:1}, r:'图纸很漂亮。方案还是原来那个。'}
+        {t:'先把图纸补齐，方案不动', eff:{work:1}, r:'图纸很漂亮。方案还是原来那个。'},
+        {t:'把之前做过的类似东西翻出来改',
+         need:{work:2}, eff:{work:1,skill:1}, r:'你翻出了大二那个。改完之后，它比原来那个好。'}
       ]},
 
     sketch: { name:'大一 · 素描', form:'choice',
@@ -517,7 +527,9 @@
       opts:[
         {t:'他是在说空间', flag:'space', r:'你回去把平面重排了一遍。'},
         {t:'他是在说形式', flag:'form', r:'你拆掉了两片墙。'},
-        {t:'他大概没想好', flag:'idle', r:'你原样交上去了。'}
+        {t:'他大概没想好', flag:'idle', r:'你原样交上去了。'},
+        {t:'把大三画大样那套逻辑摆出来，问他是不是这个意思',
+         need:{skill:4}, eff:{work:1}, r:'他愣了一下，说"对，就是这个"。你第一次在评图上没被绕进去。'}
       ]},
 
     thesis: { name:'大五 · 毕 设', form:'draw', stop:true, scene:'thesis',
@@ -556,7 +568,9 @@
       opts:[
         {t:'从头讲，讲十分钟', eff:{skill:1,hair:-1}, r:'他听完了，问："会用 CAD 和 SU 吧？"'},
         {t:'一句话带过', eff:{}, r:'他点点头，翻到下一页。'},
-        {t:'"那是学校的东西"', eff:{hair:-1}, r:'他笑了一下，在那一行划了一道。'}
+        {t:'"那是学校的东西"', eff:{hair:-1}, r:'他笑了一下，在那一行划了一道。'},
+        {t:'把作品集推过去，说"这几个是我做的"',
+         need:{work:2}, eff:{work:1,hair:-1}, r:'他一页一页看完了。翻到最后一页时说了句"行"。'}
       ]},
     f_desk: { name:'入职 · 工位 3-17', form:'choice', line:'firm', scene:'desk',
       text:'工位在走廊尽头，显示器是上一个人留下的，屏幕右下角有块亮斑。\n所里说，先跟一个住宅项目。',
@@ -831,8 +845,22 @@
     c.appendChild(d);
     c.scrollTop = c.scrollHeight;
   }
-  function delta(eff){
-    const parts = [];
+  // 数值门槛：技能/作品/头发够不够，决定有些事你做不做得成
+  function meetNeed(n){
+    if (n.skill && S.skill < n.skill) return false;
+    if (n.work  && S.work  < n.work)  return false;
+    if (n.hair  && S.hair  < n.hair)  return false;
+    return true;
+  }
+  function needText(n){
+    const out = [];
+    if (n.skill) out.push('技能 ' + n.skill);
+    if (n.work)  out.push('作品 ' + n.work);
+    if (n.hair)  out.push('头发 ' + n.hair + '%');
+    return out.join(' · ');
+  }
+
+  function delta(eff){    const parts = [];
     if (eff.work)  parts.push('作品 '  + (eff.work>0?'+':'')  + eff.work);
     if (eff.skill) parts.push('技能 '  + (eff.skill>0?'+':'') + eff.skill);
     if (eff.hair)  parts.push('头发 '  + (eff.hair>0?'+':'')  + eff.hair + '%');
@@ -976,12 +1004,15 @@
       stage.innerHTML = html;
       const box = el('opts');
       (v.opts || []).forEach(function(o, i){
+        const locked = o.need ? !meetNeed(o.need) : false;
         const b = document.createElement('button');
-        b.className = 'opt';
-        const cf = o.eff ? delta(o.eff) : '';
+        b.className = 'opt' + (locked ? ' locked' : (o.need ? ' unlocked' : ''));
+        const cf = locked ? ('需要 ' + needText(o.need))
+                          : (o.eff ? delta(o.eff) : '');
         b.innerHTML = '<span class="k">' + String.fromCharCode(65+i) + '</span>' +
                       '<span class="t">' + o.t + '</span>' +
                       (cf ? '<span class="cf">' + cf + '</span>' : '');
+        if (locked){ box.appendChild(b); return; }   // 看得见，点不了
         b.onclick = function(){
           if (c.form === 'fork'){ chooseLine(o.line, o.t); return; }
           if (o.flag) S.flags[o.flag] = true;

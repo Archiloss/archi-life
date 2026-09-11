@@ -533,6 +533,17 @@
          hook:{ at:'detail', card:'owe' }}
       ]},
 
+    plan: { name:'大三 · 平面', form:'choice',
+      text:'课程设计。一块 8 米 × 6 米的空地，北边是走廊，南边朝南。\n老师说："先排个平面。"',
+      opts:[
+        {t:'门开北边，进门加一道隔断', eff:{work:1,skill:1},
+         r:'他绕着走了一圈，没说话。走完才说："进门先收一下，里面才是干活的地方。"'},
+        {t:'门开南边，对着院子', eff:{hair:-1},
+         r:'"南边是外面。"他说："你让人从院子里绕进来。"'},
+        {t:'不分隔断，通间，桌子摆里面', eff:{work:1},
+         r:'"通间。"他说："也行——但动线得你自己管住。"'}
+      ]},
+
     structure: { name:'大三 · 结构选型', form:'choice',
       text:'结构课要求给方案选一个结构体系。\n你选了钢结构。老师说："为什么？"',
       opts:[
@@ -761,7 +772,7 @@
   };
 
   // ========== 路线 ==========
-  const COMMON = ['sketch','seat','ink','model','detail','physics','structure','sketch2','crit','intern','thesis','allnight','defense','rework','fork'];
+  const COMMON = ['sketch','seat','ink','model','structure','plan','detail','physics','sketch2','crit','intern','thesis','allnight','defense','rework','fork'];
   const LINES = {
     kaoyan:{ name:'考研线', now:'在读研', color:'var(--cyan)',   cards:['k_interview','k_lab','k_paper'], end:'在读研三，论文刚交' },
     firm:  { name:'设计院线', now:'在设计院', color:'var(--yellow)', cards:['f_interview','f_desk','f_revise'], end:'在一家民营院，第二年' },

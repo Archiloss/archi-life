@@ -507,60 +507,6 @@
     return s;
   }
 
-  // ========== SU 草模：推体块，看着它变 ==========
-  function massSVG(m, big){
-    const U = big ? 60 : 44, COS = Math.cos(Math.PI/6), SIN = Math.sin(Math.PI/6);
-    const VW = 620, VH = big ? 240 : 190;
-    const w = m.w, d = m.d, h = m.h;
-    const P = function(x, y, z){
-      return [ (x - y) * COS * U, ((x + y) * SIN - z) * U ];
-    };
-    let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
-    [[0,0],[w,0],[w,d],[0,d]].forEach(function(c){
-      [0, h].forEach(function(z){
-        const p = P(c[0], c[1], z);
-        minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
-        minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]);
-      });
-    });
-    const ox = (VW - (maxX - minX)) / 2 - minX;
-    const oy = (VH - (maxY - minY)) / 2 - minY - 10;
-    const pt = function(x, y, z){
-      const p = P(x, y, z);
-      return (p[0] + ox).toFixed(1) + ',' + (p[1] + oy).toFixed(1);
-    };
-    const poly = function(pts, fill, sw){
-      return '<polygon points="' + pts + '" fill="' + fill + '" stroke="#1a1a1a" stroke-width="' + sw + '" stroke-linejoin="round"/>';
-    };
-
-    let s = '<svg viewBox="0 0 ' + VW + ' ' + VH + '" xmlns="http://www.w3.org/2000/svg">' +
-            '<rect width="' + VW + '" height="' + VH + '" fill="#cfe3f2"/>';
-    s += '<ellipse cx="' + (VW/2) + '" cy="' + (VH - 16) + '" rx="' + (U * (w + d) * 0.5) + '" ry="14" fill="#000" opacity=".08"/>';
-    // 左面 / 右面 / 顶面
-    s += poly([pt(0,d,0), pt(0,d,h), pt(w,d,h), pt(w,d,0)].join(' '), '#e6e6e6', 1.1);
-    s += poly([pt(w,0,0), pt(w,0,h), pt(w,d,h), pt(w,d,0)].join(' '), '#d2d2d2', 1.1);
-    s += poly([pt(0,0,h), pt(w,0,h), pt(w,d,h), pt(0,d,h)].join(' '), '#ffffff', 2.0);
-    // 中庭
-    if (m.court){
-      const a = w * 0.3, b = d * 0.3, c = w * 0.7, e = d * 0.7, ch = h * 0.55;
-      s += poly([pt(a,b,h), pt(c,b,h), pt(c,e,h), pt(a,e,h)].join(' '), '#8fa8bd', 1.4);
-      s += poly([pt(a,b,h-ch), pt(a,b,h), pt(c,b,h), pt(c,b,h-ch)].join(' '), '#b9c9d6', 1.0);
-      s += poly([pt(c,b,h-ch), pt(c,b,h), pt(c,e,h), pt(c,e,h-ch)].join(' '), '#a3b6c6', 1.0);
-    }
-    // 比例人（有它才知道多大）
-    const bx = VW * 0.16, by = VH - 18;
-    s += '<g stroke="#5a5a5a" stroke-width="1.3" fill="none" stroke-linecap="round">' +
-         '<circle cx="' + bx + '" cy="' + (by - 26) + '" r="3.4"/>' +
-         '<line x1="' + bx + '" y1="' + (by - 22) + '" x2="' + bx + '" y2="' + (by - 10) + '"/>' +
-         '<line x1="' + bx + '" y1="' + (by - 22) + '" x2="' + (bx - 5) + '" y2="' + (by - 14) + '"/>' +
-         '<line x1="' + bx + '" y1="' + (by - 22) + '" x2="' + (bx + 5) + '" y2="' + (by - 14) + '"/>' +
-         '<line x1="' + bx + '" y1="' + (by - 10) + '" x2="' + (bx - 3.4) + '" y2="' + by + '"/>' +
-         '<line x1="' + bx + '" y1="' + (by - 10) + '" x2="' + (bx + 3.4) + '" y2="' + by + '"/>' +
-         '</g>';
-    s += '</svg>';
-    return s;
-  }
-
   // ========== 内容卡 ==========
   // form: choice 抉择 / guess 猜 / none 无选择 / alloc 分配 / draw 抽题 / fork 分岔
   const CARDS = {
@@ -677,8 +623,13 @@
       text:'开卷考。你带了三本书进场。\n三本都没用上。',
       opts:[{t:'继 续', eff:{}, r:'你交了卷，提前四十分钟。考场外面没有人。\n你在台阶上坐到铃响。'}]},
 
-    sketch2: { name:'大四 · 一草', form:'mass',
-      text:'老师把你带到一块空地边上。\n"先搭个体量看看。"' },
+    sketch2: { name:'大四 · 一草', form:'choice',
+      text:'老师把你带到一块空地边上。\n"先搭个体量看看。"',
+      opts:[
+        {t:'用桌上的马克笔和橡皮摆一个', eff:{work:1,hair:-1}, r:'你摆了一桌子。老师看了两眼，说："再想想。"'},
+        {t:'先在纸上画剖透视', eff:{skill:1}, r:'画了两天。第三天你发现那张透视里有两处对不上。'},
+        {t:'直接上 SU 拉一个', eff:{work:1,skill:-1}, r:'模型拉得挺快。老师问"为什么是这个形状"，你没答上来。'}
+      ]},
 
     crit: { name:'评 图', form:'choice', scene:'crit',
       text:'老师看了很久，说："你这个方案，再想想。"\n他没说想什么。',
@@ -1180,14 +1131,6 @@
       return;
     }
 
-    // ---- 推体块：搭你自己的草模 ----
-    if (c.form === 'mass'){
-      if (!S.mass) S.mass = { w:1.8, d:1.8, h:0.7, court:false };
-      if (S.massLeft == null) S.massLeft = 4;
-      renderMass(c);
-      return;
-    }
-
     // ---- 座位平面图：在图上挑位置 ----
     if (c.form === 'seat'){
       let grid = '';
@@ -1278,62 +1221,6 @@
             S.memories.push({ tile: c.name, text: o.r });
           }
           showResult(o.t, o.r, o.eff || {});
-  }
-
-  // ========== 推体块 ==========
-  function renderMass(c){
-    const m = S.mass;
-    const acts = [
-      { t:'加一层', fn:function(){ m.h += 0.4; } },
-      { t:'减一层', fn:function(){ m.h = Math.max(0.4, m.h - 0.4); } },
-      { t:'拉长',   fn:function(){ m.d = Math.min(4.2, m.d + 0.4); } },
-      { t:'收进',   fn:function(){ m.d = Math.max(0.8, m.d - 0.4); } },
-      { t:'挖中庭', fn:function(){ m.court = !m.court; } }
-    ];
-    let btns = acts.map(function(a, i){
-      return '<button data-i="' + i + '"' + (S.massLeft <= 0 ? ' disabled' : '') + '>' + a.t + '</button>';
-    }).join('');
-    btns += '<button class="done" id="massOK">就 这 样</button>';
-
-    el('stage').innerHTML =
-      '<div class="ttl">' + c.name + '</div>' +
-      '<div class="txt">' + c.text.replace(/\n/g,'<br>') + '</div>' +
-      '<div class="scene" id="massView">' + massSVG(m, true) + '</div>' +
-      '<div class="massbar">' + btns + '</div>' +
-      '<div class="massleft">还能改 <b>' + S.massLeft + '</b> 次</div>';
-
-    Array.prototype.forEach.call(el('stage').querySelectorAll('.massbar button[data-i]'), function(b){
-      b.onclick = function(){
-        if (S.massLeft <= 0) return;
-        acts[+b.dataset.i].fn();
-        S.massLeft--;
-        renderMass(c);
-      };
-    });
-
-    el('massOK').onclick = function(){
-      const ratio = m.h / m.w;
-      let pick, eff, r;
-      if (m.court){
-        pick = '一个带中庭的体量'; eff = { work:1, hair:-1 };
-        r = '老师绕着走了两圈，说："中间这个院子，有点意思。"';
-      } else if (ratio > 1.3){
-        pick = '一个高高的体量'; eff = { work:1, skill:1 };
-        r = '他说："你想让它当标志物。"你没反驳——其实你没想那么远。';
-      } else if (ratio < 0.6){
-        pick = '一个扁扁的体量'; eff = { work:1, hair:-1 };
-        r = '他说："太保守了。"你回去加了两层，然后觉得他说得对。';
-      } else {
-        pick = '一个方方正正的体量'; eff = { work:1 };
-        r = '他看了很久，说："先这样吧。"';
-      }
-      log('· ' + pick);
-      log('　' + r);
-      S.memories.push({ tile: c.name, text: r });
-      S.choices.push(eff);
-      apply(eff);
-      showResult(pick, r, eff);
-    };
   }
 
   // ========== 结果页：选完先看清发生了什么，再走下一步 ==========

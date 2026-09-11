@@ -198,8 +198,62 @@
   .ending .body .hot{color:var(--yellow);}
   .ending .body .dim{color:var(--dim);}
 
+  /* ---- 摆图块：在空房间里自己排平面 ---- */
+  .planwrap{display:flex;gap:14px;flex-wrap:wrap;margin:2px 0 10px;
+            border:1px solid #2e2e2e;background:#141414;padding:12px;}
+  .palette{display:flex;flex-direction:column;gap:6px;min-width:104px;}
+  .palette .ph{font-size:10px;color:var(--dim2);letter-spacing:2px;padding-bottom:6px;
+               border-bottom:1px dashed #333;}
+  .palette button{display:flex;align-items:center;gap:8px;font-family:var(--mono);
+    font-size:12px;padding:8px 10px;min-height:38px;background:#1e1e1e;color:var(--ink);
+    border:1px solid #3d3d3d;border-radius:2px;cursor:pointer;text-align:left;}
+  .palette button:hover{border-color:var(--cyan);color:var(--cyan);}
+  .palette button.sel{border-color:var(--cyan);background:#243032;color:var(--white);
+                      box-shadow:0 0 0 1px var(--cyan);}
+  .palette button:disabled{opacity:.32;cursor:not-allowed;}
+  .palette button svg{flex:0 0 18px;}
+  .palette .lp{font-size:9.5px;color:var(--dim2);line-height:1.5;padding-top:4px;}
+  .planarea{flex:1;min-width:280px;}
+  .planarea .axis{font-size:9.5px;color:var(--dim2);letter-spacing:3px;text-align:center;
+                  margin-bottom:5px;}
+  .planarea .axis.s{border-top:1px dashed #333;padding-top:5px;margin:5px 0 0;}
+  .plangrid{display:grid;gap:1px;background:#333;border:1px solid #444;width:max-content;
+            margin:0 auto;}
+  .pc{width:44px;height:38px;background:#1c1c1c;border:0;padding:0;cursor:crosshair;
+      display:grid;place-items:center;font-family:var(--mono);}
+  .pc:hover{background:#26302f;}
+  .pc.hot{background:#22302f;box-shadow:inset 0 0 0 1px var(--cyan);}
+  .pc:disabled{cursor:default;background:#1a1a1a;}
+  .pc:disabled:hover{background:#1a1a1a;}
+  .planleft{font-size:11.5px;color:var(--dim);margin-top:10px;text-align:center;}
+  .planleft b{color:var(--yellow);font-weight:400;}
+  .planbar{display:flex;gap:8px;margin-top:10px;justify-content:center;}
+  .planbar button{font-family:var(--mono);font-size:12.5px;padding:9px 14px;min-height:40px;
+    background:#232323;color:var(--ink);border:1px solid #3d3d3d;border-radius:2px;cursor:pointer;}
+  .planbar button:hover{border-color:var(--cyan);color:var(--cyan);}
+  .planbar button.done{background:var(--cyan);color:#0f0f0f;border-color:var(--cyan);font-weight:700;}
+
+  /* ---- 状态栏：鼠标一动坐标就跳，这是\"我在 AutoCAD 里\"的命根子 ---- */
+  .status{display:flex;align-items:center;background:#2e2e2e;border-top:1px solid var(--line);
+          font-size:10px;color:var(--dim2);height:22px;overflow:hidden;}
+  .status span{padding:0 11px;height:100%;display:flex;align-items:center;
+               border-right:1px solid var(--line);white-space:nowrap;}
+  .status span.act{color:var(--white);background:#3a3a3a;}
+  .status span.co{margin-left:auto;border-right:0;color:var(--dim);
+                  font-variant-numeric:tabular-nums;}
+
+  /* ---- 图签：一局结束，像一张图签完稿 ---- */
+  .tblock{display:flex;border:1px solid #4a4a4a;width:max-content;max-width:100%;flex-wrap:wrap;
+          background:#161616;}
+  .tblock span{font-size:10.5px;color:var(--dim2);padding:7px 12px;
+               border-right:1px solid #4a4a4a;white-space:nowrap;}
+  .tblock span:last-child{border-right:0;}
+  .tblock b{color:var(--ink);font-weight:400;margin-left:6px;}
+
   @media (max-width:700px){
     body{padding:8px;font-size:12.5px;}
+    .planwrap{gap:10px;}
+    .pc{width:34px;height:32px;}
     .hud .st{padding:0 10px;font-size:11px;}
     .stage{padding:16px 13px;min-height:180px;}
     .stage .txt{font-size:14px;}
@@ -236,6 +290,14 @@
   <div class="stage" id="stage"></div>
 
   <div class="cmd" id="cmd"></div>
+
+  <div class="status">
+    <span class="act">对象捕捉</span>
+    <span>栅格</span>
+    <span>正交</span>
+    <span>极轴</span>
+    <span class="co" id="coords">0.0, 0.0, 0.0</span>
+  </div>
 </div>
 
 <script>
@@ -515,6 +577,9 @@
          hook:{ at:'detail', card:'owe' }}
       ]},
 
+    plan: { name:'大三 · 平面', form:'plan',
+      text:'课程设计。给你一块 8 米 × 6 米的空地：\n北边是走廊，南边朝南，有光。\n老师说：\"先排个平面。\"' },
+
     structure: { name:'大三 · 结构选型', form:'choice',
       text:'结构课要求给方案选一个结构体系。\n你选了钢结构。老师说："为什么？"',
       opts:[
@@ -738,7 +803,7 @@
   };
 
   // ========== 路线 ==========
-  const COMMON = ['sketch','seat','ink','model','detail','physics','structure','sketch2','crit','intern','thesis','allnight','defense','rework','fork'];
+  const COMMON = ['sketch','seat','ink','model','detail','plan','physics','structure','sketch2','crit','intern','thesis','allnight','defense','rework','fork'];
   const LINES = {
     kaoyan:{ name:'考研线', now:'在读研', color:'var(--cyan)',   cards:['k_interview','k_lab','k_paper'], end:'在读研三，论文刚交' },
     firm:  { name:'设计院线', now:'在设计院', color:'var(--yellow)', cards:['f_interview','f_desk','f_revise'], end:'在一家民营院，第二年' },
@@ -1056,6 +1121,13 @@
       return;
     }
 
+    // ---- 摆图块：给你一个空房间，自己排平面 ----
+    if (c.form === 'plan'){
+      if (!S.plan) S.plan = { cells:{}, left:5, sel:'door' };
+      renderPlan(c);
+      return;
+    }
+
     // ---- 座位平面图：在图上挑位置 ----
     if (c.form === 'seat'){
       let grid = '';
@@ -1203,6 +1275,130 @@
     };
   }
 
+  // ========== 摆图块：一块空地，北边走廊、南边朝阳 ==========
+  // 图块＝可复用的图形单元。建筑人每天真做的事就是摆它们。
+  const PLAN_COLS = 8, PLAN_ROWS = 6;
+  const PLAN_ITEMS = [
+    { k:'door', t:'门',   rule:'只能开在北墙或南墙',
+      ok:function(r){ return r === 0 || r === PLAN_ROWS - 1; } },
+    { k:'wall', t:'隔断', rule:'内部，用来分区',
+      ok:function(r){ return r >= 1 && r <= PLAN_ROWS - 2; } },
+    { k:'desk', t:'桌椅', rule:'内部，你的位置',
+      ok:function(r){ return r >= 1 && r <= PLAN_ROWS - 2; } },
+    { k:'col',  t:'柱',   rule:'内部，结构柱',
+      ok:function(r){ return r >= 1 && r <= PLAN_ROWS - 2; } }
+  ];
+
+  function planIcon(type){
+    const c = { door:'#35d6e8', wall:'#dcdcdc', desk:'#ffd93d', col:'#8a8a8a' }[type] || '#8a8a8a';
+    if (type === 'door')
+      return '<svg width="20" height="18" viewBox="0 0 20 18"><path d="M3,15 L3,3 M3,3 A12,12 0 0 1 15,15" fill="none" stroke="' + c + '" stroke-width="1.6"/></svg>';
+    if (type === 'wall')
+      return '<svg width="20" height="18" viewBox="0 0 20 18"><line x1="1" y1="9" x2="19" y2="9" stroke="' + c + '" stroke-width="3.4"/></svg>';
+    if (type === 'desk')
+      return '<svg width="20" height="18" viewBox="0 0 20 18"><rect x="4" y="4.5" width="12" height="9" fill="none" stroke="' + c + '" stroke-width="1.5"/><circle cx="10" cy="9" r="1.5" fill="' + c + '"/></svg>';
+    return '<svg width="20" height="18" viewBox="0 0 20 18"><circle cx="10" cy="9" r="3.6" fill="#3a3a3a" stroke="' + c + '" stroke-width="1.4"/></svg>';
+  }
+
+  function renderPlan(c){
+    const P = S.plan;
+    const cur = PLAN_ITEMS.filter(function(x){ return x.k === P.sel; })[0] || PLAN_ITEMS[0];
+
+    const pals = PLAN_ITEMS.map(function(it){
+      return '<button data-k="' + it.k + '"' + (P.sel === it.k ? ' class="sel"' : '') + '>' +
+             planIcon(it.k) + '<span>' + it.t + '</span></button>';
+    }).join('');
+
+    let grid = '';
+    for (let r = 0; r < PLAN_ROWS; r++){
+      for (let col = 0; col < PLAN_COLS; col++){
+        const type = P.cells[r + ',' + col];
+        grid += '<button class="pc" data-r="' + r + '" data-c="' + col + '"' +
+                (type ? ' disabled' : '') + '>' + (type ? planIcon(type) : '') + '</button>';
+      }
+    }
+
+    el('stage').innerHTML =
+      '<div class="ttl">' + c.name + '</div>' +
+      '<div class="txt">' + c.text.replace(/\n/g,'<br>') + '</div>' +
+      '<div class="planwrap">' +
+        '<div class="palette">' +
+          '<div class="ph">图 块</div>' + pals +
+          '<div class="lp">' + cur.t + '：' + cur.rule + '</div>' +
+        '</div>' +
+        '<div class="planarea">' +
+          '<div class="axis">走 廊</div>' +
+          '<div class="plangrid" style="grid-template-columns:repeat(' + PLAN_COLS + ',1fr)">' + grid + '</div>' +
+          '<div class="axis s">朝 南 · 采 光</div>' +
+          '<div class="planleft">还能放 <b>' + P.left + '</b> 个图块</div>' +
+          '<div class="planbar"><button class="done" id="planOK">就 这 样</button></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="warn" id="planWarn"></div>';
+
+    Array.prototype.forEach.call(el('stage').querySelectorAll('.palette button[data-k]'), function(b){
+      b.onclick = function(){ P.sel = b.dataset.k; renderPlan(c); };
+    });
+
+    Array.prototype.forEach.call(el('stage').querySelectorAll('.pc[data-r]'), function(b){
+      b.onclick = function(){
+        if (P.left <= 0) return;
+        const r = +b.dataset.r, col = +b.dataset.c;
+        if (!cur.ok(r)){ el('planWarn').textContent = cur.t + '：' + cur.rule + '。'; return; }
+        P.cells[r + ',' + col] = P.sel;
+        P.left--;
+        renderPlan(c);
+      };
+    });
+
+    el('planOK').onclick = function(){ settlePlan(c); };
+  }
+
+  function settlePlan(c){
+    const P = S.plan;
+    const at = function(type){
+      return Object.keys(P.cells).filter(function(k){ return P.cells[k] === type; })
+                   .map(function(k){ const a = k.split(','); return { r:+a[0], c:+a[1] }; });
+    };
+    const doors = at('door'), desks = at('desk'), walls = at('wall'), cols = at('col');
+    const minR = function(arr){ return Math.min.apply(null, arr.map(function(x){ return x.r; })); };
+
+    let pick, r, eff;
+
+    if (!doors.length){
+      pick = '一个没有入口的平面';
+      r = '老师站在门口，没进来。\n"人从哪儿进？"';
+      eff = { hair:-1 };
+    } else if (doors[0].r === PLAN_ROWS - 1){
+      pick = '门开在南边的平面';
+      r = '"南边是外面。"\n他说："你让人从院子里绕进来。"';
+      eff = { hair:-1 };
+    } else if (cols.length >= 3){
+      pick = '中间立了三根柱子的平面';
+      r = '"柱子挡在中间。"\n他指了其中一根："这块地本来不用立。"';
+      eff = { work:1, hair:-1 };
+    } else if (desks.length && walls.length && minR(desks) > minR(walls)){
+      pick = '进门先过一道隔断的平面';
+      r = '他绕着走了一圈，没说话。\n走完才说："进门先收一下，里面才是干活的地方。"';
+      eff = { work:1, skill:1 };
+    } else if (desks.length && desks.some(function(x){ return x.r <= 1 && x.c === doors[0].c; })){
+      pick = '工位正对门口的平面';
+      r = '"你一进门就撞见自己。"\n他说："坐下之前，全屋的人都得先看你一遍。"';
+      eff = { work:1, hair:-1 };
+    } else {
+      pick = '一个通间';
+      r = '"通间。"\n他说："也行——但动线得你自己管住。"';
+      eff = { work:1 };
+    }
+
+    log('· ' + pick);
+    log('　' + r.replace(/\n/g, ''));
+    S.memories.push({ tile: c.name, text: r.replace(/\n/g, '') });
+    S.choices.push(eff);
+    apply(eff);
+    showResult(pick, r, eff);
+  }
+
   // ========== 结果页：选完先看清发生了什么，再走下一步 ==========
   function showResult(pick, res, eff){
     const chips = [];
@@ -1320,6 +1516,12 @@
         '<div class="big-t">' + end + '。</div>' +
         '<div class="scene" style="margin-top:2px">' + suScene(S.work) + '</div>' +
         '<div class="body">' + lines.join('\n').replace(/\n/g,'<br>') + '</div>' +
+        '<div class="tblock">' +
+          '<span>图号<b>YZ-2026-01</b></span>' +
+          '<span>版次<b>REV.A</b></span>' +
+          '<span>设计<b>你</b></span>' +
+          '<span>比例<b>1:100</b></span>' +
+        '</div>' +
         '<div><button class="act" id="again">再 来 一 局</button></div>' +
       '</div>';
 
@@ -1339,6 +1541,15 @@
       pk.style.top = e.clientY + 'px';
     });
     document.addEventListener('mouseleave', function(){ ch.classList.remove('on'); });
+  })();
+
+  // 状态栏坐标：鼠标一动就跳，才有"在 AutoCAD 里"的感觉
+  (function(){
+    const co = el('coords');
+    document.addEventListener('mousemove', function(e){
+      co.textContent = (e.clientX * 1.37).toFixed(1) + ', ' +
+                       ((window.innerHeight - e.clientY) * 1.19).toFixed(1) + ', 0.0';
+    });
   })();
 
   reset();

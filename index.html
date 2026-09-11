@@ -52,6 +52,22 @@
   .hud .st b{color:var(--white);font-weight:400;font-variant-numeric:tabular-nums;}
   .hud .st.sp{flex:1;justify-content:flex-end;border-right:0;color:var(--dim2);}
 
+
+  /* ---- CAD 经典坐标轴（UCS 图标）---- */
+  .ucs{position:absolute;left:16px;bottom:16px;pointer-events:none;z-index:5;
+       font-size:9px;line-height:1;opacity:.85;}
+  .ucs .ax{position:relative;width:34px;height:34px;}
+  .ucs .ax i{position:absolute;background:var(--dim);}
+  .ucs .ax i.x{left:0;bottom:3px;width:30px;height:1px;}
+  .ucs .ax i.y{left:3px;bottom:0;width:1px;height:30px;}
+  .ucs .ax i.xh{left:28px;bottom:1px;width:0;height:0;background:none;
+    border-left:4px solid var(--dim);border-top:3px solid transparent;border-bottom:3px solid transparent;}
+  .ucs .ax i.yh{left:1px;bottom:28px;width:0;height:0;background:none;
+    border-bottom:4px solid var(--dim);border-left:3px solid transparent;border-right:3px solid transparent;}
+  .ucs .ax em{position:absolute;font-style:normal;font-size:8.5px;color:var(--dim);}
+  .ucs .ax em.ex{left:31px;bottom:-2px;}
+  .ucs .ax em.ey{left:-1px;bottom:31px;}
+
   /* ---- 工作区 + 右侧面板 ---- */
   .main{display:grid;grid-template-columns:1fr 208px;flex:1;min-height:0;}
   .work{display:flex;flex-direction:column;min-width:0;}
@@ -109,7 +125,7 @@
   .sep{padding:0 2px;color:var(--edge);align-self:center;margin-top:6px;font-size:10px;}
 
   .stage{padding:20px 18px;min-height:210px;display:flex;flex-direction:column;gap:14px;
-         flex:1;min-height:0;overflow-y:auto;
+         flex:1;min-height:0;overflow-y:auto;position:relative;
          background-color:var(--bg);
          background-image:linear-gradient(var(--grid) 1px,transparent 1px),
            linear-gradient(90deg,var(--grid) 1px,transparent 1px);
@@ -276,15 +292,24 @@
    是"你这辈子是怎么过的"的视觉总结。
    ============================================================ */
 
-/* ---- SU：白模 + 浅蓝天空 ---- */
+/* ---- SU：天空蓝的绘图区 + 浅灰工具栏（SU 的 sky / ground 是两件事）---- */
 body.skin-su{
-  --body-bg:#c3d5e4; --bg:#e6eff7; --panel:#dde9f3; --chrome:#c9d9e7;
-  --line:#aec1d2; --grid:#d7e4f0;
-  --ink:#21323e; --white:#0a1922; --dim:#617687; --dim2:#92a6b5;
-  --hud-bg:#d4e2ee; --box-bg:#dce8f3; --edge:#a6bacb; --edge2:#bdcddc;
-  --sunken:#d5e2ef; --head-bg:#cedde9;
-  --cyan:#0b7ba6; --yellow:#946f00; --red:#b5382c; --green:#1a7c45; --magenta:#8b2a98;
+  --body-bg:#c0c0c0; --bg:#e8e8e8; --panel:#dedede; --chrome:#c8c8c8;
+  --line:#aeaeae; --grid:#dcdcdc;
+  --ink:#2e2e2e; --white:#141414; --dim:#6a6a6a; --dim2:#909090;
+  --hud-bg:#d2d2d2; --box-bg:#dcdcdc; --edge:#a4a4a4; --edge2:#bcbcbc;
+  --sunken:#d4d4d4; --head-bg:#cccccc;
+  --cyan:#14688f; --yellow:#8a6410; --red:#ab3428; --green:#2e7040; --magenta:#7c3a90;
 }
+/* SU 的绘图区＝天空（这是 SU 唯一蓝的地方） */
+body.skin-su .stage{
+  background-color:#cfe3f2;
+  background-image:linear-gradient(#a9cbe8 0%, #cfe3f2 46%, #dceaf6 100%);
+  background-size:auto;
+}
+/* 地平线：天空下面压一条地面灰 */
+body.skin-su .stage::after{content:'';position:absolute;left:0;right:0;bottom:0;height:26%;
+  background:linear-gradient(#cfcfcf,#c2c2c2);pointer-events:none;}
 
 /* ---- 手绘：硫酸纸 + 针管笔 ---- */
 body.skin-sketch{
@@ -296,14 +321,14 @@ body.skin-sketch{
   --cyan:#1f5f8b; --yellow:#8a6410; --red:#a33a2a; --green:#3d6b34; --magenta:#7a3a7a;
 }
 
-/* ---- Rhino：深灰视窗 + 蓝紫高亮 ---- */
+/* ---- Rhino：灰色工作视窗（官方默认背景就是灰色，不是深色）---- */
 body.skin-rhino{
-  --body-bg:#0a0a0c; --bg:#141416; --panel:#1a1a1e; --chrome:#232327;
-  --line:#2e2e34; --grid:#1c1c20;
-  --ink:#c8c8d0; --white:#f0f0f6; --dim:#7a7a86; --dim2:#565660;
-  --hud-bg:#101012; --box-bg:#1e1e22; --edge:#33333a; --edge2:#424250;
-  --sunken:#18181c; --head-bg:#17171a;
-  --cyan:#4d9de0; --yellow:#e0b23c; --red:#e05c5c; --green:#5fc27e; --magenta:#c07de0;
+  --body-bg:#c8c8c8; --bg:#dcdcdc; --panel:#d2d2d2; --chrome:#c0c0c0;
+  --line:#a8a8a8; --grid:#d0d0d0;
+  --ink:#2b2b2b; --white:#141414; --dim:#666666; --dim2:#8e8e8e;
+  --hud-bg:#cdcdcd; --box-bg:#d5d5d5; --edge:#9e9e9e; --edge2:#b6b6b6;
+  --sunken:#d0d0d0; --head-bg:#c8c8c8;
+  --cyan:#1a6fa8; --yellow:#8a6410; --red:#b03028; --green:#2c6e3f; --magenta:#7a3a94;
 }
 </style>
 </head>
@@ -332,7 +357,11 @@ body.skin-rhino{
   </div>
 
   <div class="main">
-    <div class="work">
+    <div class="work" style="position:relative">
+      <div class="ucs"><div class="ax">
+        <i class="x"></i><i class="xh"></i><i class="y"></i><i class="yh"></i>
+        <em class="ex">X</em><em class="ey">Y</em>
+      </div></div>
       <div class="stage" id="stage"></div>
 
       <div class="cmd" id="cmd"></div>

@@ -171,7 +171,8 @@
   .massbar button.done{background:var(--cyan);color:var(--body-bg);border-color:var(--cyan);font-weight:700;}
   .massleft{font-size:11.5px;color:var(--dim);margin-top:9px;letter-spacing:.3px;}
   .massleft b{color:var(--yellow);font-weight:400;}
-  .stage .picked{font-size:15px;color:var(--dim);line-height:1.9;}
+  .stage .picked{font-size:15px;color:var(--dim);line-height:1.9;
+    opacity:0;animation:lnIn .34s ease-out forwards;animation-delay:.3s;}
   .stage .res{font-size:16px;color:var(--white);line-height:1.95;}
   .deltas{display:flex;gap:9px;flex-wrap:wrap;margin-top:2px;}
   .chip{font-size:13.5px;padding:6px 12px;border:1px solid var(--line);
@@ -216,11 +217,12 @@
   .opt{transition:border-color .12s,background .12s,opacity .28s,box-shadow .15s;}
 
   /* 结果逐行浮现，不是一坨字甩脸上 */
+  /* 结果晚一步浮现——这个"停顿"以前是靠 setTimeout，现在纯 CSS，不会丢 */
   .stage .res span.ln{display:block;opacity:0;transform:translateY(4px);
-    animation:lnIn .38s ease-out forwards;}
-  .stage .res span.ln:nth-child(2){animation-delay:.13s;}
-  .stage .res span.ln:nth-child(3){animation-delay:.26s;}
-  .stage .res span.ln:nth-child(4){animation-delay:.39s;}
+    animation:lnIn .38s ease-out forwards;animation-delay:.42s;}
+  .stage .res span.ln:nth-child(2){animation-delay:.55s;}
+  .stage .res span.ln:nth-child(3){animation-delay:.68s;}
+  .stage .res span.ln:nth-child(4){animation-delay:.81s;}
   @keyframes lnIn{to{opacity:1;transform:none;}}
   .deltas span.chip{opacity:0;animation:lnIn .3s ease-out forwards;animation-delay:.5s;}
   .deltas span.chip:nth-child(2){animation-delay:.62s;}
@@ -266,6 +268,8 @@
   .cmd .prompt{color:#cfcfcf;margin-top:5px;padding-top:5px;border-top:1px dashed #2e2e2e;}
   .cmd .prompt .p{color:var(--dim2);}
   .cmd .prompt .opts{color:var(--yellow);}
+  /* 光标现在名副其实：敲 A/B/C/D 会先在前面回显，再执行 */
+  .cmd .prompt .typed{color:var(--white);font-weight:700;}
   .cmd .prompt .cur{display:inline-block;width:7px;height:12px;background:var(--white);
                     vertical-align:-2px;animation:blink 1.05s steps(1) infinite;}
   @keyframes blink{50%{opacity:0;}}
@@ -931,6 +935,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     applySkin('');                 // 新一局回到默认界面
     renderStatus();
     document.getElementById('cmd').innerHTML = '';
+    cmdEcho('');
     log('新的一局。', 'p');
     renderTrack(); renderHUD(); showSchool();
   }
@@ -1169,6 +1174,44 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     }
   }
 
+
+  // ========== 键盘：在命令行敲字母选选项（CAD 就是这样的）==========
+  // 敲 A/B/C/D 选中对应项，回车＝第一项。敲错了在命令行留一行回显。
+  function cmdOptions(){
+    return Array.prototype.slice.call(document.querySelectorAll('.opt'))
+      .filter(function(b){ return !b.classList.contains('locked') && !b.disabled; });
+  }
+  function cmdEcho(txt){
+    const t = el('typed');
+    if (t) t.textContent = txt;
+  }
+  document.addEventListener('keydown', function(e){
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const tag = (e.target && e.target.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;   // 填学校名时别抢键
+    const opts = cmdOptions();
+    if (!opts.length) return;
+
+    const K = 'ABCDEF';
+    const k = (e.key || '').toUpperCase();
+
+    if (k.length === 1 && K.indexOf(k) >= 0){
+      const i = K.indexOf(k);
+      e.preventDefault();
+      cmdEcho(k);
+      if (opts[i]) opts[i].click();
+      else { log('没有 ' + k + ' 这一项。', ''); cmdEcho(''); }
+      return;
+    }
+    if (e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      cmdEcho('⏎');
+      opts[0].click();
+      return;
+    }
+    if (e.key === 'Backspace'){ cmdEcho(''); return; }
+  });
+
   // ========== 底部状态栏：每个软件都不一样 ==========
   // AutoCAD 是捕捉开关 + 坐标；SketchUp 是工具提示 + Measurements 输入框；
   // Rhino 是 CPlane + XYZ + 单位 + 开关；手绘没有软件界面，只有图签信息
@@ -1310,7 +1353,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     d.className = 'prompt';
     d.innerHTML = '<span class="p">命令:</span> _' + esc(title) + ' ' +
                   '<span class="opts">[ ' + esc(list) + ' ]</span> ' +
-                  '&lt;A&gt;: <span class="cur"></span>';
+                  '&lt;A&gt;: <span class="typed" id="typed"></span><span class="cur"></span>';
     cmd.appendChild(d);
     cmd.scrollTop = cmd.scrollHeight;
   }
@@ -1425,12 +1468,14 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         if (locked){ box.appendChild(b); return; }   // 看得见，点不了
         b.onclick = function(){
           if (c.form === 'fork'){ chooseLine(o.line, o.t); return; }
-          // 选择的那一刻：选中的留下，其余退场——先让这个决定"落下来"
+          // 选择的那一刻：选中的留下，其余退场
           Array.prototype.forEach.call(box.querySelectorAll('.opt'), function(x){
             x.classList.add(x === b ? 'chosen' : 'faded');
             x.disabled = true;
           });
-          setTimeout(function(){ commitChoice(c, o); }, 480);
+          // 数据立刻结算（不再用 setTimeout 当通道——后台标签页会把它节流掉）。
+          // "停一下再出结果"的体感交给结果页的 CSS 动画延迟。
+          commitChoice(c, o);
         };
         box.appendChild(b);
       });

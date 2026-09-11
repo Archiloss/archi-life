@@ -14,7 +14,20 @@
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{background:#0f0f0f;color:var(--ink);font-family:var(--mono);
-       font-size:13px;-webkit-font-smoothing:antialiased;padding:14px;}
+       font-size:13px;-webkit-font-smoothing:antialiased;padding:14px;
+       cursor:crosshair;}
+
+  /* ---- 十字光标（跟随鼠标，CAD 的命根子动作）---- */
+  .crosshair{position:fixed;inset:0;pointer-events:none;z-index:999;display:none;}
+  .crosshair.on{display:block;}
+  .crosshair .h,.crosshair .v{position:absolute;background:rgba(150,150,150,.5);}
+  .crosshair .h{left:0;right:0;height:1px;}
+  .crosshair .v{top:0;bottom:0;width:1px;}
+  .crosshair .pick{
+    position:absolute;width:11px;height:11px;
+    border:1px solid rgba(180,180,180,.85);
+    transform:translate(-50%,-50%);
+  }
   .app{max-width:1080px;margin:0 auto;background:var(--bg);border:1px solid #000;
        box-shadow:0 10px 40px rgba(0,0,0,.7);display:flex;flex-direction:column;}
 
@@ -58,6 +71,10 @@
   .stage .txt{font-size:15px;line-height:1.85;color:var(--white);white-space:pre-wrap;}
   .stage .txt .hot{color:var(--yellow);}
   .stage .txt .bk{color:var(--dim);}
+
+  /* ---- 场景图：每一站该有它的样子 ---- */
+  .scene{margin:0 0 12px;border:1px solid #2e2e2e;background:#151515;overflow:hidden;}
+  .scene svg{display:block;width:100%;height:auto;}
   .stage .picked{font-size:15px;color:var(--dim);line-height:1.9;}
   .stage .res{font-size:16px;color:var(--white);line-height:1.95;}
   .deltas{display:flex;gap:9px;flex-wrap:wrap;margin-top:2px;}
@@ -137,6 +154,10 @@
 </head>
 <body>
 
+<div class="crosshair" id="crosshair">
+  <div class="h"></div><div class="v"></div><div class="pick"></div>
+</div>
+
 <div class="app">
   <div class="titlebar">
     <span>营造大亨 &nbsp;<span class="fn">— [ YZ-2026.dwg ]</span></span>
@@ -204,6 +225,108 @@
     return POOL.map(function(a){ return a[0]; }).join('');
   }
 
+  // ========== 场景图（代码画的线稿，和 CAD／SU 是一套语言）==========
+  const SCENES = {
+    crit:
+      '<svg viewBox="0 0 620 152" xmlns="http://www.w3.org/2000/svg">' +
+      '<line x1="26" y1="12" x2="594" y2="12" stroke="#3a3a3a" stroke-width="3"/>' +
+      '<line x1="26" y1="12" x2="594" y2="12" stroke="#707070" stroke-width="1"/>' +
+      '<rect x="28" y="26" width="404" height="114" fill="#131313" stroke="#333" stroke-width="1"/>' +
+      '<rect x="52" y="42" width="74" height="86" fill="#d6d6d6"/>' +
+      '<rect x="136" y="40" width="74" height="88" fill="#e8e8e8"/>' +
+      '<rect x="220" y="44" width="74" height="84" fill="#c4c4c4"/>' +
+      '<rect x="304" y="42" width="74" height="86" fill="#adadad"/>' +
+      '<g stroke="#8a8a8a" stroke-width=".8" fill="none">' +
+        '<rect x="146" y="52" width="46" height="36"/><circle cx="169" cy="70" r="11"/>' +
+        '<line x1="146" y1="98" x2="204" y2="98"/><line x1="146" y1="106" x2="190" y2="106"/>' +
+        '<rect x="230" y="56" width="52" height="30"/><line x1="230" y1="98" x2="286" y2="98"/>' +
+      '</g>' +
+      '<g stroke="#cfcfcf" stroke-width="1.7" fill="none" stroke-linecap="round">' +
+        '<circle cx="502" cy="56" r="11"/>' +
+        '<line x1="502" y1="67" x2="502" y2="106"/>' +
+        '<line x1="502" y1="78" x2="452" y2="70"/>' +
+        '<line x1="502" y1="78" x2="518" y2="100"/>' +
+        '<line x1="502" y1="106" x2="489" y2="140"/>' +
+        '<line x1="502" y1="106" x2="514" y2="140"/>' +
+      '</g>' +
+      '<ellipse cx="502" cy="141" rx="19" ry="3" fill="#000" opacity=".35"/>' +
+      '<line x1="18" y1="141" x2="602" y2="141" stroke="#2c2c2c"/>' +
+      '</svg>',
+
+    allnight:
+      '<svg viewBox="0 0 620 152" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="466" y="24" width="126" height="84" fill="#0b0b0b" stroke="#333"/>' +
+      '<circle cx="548" cy="48" r="7" fill="#5f5f5f"/>' +
+      '<line x1="466" y1="66" x2="592" y2="66" stroke="#1e1e1e"/>' +
+      '<line x1="24" y1="112" x2="596" y2="112" stroke="#3a3a3a" stroke-width="2"/>' +
+      '<line x1="24" y1="140" x2="596" y2="140" stroke="#2c2c2c"/>' +
+      '<rect x="66" y="60" width="84" height="52" fill="#16201f" stroke="#4a4a4a"/>' +
+      '<rect x="76" y="70" width="64" height="32" fill="none" stroke="#3d5a58"/>' +
+      '<line x1="108" y1="112" x2="108" y2="126" stroke="#4a4a4a"/>' +
+      '<rect x="182" y="66" width="84" height="46" fill="#16201f" stroke="#4a4a4a"/>' +
+      '<rect x="192" y="76" width="64" height="26" fill="none" stroke="#3d5a58"/>' +
+      '<path d="M320,112 L320,78 L342,66" stroke="#6a6a6a" fill="none" stroke-width="1.4"/>' +
+      '<circle cx="342" cy="66" r="5" fill="#5a5a5a"/>' +
+      '<ellipse cx="342" cy="74" rx="26" ry="12" fill="#5a5a5a" opacity=".07"/>' +
+      '<rect x="392" y="96" width="64" height="16" fill="none" stroke="#4a4a4a" transform="rotate(-4 424 104)"/>' +
+      '<circle cx="140" cy="140" r="2" fill="#3a3a3a"/><circle cx="300" cy="140" r="2" fill="#3a3a3a"/>' +
+      '</svg>',
+
+    thesis:
+      '<svg viewBox="0 0 620 152" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="150" y="20" width="320" height="96" fill="#e4e4e4"/>' +
+      '<g stroke="#9a9a9a" stroke-width=".9" fill="none">' +
+        '<rect x="176" y="38" width="120" height="60"/>' +
+        '<line x1="176" y1="70" x2="296" y2="70"/><line x1="236" y1="38" x2="236" y2="98"/>' +
+        '<rect x="318" y="46" width="60" height="44"/>' +
+        '<line x1="318" y1="68" x2="378" y2="68"/>' +
+      '</g>' +
+      '<path d="M120,124 L470,124 L512,60 L104,60 Z" fill="#ffffff" opacity=".05"/>' +
+      '<line x1="24" y1="124" x2="596" y2="124" stroke="#3a3a3a" stroke-width="2"/>' +
+      '<line x1="24" y1="142" x2="596" y2="142" stroke="#2c2c2c"/>' +
+      '<rect x="104" y="60" width="40" height="20" fill="#333" stroke="#555"/>' +
+      '<circle cx="560" cy="126" r="9" stroke="#8a8a8a" fill="none" stroke-width="1.6"/>' +
+      '<line x1="560" y1="135" x2="560" y2="146" stroke="#8a8a8a" stroke-width="1.6"/>' +
+      '</svg>',
+
+    site:
+      '<svg viewBox="0 0 620 152" xmlns="http://www.w3.org/2000/svg">' +
+      '<line x1="24" y1="132" x2="596" y2="132" stroke="#3a3a3a" stroke-width="2"/>' +
+      '<g stroke="#6a6a6a" fill="none" stroke-width="1.2">' +
+        '<line x1="120" y1="132" x2="120" y2="40"/><line x1="200" y1="132" x2="200" y2="40"/>' +
+        '<line x1="120" y1="52" x2="200" y2="52"/><line x1="120" y1="76" x2="200" y2="76"/>' +
+        '<line x1="120" y1="100" x2="200" y2="100"/><line x1="120" y1="124" x2="200" y2="124"/>' +
+        '<line x1="120" y1="40" x2="90" y2="52"/><line x1="200" y1="40" x2="230" y2="52"/>' +
+      '</g>' +
+      '<rect x="300" y="60" width="200" height="72" fill="none" stroke="#4a4a4a"/>' +
+      '<rect x="300" y="60" width="200" height="16" fill="#1e1e1e" stroke="#4a4a4a"/>' +
+      '<circle cx="330" cy="68" r="3" fill="#5a5a5a"/><circle cx="350" cy="68" r="3" fill="#5a5a5a"/>' +
+      '<g stroke="#cfcfcf" stroke-width="1.6" fill="none" stroke-linecap="round">' +
+        '<circle cx="270" cy="96" r="10"/>' +
+        '<path d="M262,94 a10,10 0 0 1 16,0"/>' +
+        '<line x1="270" y1="106" x2="270" y2="130"/>' +
+        '<line x1="270" y1="112" x2="256" y2="124"/>' +
+        '<line x1="270" y1="112" x2="284" y2="124"/>' +
+      '</g>' +
+      '<line x1="240" y1="132" x2="520" y2="132" stroke="#2c2c2c"/>' +
+      '</svg>',
+
+    desk:
+      '<svg viewBox="0 0 620 152" xmlns="http://www.w3.org/2000/svg">' +
+      '<line x1="24" y1="120" x2="596" y2="120" stroke="#3a3a3a" stroke-width="2"/>' +
+      '<rect x="60" y="52" width="112" height="68" fill="#16201f" stroke="#4a4a4a"/>' +
+      '<rect x="72" y="64" width="88" height="44" fill="none" stroke="#3d5a58"/>' +
+      '<line x1="116" y1="120" x2="116" y2="134" stroke="#4a4a4a"/>' +
+      '<rect x="216" y="40" width="150" height="34" fill="#c8c8c8" opacity=".9"/>' +
+      '<rect x="232" y="92" width="120" height="28" fill="none" stroke="#4a4a4a"/>' +
+      '<ellipse cx="296" cy="90" rx="26" ry="6" fill="#333"/>' +
+      '<line x1="430" y1="82" x2="520" y2="82" stroke="#4a4a4a"/>' +
+      '<path d="M430,82 L430,120 M520,82 L520,120" stroke="#3a3a3a" fill="none"/>' +
+      '<rect x="452" y="92" width="46" height="18" fill="none" stroke="#555"/>' +
+      '<line x1="24" y1="142" x2="596" y2="142" stroke="#2c2c2c"/>' +
+      '</svg>'
+  };
+
   // ========== 内容卡 ==========
   // form: choice 抉择 / guess 猜 / none 无选择 / alloc 分配 / draw 抽题 / fork 分岔
   const CARDS = {
@@ -238,7 +361,7 @@
         {t:'改回混凝土', eff:{skill:-1}, r:'改完发现钢筋混凝土那节课你在睡觉。'}
       ]},
 
-    intern: { name:'大五 · 实习', form:'choice',
+    intern: { name:'大五 · 实习', form:'choice', scene:'site',
       text:'在设计院实习两个月。\n带你的老师第一周给了你一套图纸，让你描。',
       opts:[
         {t:'认真描完', eff:{skill:1}, r:'描完了。第二周他给了你另一套。'},
@@ -315,7 +438,7 @@
         {t:'再想一个更好的', eff:{hair:-1}, r:'你想了三天，还是回到了第一版。'}
       ]},
 
-    crit: { name:'评 图', form:'guess',
+    crit: { name:'评 图', form:'guess', scene:'crit',
       text:'老师看了很久，说："你这个方案，再想想。"\n他没说想什么。',
       opts:[
         {t:'他是在说空间', flag:'space', r:'你回去把平面重排了一遍。'},
@@ -323,11 +446,11 @@
         {t:'他大概没想好', flag:'idle', r:'你原样交上去了。'}
       ]},
 
-    thesis: { name:'大五 · 毕 设', form:'draw', stop:true,
+    thesis: { name:'大五 · 毕 设', form:'draw', stop:true, scene:'thesis',
       text:'毕设题目分配会。\n题目装在两个牛皮纸信封里，逐个念名字。',
       opts:[] },
 
-    allnight: { name:'专教 · 通 宵', form:'choice',
+    allnight: { name:'专教 · 通 宵', form:'choice', scene:'allnight',
       text:'交图前一晚。凌晨四点，楼道里有泡面的味道。\n你已经连续画了九个小时。',
       opts:[
         {t:'再撑两个小时', eff:{skill:1,hair:-2}, r:'六点的时候，鸟叫了。图赶完了。'},
@@ -361,7 +484,7 @@
         {t:'一句话带过', eff:{}, r:'他点点头，翻到下一页。'},
         {t:'"那是学校的东西"', eff:{hair:-1}, r:'他笑了一下，在那一行划了一道。'}
       ]},
-    f_desk: { name:'入职 · 工位 3-17', form:'choice', line:'firm',
+    f_desk: { name:'入职 · 工位 3-17', form:'choice', line:'firm', scene:'desk',
       text:'工位在走廊尽头，显示器是上一个人留下的，屏幕右下角有块亮斑。\n所里说，先跟一个住宅项目。',
       opts:[
         {t:'主动问有没有别的活', eff:{skill:1,hair:-1}, r:'于是你手里多了一个商业综合体的地下车库。'},
@@ -708,6 +831,7 @@
     if (c.form === 'draw'){
       stage.innerHTML =
         '<div class="ttl">大 五 · 毕 设</div>' +
+        (c.scene && SCENES[c.scene] ? '<div class="scene">' + SCENES[c.scene] + '</div>' : '') +
         '<div class="txt">' + c.text.replace(/\n/g,'<br>') + '</div>' +
         '<div class="big"><div class="lbl">你 抽 到 了</div><div class="num" id="rolledTitle" style="font-size:19px;line-height:1.6">…</div></div>' +
         '<div id="drawBtns"></div>';
@@ -728,6 +852,7 @@
     const titleEl = '<div class="ttl">' + c.name + '</div>';
     // 同一格备两件事，骰子点数决定遇到哪件
     const v = (S.useAlt && c.alt) ? c.alt : c;
+    const sceneHTML = SCENES[v.scene || c.scene] ? '<div class="scene">' + SCENES[v.scene || c.scene] + '</div>' : '';
     let body = v.text;
     if (body.indexOf('@@THESIS@@') >= 0){
       const t = S.title || '';
@@ -738,7 +863,7 @@
       body = '面试官翻到你简历最后一行：\n"《' + S.title + '》——这个讲讲？"';
     }
 
-    let html = titleEl + '<div class="txt">' + body.replace(/\n/g,'<br>') + '</div>';
+    html = titleEl + sceneHTML + '<div class="txt">' + body.replace(/\n/g,'<br>') + '</div>';
 
     if (c.form === 'choice' || c.form === 'guess' || c.form === 'fork' || c.form === 'none'){
       html += '<div class="opts" id="opts"></div>';
@@ -890,6 +1015,20 @@
     log('—— 一局结束 ——', 'p');
     el('again').onclick = reset;
   }
+
+  // 十字光标：移动到哪跟到哪
+  (function(){
+    const ch = el('crosshair');
+    const h = ch.querySelector('.h'), v = ch.querySelector('.v'), pk = ch.querySelector('.pick');
+    document.addEventListener('mousemove', function(e){
+      ch.classList.add('on');
+      h.style.top = e.clientY + 'px';
+      v.style.left = e.clientX + 'px';
+      pk.style.left = e.clientX + 'px';
+      pk.style.top = e.clientY + 'px';
+    });
+    document.addEventListener('mouseleave', function(){ ch.classList.remove('on'); });
+  })();
 
   reset();
 })();

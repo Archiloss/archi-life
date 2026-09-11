@@ -75,6 +75,19 @@
   /* ---- 场景图：每一站该有它的样子 ---- */
   .scene{margin:0 0 12px;border:1px solid #2e2e2e;background:#151515;overflow:hidden;}
   .scene svg{display:block;width:100%;height:auto;}
+
+  /* ---- 座位平面图：在图上挑位置，不是在选项里挑 ---- */
+  .seatwrap{margin:2px 0 10px;border:1px solid #2e2e2e;background:#141414;padding:12px;}
+  .seatwrap .board{font-size:10px;color:var(--dim2);letter-spacing:4px;text-align:center;
+                   padding-bottom:8px;margin-bottom:10px;border-bottom:1px dashed #333;}
+  .seatmap{display:grid;gap:6px;}
+  .seat{aspect-ratio:2.3/1;border:1px solid #3d3d3d;background:#1e1e1e;cursor:pointer;
+        border-radius:1px;transition:border-color .1s,background .1s;position:relative;
+        font-family:var(--mono);font-size:9px;color:#4a4a4a;padding:0;}
+  .seat:hover{border-color:var(--cyan);background:#22302f;color:var(--cyan);}
+  .seat.void{border:none;background:transparent;cursor:default;}
+  .seat .tagn{position:absolute;left:3px;top:2px;font-size:8px;color:#3f3f3f;}
+  .seat:hover .tagn{color:var(--cyan);}
   .stage .picked{font-size:15px;color:var(--dim);line-height:1.9;}
   .stage .res{font-size:16px;color:var(--white);line-height:1.95;}
   .deltas{display:flex;gap:9px;flex-wrap:wrap;margin-top:2px;}
@@ -327,6 +340,59 @@
       '</svg>'
   };
 
+  // ========== SU 白模：你这辈子做过的建筑，一栋一栋立着 ==========
+  function suScene(count){
+    const U = 30, COS = Math.cos(Math.PI/6), SIN = Math.sin(Math.PI/6);
+    const VW = 620, VH = 150;
+    const n = Math.max(1, Math.min(count, 7));
+
+    // 每栋的体量：越往后越高（越做越大，也越费头发）
+    const B = [];
+    for (let i = 0; i < n; i++){
+      const cols = 3;
+      const gx = (i % cols) * 1.25 + Math.floor(i / cols) * 0.3;
+      const gy = Math.floor(i / cols) * 1.25;
+      const h = 0.8 + i * 0.28 + (i % 3) * 0.22;
+      B.push({ gx: gx, gy: gy, w: 0.95, d: 0.95, h: h });
+    }
+
+    const P = function(x, y, z){
+      return [ (x - y) * COS * U, ((x + y) * SIN - z) * U ];
+    };
+    let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+    B.forEach(function(b){
+      [[b.gx,b.gy],[b.gx+b.w,b.gy],[b.gx+b.w,b.gy+b.d],[b.gx,b.gy+b.d]].forEach(function(c){
+        [0, b.h].forEach(function(z){
+          const p = P(c[0], c[1], z);
+          minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
+          minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]);
+        });
+      });
+    });
+    const ox = (VW - (maxX - minX)) / 2 - minX;
+    const oy = (VH - (maxY - minY)) / 2 - minY - 6;
+    const pt = function(x, y, z){
+      const p = P(x, y, z);
+      return (p[0] + ox).toFixed(1) + ',' + (p[1] + oy).toFixed(1);
+    };
+    const poly = function(pts, fill, sw){
+      return '<polygon points="' + pts + '" fill="' + fill + '" stroke="#1a1a1a" stroke-width="' + sw + '" stroke-linejoin="round"/>';
+    };
+
+    let s = '<svg viewBox="0 0 ' + VW + ' ' + VH + '" xmlns="http://www.w3.org/2000/svg">' +
+            '<rect width="' + VW + '" height="' + VH + '" fill="#cfe3f2"/>';
+    s += '<ellipse cx="' + (VW/2) + '" cy="' + (VH - 12) + '" rx="190" ry="14" fill="#000" opacity=".07"/>';
+
+    B.slice().sort(function(a,b){ return (a.gx+a.gy)-(b.gx+b.gy); }).forEach(function(b){
+      const x0=b.gx, x1=b.gx+b.w, y0=b.gy, y1=b.gy+b.d, h=b.h;
+      s += poly([pt(x0,y1,0), pt(x0,y1,h), pt(x1,y1,h), pt(x1,y1,0)].join(' '), '#e9e9e9', 1.0);
+      s += poly([pt(x1,y0,0), pt(x1,y0,h), pt(x1,y1,h), pt(x1,y1,0)].join(' '), '#d6d6d6', 1.0);
+      s += poly([pt(x0,y0,h), pt(x1,y0,h), pt(x1,y1,h), pt(x0,y1,h)].join(' '), '#ffffff', 1.7);
+    });
+    s += '</svg>';
+    return s;
+  }
+
   // ========== 内容卡 ==========
   // form: choice 抉择 / guess 猜 / none 无选择 / alloc 分配 / draw 抽题 / fork 分岔
   const CARDS = {
@@ -391,19 +457,27 @@
         {t:'追上去问哪里不对', eff:{skill:1,hair:-1}, r:'他讲了二十分钟。前五分钟有用。'}
       ]},
 
-    seat: { name:'专教 · 抢座', form:'choice',
-      text:'专教一共 34 个座位，班里有 41 个人。\n公告栏上贴着一张纸：座位安排待定。',
-      alt:{ text:'开学第二周，专教座位重新分配了一次。\n你原来那个位置的插座是坏的。',
-        opts:[
-          {t:'换到有插座的那排', eff:{skill:1,hair:-1}, r:'那排在门口，人来人往，你画得比谁都慢。'},
-          {t:'不换，买个插排', eff:{}, r:'你用了一个学期。后来插排被谁的电脑烧了。'},
-          {t:'干脆搬去图书馆', eff:{skill:-1}, r:'安静，但不能讨论。你们组的方案你只能看群消息。'}
-        ]},
-      opts:[
-        {t:'每天早上七点来占', eff:{skill:1,hair:-2}, r:'你连着占了三个星期，然后放弃了。但那个座位一直是你坐。'},
-        {t:'放本书占着，人不在', eff:{hair:0}, r:'书丢过两次。第二次丢的是图书馆借的。'},
-        {t:'去图书馆画', eff:{skill:-1}, r:'图书馆安静，但不能大声讨论。你们组的讨论你只能看群消息。'}
-      ]},
+    seat: { name:'专教 · 抢座', form:'seat',
+      text:'专教一共 34 个座位，班里有 41 个人。\n你来得早，可以先挑一个。',
+      cols:7, rows:5, void:['4,3'],
+      pick:function(r, col){
+        const near   = r <= 1;          // 前排，老师眼皮底下
+        const back   = r >= 3;          // 后排
+        const window = col <= 0;        // 靠窗
+        const door   = col >= 6;        // 靠门
+        const mid    = col >= 3 && col <= 4;
+        if (window) return { t:'靠窗那个位置', eff:{skill:1},
+          r:'自然光好，你画得比平时准。代价是你会花很多时间看外面那棵树。' };
+        if (door)   return { t:'靠门那个位置', eff:{skill:-1},
+          r:'人来人往，一节课有人从你背后过八趟。你什么都画不进去。' };
+        if (near)   return { t:'前排那个位置', eff:{hair:-1, skill:1},
+          r:'老师每次抬头都先看你。你不敢停。' };
+        if (back)   return { t:'后排那个位置', eff:{},
+          r:'没人管你。你也没画多少。' };
+        if (mid)    return { t:'中间那个位置', eff:{skill:1, hair:-1},
+          r:'周围都在讨论，你听得见每一句。进度快，但一直很吵。' };
+        return { t:'那个位置', eff:{}, r:'你坐下了。' };
+      }},
 
     ink: { name:'大二 · 墨线图', form:'choice',
       text:'第一次用鸭嘴笔。你画废了六张。\n第七张画到一半，墨滴下来了。',
@@ -849,6 +923,38 @@
       return;
     }
 
+    // ---- 座位平面图：在图上挑位置 ----
+    if (c.form === 'seat'){
+      let grid = '';
+      for (let r = 0; r < c.rows; r++){
+        for (let col = 0; col < c.cols; col++){
+          if ((c.void || []).indexOf(r + ',' + col) >= 0){
+            grid += '<span class="seat void"></span>';
+          } else {
+            grid += '<button class="seat" data-r="' + r + '" data-c="' + col + '"></button>';
+          }
+        }
+      }
+      el('stage').innerHTML =
+        '<div class="ttl">' + c.name + '</div>' +
+        '<div class="txt">' + c.text.replace(/\n/g,'<br>') + '</div>' +
+        '<div class="seatwrap">' +
+          '<div class="board">讲 台</div>' +
+          '<div class="seatmap" style="grid-template-columns:repeat(' + c.cols + ',1fr)">' + grid + '</div>' +
+        '</div>';
+      Array.prototype.forEach.call(el('stage').querySelectorAll('.seat[data-r]'), function(b){
+        b.onclick = function(){
+          const res = c.pick(+b.dataset.r, +b.dataset.c);
+          log('· 你坐了' + res.t);
+          if (res.r){ log('　' + res.r); S.memories.push({ tile: c.name, text: res.r }); }
+          apply(res.eff || {});
+          S.choices.push(res.eff || {});
+          showResult('你坐了' + res.t, res.r, res.eff || {});
+        };
+      });
+      return;
+    }
+
     const titleEl = '<div class="ttl">' + c.name + '</div>';
     // 同一格备两件事，骰子点数决定遇到哪件
     const v = (S.useAlt && c.alt) ? c.alt : c;
@@ -1008,6 +1114,7 @@
       '<div class="ending">' +
         '<div class="lab">你 现 在</div>' +
         '<div class="big-t">' + end + '。</div>' +
+        '<div class="scene" style="margin-top:2px">' + suScene(S.work) + '</div>' +
         '<div class="body">' + lines.join('\n').replace(/\n/g,'<br>') + '</div>' +
         '<div><button class="act" id="again">再 来 一 局</button></div>' +
       '</div>';

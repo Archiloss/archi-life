@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>营造大亨 v0.2</title>
+<title>营造大亨 v0.1</title>
 <style>
   :root{
     --bg:#1a1a1a; --panel:#202020; --chrome:#2e2e2e; --line:#3a3a3a; --grid:#242424;
@@ -12,10 +12,10 @@
     --mono:ui-monospace,"SF Mono",Menlo,Consolas,"PingFang SC",monospace;
   }
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
+  html,body{margin:0;padding:0;height:100%;}
   body{background:#0f0f0f;color:var(--ink);font-family:var(--mono);
        font-size:13px;-webkit-font-smoothing:antialiased;padding:14px;
-       cursor:crosshair;}
+       cursor:crosshair;display:flex;}
 
   /* ---- 十字光标（跟随鼠标，CAD 的命根子动作）---- */
   .crosshair{position:fixed;inset:0;pointer-events:none;z-index:999;display:none;}
@@ -29,7 +29,8 @@
     transform:translate(-50%,-50%);
   }
   .app{max-width:1080px;margin:0 auto;background:var(--bg);border:1px solid #000;
-       box-shadow:0 10px 40px rgba(0,0,0,.7);display:flex;flex-direction:column;}
+       box-shadow:0 10px 40px rgba(0,0,0,.7);display:flex;flex-direction:column;
+       flex:1;min-height:0;}
 
   .titlebar{display:flex;justify-content:space-between;align-items:center;gap:10px;
             padding:0 12px;height:28px;background:var(--chrome);
@@ -47,6 +48,34 @@
            border-right:1px solid #2c2c2c;font-size:11.5px;color:var(--dim);white-space:nowrap;}
   .hud .st b{color:var(--white);font-weight:400;font-variant-numeric:tabular-nums;}
   .hud .st.sp{flex:1;justify-content:flex-end;border-right:0;color:var(--dim2);}
+
+  /* ---- 工作区 + 右侧面板 ---- */
+  .main{display:grid;grid-template-columns:1fr 208px;flex:1;min-height:0;}
+  .work{display:flex;flex-direction:column;min-width:0;}
+
+  .side{background:var(--chrome);border-left:1px solid var(--line);overflow-y:auto;}
+  .side h3{margin:0;padding:7px 10px;font-size:10px;font-weight:400;
+           color:var(--dim2);letter-spacing:1.5px;background:#1c1c1c;
+           border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .side h3:first-child{border-top:0;}
+  .side .grp{padding:8px 10px;border-bottom:1px solid #242424;}
+  .side .row{display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11px;}
+  .side .row .sw{width:9px;height:9px;flex:0 0 9px;border:1px solid rgba(0,0,0,.6);}
+  .side .row .k{color:var(--dim);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .side .row .n{color:var(--ink);font-variant-numeric:tabular-nums;}
+  .side .row .n.on{color:var(--white);}
+  .side .row .n.off{color:#4a4a4a;text-decoration:line-through;}
+  .side .row .n b{color:var(--white);font-weight:400;}
+
+  /* ---- 底部状态栏（含实时坐标）---- */
+  .status{display:flex;align-items:center;background:#262626;
+          border-top:1px solid var(--line);height:22px;font-size:10px;
+          color:var(--dim2);overflow:hidden;}
+  .status span{padding:0 11px;height:100%;display:flex;align-items:center;
+               border-right:1px solid var(--line);white-space:nowrap;}
+  .status span.act{color:var(--white);background:#3a3a3a;}
+  .status span.co{margin-left:auto;border-right:0;border-left:1px solid var(--line);
+                  color:var(--dim);font-variant-numeric:tabular-nums;}
 
   .track{padding:16px 18px;background-color:var(--bg);
          background-image:linear-gradient(var(--grid) 1px,transparent 1px),
@@ -66,21 +95,32 @@
   .nd.end .bx{border-color:var(--magenta);color:var(--magenta);}
   .sep{padding:0 2px;color:#3d3d3d;align-self:center;margin-top:6px;font-size:10px;}
 
-  .stage{padding:20px 18px;min-height:210px;display:flex;flex-direction:column;gap:14px;}
+  .stage{padding:20px 18px;min-height:210px;display:flex;flex-direction:column;gap:14px;
+         background-color:var(--bg);
+         background-image:linear-gradient(var(--grid) 1px,transparent 1px),
+           linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+         background-size:22px 22px;}
   .stage .ttl{font-size:12px;color:var(--dim);letter-spacing:2px;}
   .stage .txt{font-size:15px;line-height:1.85;color:var(--white);white-space:pre-wrap;}
   .stage .txt .hot{color:var(--yellow);}
   .stage .txt .bk{color:var(--dim);}
 
-  /* ---- 体量读数：不画图，用数字和条 ---- */
-  .mread{display:flex;flex-direction:column;gap:9px;margin:2px 0 4px;
-         border:1px solid #2e2e2e;background:#151515;padding:13px 14px;}
-  .mrow{display:flex;align-items:center;gap:12px;}
-  .mrow .mk{width:34px;flex:0 0 34px;font-size:11.5px;color:var(--dim);}
-  .mrow .mbar{flex:1;height:6px;background:#242424;border:1px solid #333;}
-  .mrow .mbar i{display:block;height:100%;background:var(--cyan);transition:width .18s ease-out;}
-  .mrow .mv{width:58px;flex:0 0 58px;text-align:right;font-size:13px;color:var(--white);
-            font-variant-numeric:tabular-nums;}
+  /* ---- 场景图：每一站该有它的样子 ---- */
+  .scene{margin:0 0 12px;border:1px solid #2e2e2e;background:#151515;overflow:hidden;}
+  .scene svg{display:block;width:100%;height:auto;}
+
+  /* ---- 座位平面图：在图上挑位置，不是在选项里挑 ---- */
+  .seatwrap{margin:2px 0 10px;border:1px solid #2e2e2e;background:#141414;padding:12px;}
+  .seatwrap .board{font-size:10px;color:var(--dim2);letter-spacing:4px;text-align:center;
+                   padding-bottom:8px;margin-bottom:10px;border-bottom:1px dashed #333;}
+  .seatmap{display:grid;gap:6px;}
+  .seat{aspect-ratio:2.3/1;border:1px solid #3d3d3d;background:#1e1e1e;cursor:pointer;
+        border-radius:1px;transition:border-color .1s,background .1s;position:relative;
+        font-family:var(--mono);font-size:9px;color:#4a4a4a;padding:0;}
+  .seat:hover{border-color:var(--cyan);background:#22302f;color:var(--cyan);}
+  .seat.void{border:none;background:transparent;cursor:default;}
+  .seat .tagn{position:absolute;left:3px;top:2px;font-size:8px;color:#3f3f3f;}
+  .seat:hover .tagn{color:var(--cyan);}
 
   /* ---- 推体块 ---- */
   .massbar{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 0;align-items:center;}
@@ -183,6 +223,12 @@
   .cmd .l .up{color:var(--green);}
   .cmd .l .dn{color:var(--red);}
   .cmd .l .hl{color:var(--cyan);}
+  .cmd .prompt{color:#cfcfcf;margin-top:5px;padding-top:5px;border-top:1px dashed #2e2e2e;}
+  .cmd .prompt .p{color:var(--dim2);}
+  .cmd .prompt .opts{color:var(--yellow);}
+  .cmd .prompt .cur{display:inline-block;width:7px;height:12px;background:var(--white);
+                    vertical-align:-2px;animation:blink 1.05s steps(1) infinite;}
+  @keyframes blink{50%{opacity:0;}}
 
   .ending{padding:26px 22px;display:flex;flex-direction:column;gap:16px;}
   .ending .lab{font-size:11px;color:var(--dim);letter-spacing:3px;}
@@ -191,22 +237,15 @@
   .ending .body .hot{color:var(--yellow);}
   .ending .body .dim{color:var(--dim);}
 
-  /* ---- 状态栏：鼠标一动坐标就跳，这是\"我在 AutoCAD 里\"的命根子 ---- */
-  .status{display:flex;align-items:center;background:#2e2e2e;border-top:1px solid var(--line);
-          font-size:10px;color:var(--dim2);height:22px;overflow:hidden;}
-  .status span{padding:0 11px;height:100%;display:flex;align-items:center;
-               border-right:1px solid var(--line);white-space:nowrap;}
-  .status span.act{color:var(--white);background:#3a3a3a;}
-  .status span.co{margin-left:auto;border-right:0;color:var(--dim);
-                  font-variant-numeric:tabular-nums;}
-
-  /* ---- 图签：一局结束，像一张图签完稿 ---- */
-  .tblock{display:flex;border:1px solid #4a4a4a;width:max-content;max-width:100%;flex-wrap:wrap;
-          background:#161616;}
-  .tblock span{font-size:10.5px;color:var(--dim2);padding:7px 12px;
-               border-right:1px solid #4a4a4a;white-space:nowrap;}
-  .tblock span:last-child{border-right:0;}
-  .tblock b{color:var(--ink);font-weight:400;margin-left:6px;}
+  /* 窄屏：收掉右侧面板，数值回到顶部横条 */
+  @media (max-width:819px){
+    .main{grid-template-columns:1fr;}
+    .side{display:none;}
+  }
+  /* 宽屏：顶部横条不再重复数值，交给右侧面板 */
+  @media (min-width:820px){
+    .hud .st.num{display:none;}
+  }
 
   @media (max-width:700px){
     body{padding:8px;font-size:12.5px;}
@@ -226,7 +265,7 @@
 <div class="app">
   <div class="titlebar">
     <span>营造大亨 &nbsp;<span class="fn">— [ YZ-2026.dwg ]</span></span>
-    <span class="w"><span>v0.2</span><span>— &nbsp;□&nbsp; ✕</span></span>
+    <span class="w"><span>v0.1</span><span>— &nbsp;□&nbsp; ✕</span></span>
   </div>
 
   <div class="menubar">
@@ -234,25 +273,31 @@
   </div>
 
   <div class="hud">
-    <span class="st">作品 <b id="hWork">0</b></span>
-    <span class="st">技能 <b id="hSkill">0</b></span>
-    <span class="st">头发 <b id="hHair">100%</b></span>
+    <span class="st num">作品 <b id="hWork">0</b></span>
+    <span class="st num">技能 <b id="hSkill">0</b></span>
+    <span class="st num">头发 <b id="hHair">100%</b></span>
     <span class="st">进度 <b id="hStep">0 / 0</b></span>
     <span class="st sp" id="hLine">尚未分岔</span>
   </div>
 
-  <div class="track"><div class="nodes" id="nodes"></div></div>
+  <div class="main">
+    <div class="work">
+      <div class="track"><div class="nodes" id="nodes"></div></div>
 
-  <div class="stage" id="stage"></div>
+      <div class="stage" id="stage"></div>
 
-  <div class="cmd" id="cmd"></div>
+      <div class="cmd" id="cmd"></div>
+    </div>
+
+    <div class="side" id="side"></div>
+  </div>
 
   <div class="status">
     <span class="act">对象捕捉</span>
     <span>栅格</span>
     <span>正交</span>
     <span>极轴</span>
-    <span class="co" id="coords">0.0, 0.0, 0.0</span>
+    <span class="co" id="coords">0.0000, 0.0000, 0.0000</span>
   </div>
 </div>
 
@@ -298,6 +343,214 @@
     return POOL.map(function(a){ return a[0]; }).join('');
   }
 
+  // ========== 场景图（代码画的线稿，和 CAD／SU 是一套语言）==========
+  const SCENES = {
+    crit:
+      '<svg viewBox="0 0 620 152" xmlns="http://www.w3.org/2000/svg">' +
+      '<line x1="26" y1="12" x2="594" y2="12" stroke="#3a3a3a" stroke-width="3"/>' +
+      '<line x1="26" y1="12" x2="594" y2="12" stroke="#707070" stroke-width="1"/>' +
+      '<rect x="28" y="26" width="404" height="114" fill="#131313" stroke="#333" stroke-width="1"/>' +
+      '<rect x="52" y="42" width="74" height="86" fill="#d6d6d6"/>' +
+      '<rect x="136" y="40" width="74" height="88" fill="#e8e8e8"/>' +
+      '<rect x="220" y="44" width="74" height="84" fill="#c4c4c4"/>' +
+      '<rect x="304" y="42" width="74" height="86" fill="#adadad"/>' +
+      '<g stroke="#8a8a8a" stroke-width=".8" fill="none">' +
+        '<rect x="146" y="52" width="46" height="36"/><circle cx="169" cy="70" r="11"/>' +
+        '<line x1="146" y1="98" x2="204" y2="98"/><line x1="146" y1="106" x2="190" y2="106"/>' +
+        '<rect x="230" y="56" width="52" height="30"/><line x1="230" y1="98" x2="286" y2="98"/>' +
+      '</g>' +
+      '<g stroke="#cfcfcf" stroke-width="1.7" fill="none" stroke-linecap="round">' +
+        '<circle cx="502" cy="56" r="11"/>' +
+        '<line x1="502" y1="67" x2="502" y2="106"/>' +
+        '<line x1="502" y1="78" x2="452" y2="70"/>' +
+        '<line x1="502" y1="78" x2="518" y2="100"/>' +
+        '<line x1="502" y1="106" x2="489" y2="140"/>' +
+        '<line x1="502" y1="106" x2="514" y2="140"/>' +
+      '</g>' +
+      '<ellipse cx="502" cy="141" rx="19" ry="3" fill="#000" opacity=".35"/>' +
+      '<line x1="18" y1="141" x2="602" y2="141" stroke="#2c2c2c"/>' +
+      '</svg>',
+
+    allnight:
+      '<svg viewBox="0 0 620 152" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="466" y="24" width="126" height="84" fill="#0b0b0b" stroke="#333"/>' +
+      '<circle cx="548" cy="48" r="7" fill="#5f5f5f"/>' +
+      '<line x1="466" y1="66" x2="592" y2="66" stroke="#1e1e1e"/>' +
+      '<line x1="24" y1="112" x2="596" y2="112" stroke="#3a3a3a" stroke-width="2"/>' +
+      '<line x1="24" y1="140" x2="596" y2="140" stroke="#2c2c2c"/>' +
+      '<rect x="66" y="60" width="84" height="52" fill="#16201f" stroke="#4a4a4a"/>' +
+      '<rect x="76" y="70" width="64" height="32" fill="none" stroke="#3d5a58"/>' +
+      '<line x1="108" y1="112" x2="108" y2="126" stroke="#4a4a4a"/>' +
+      '<rect x="182" y="66" width="84" height="46" fill="#16201f" stroke="#4a4a4a"/>' +
+      '<rect x="192" y="76" width="64" height="26" fill="none" stroke="#3d5a58"/>' +
+      '<path d="M320,112 L320,78 L342,66" stroke="#6a6a6a" fill="none" stroke-width="1.4"/>' +
+      '<circle cx="342" cy="66" r="5" fill="#5a5a5a"/>' +
+      '<ellipse cx="342" cy="74" rx="26" ry="12" fill="#5a5a5a" opacity=".07"/>' +
+      '<rect x="392" y="96" width="64" height="16" fill="none" stroke="#4a4a4a" transform="rotate(-4 424 104)"/>' +
+      '<circle cx="140" cy="140" r="2" fill="#3a3a3a"/><circle cx="300" cy="140" r="2" fill="#3a3a3a"/>' +
+      '</svg>',
+
+    thesis:
+      '<svg viewBox="0 0 620 152" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="150" y="20" width="320" height="96" fill="#e4e4e4"/>' +
+      '<g stroke="#9a9a9a" stroke-width=".9" fill="none">' +
+        '<rect x="176" y="38" width="120" height="60"/>' +
+        '<line x1="176" y1="70" x2="296" y2="70"/><line x1="236" y1="38" x2="236" y2="98"/>' +
+        '<rect x="318" y="46" width="60" height="44"/>' +
+        '<line x1="318" y1="68" x2="378" y2="68"/>' +
+      '</g>' +
+      '<path d="M120,124 L470,124 L512,60 L104,60 Z" fill="#ffffff" opacity=".05"/>' +
+      '<line x1="24" y1="124" x2="596" y2="124" stroke="#3a3a3a" stroke-width="2"/>' +
+      '<line x1="24" y1="142" x2="596" y2="142" stroke="#2c2c2c"/>' +
+      '<rect x="104" y="60" width="40" height="20" fill="#333" stroke="#555"/>' +
+      '<circle cx="560" cy="126" r="9" stroke="#8a8a8a" fill="none" stroke-width="1.6"/>' +
+      '<line x1="560" y1="135" x2="560" y2="146" stroke="#8a8a8a" stroke-width="1.6"/>' +
+      '</svg>',
+
+    site:
+      '<svg viewBox="0 0 620 152" xmlns="http://www.w3.org/2000/svg">' +
+      '<line x1="24" y1="132" x2="596" y2="132" stroke="#3a3a3a" stroke-width="2"/>' +
+      '<g stroke="#6a6a6a" fill="none" stroke-width="1.2">' +
+        '<line x1="120" y1="132" x2="120" y2="40"/><line x1="200" y1="132" x2="200" y2="40"/>' +
+        '<line x1="120" y1="52" x2="200" y2="52"/><line x1="120" y1="76" x2="200" y2="76"/>' +
+        '<line x1="120" y1="100" x2="200" y2="100"/><line x1="120" y1="124" x2="200" y2="124"/>' +
+        '<line x1="120" y1="40" x2="90" y2="52"/><line x1="200" y1="40" x2="230" y2="52"/>' +
+      '</g>' +
+      '<rect x="300" y="60" width="200" height="72" fill="none" stroke="#4a4a4a"/>' +
+      '<rect x="300" y="60" width="200" height="16" fill="#1e1e1e" stroke="#4a4a4a"/>' +
+      '<circle cx="330" cy="68" r="3" fill="#5a5a5a"/><circle cx="350" cy="68" r="3" fill="#5a5a5a"/>' +
+      '<g stroke="#cfcfcf" stroke-width="1.6" fill="none" stroke-linecap="round">' +
+        '<circle cx="270" cy="96" r="10"/>' +
+        '<path d="M262,94 a10,10 0 0 1 16,0"/>' +
+        '<line x1="270" y1="106" x2="270" y2="130"/>' +
+        '<line x1="270" y1="112" x2="256" y2="124"/>' +
+        '<line x1="270" y1="112" x2="284" y2="124"/>' +
+      '</g>' +
+      '<line x1="240" y1="132" x2="520" y2="132" stroke="#2c2c2c"/>' +
+      '</svg>',
+
+    desk:
+      '<svg viewBox="0 0 620 152" xmlns="http://www.w3.org/2000/svg">' +
+      '<line x1="24" y1="120" x2="596" y2="120" stroke="#3a3a3a" stroke-width="2"/>' +
+      '<rect x="60" y="52" width="112" height="68" fill="#16201f" stroke="#4a4a4a"/>' +
+      '<rect x="72" y="64" width="88" height="44" fill="none" stroke="#3d5a58"/>' +
+      '<line x1="116" y1="120" x2="116" y2="134" stroke="#4a4a4a"/>' +
+      '<rect x="216" y="40" width="150" height="34" fill="#c8c8c8" opacity=".9"/>' +
+      '<rect x="232" y="92" width="120" height="28" fill="none" stroke="#4a4a4a"/>' +
+      '<ellipse cx="296" cy="90" rx="26" ry="6" fill="#333"/>' +
+      '<line x1="430" y1="82" x2="520" y2="82" stroke="#4a4a4a"/>' +
+      '<path d="M430,82 L430,120 M520,82 L520,120" stroke="#3a3a3a" fill="none"/>' +
+      '<rect x="452" y="92" width="46" height="18" fill="none" stroke="#555"/>' +
+      '<line x1="24" y1="142" x2="596" y2="142" stroke="#2c2c2c"/>' +
+      '</svg>'
+  };
+
+  // ========== SU 白模：你这辈子做过的建筑，一栋一栋立着 ==========
+  function suScene(count){
+    const U = 30, COS = Math.cos(Math.PI/6), SIN = Math.sin(Math.PI/6);
+    const VW = 620, VH = 150;
+    const n = Math.max(1, Math.min(count, 7));
+
+    // 每栋的体量：越往后越高（越做越大，也越费头发）
+    const B = [];
+    for (let i = 0; i < n; i++){
+      const cols = 3;
+      const gx = (i % cols) * 1.25 + Math.floor(i / cols) * 0.3;
+      const gy = Math.floor(i / cols) * 1.25;
+      const h = 0.8 + i * 0.28 + (i % 3) * 0.22;
+      B.push({ gx: gx, gy: gy, w: 0.95, d: 0.95, h: h });
+    }
+
+    const P = function(x, y, z){
+      return [ (x - y) * COS * U, ((x + y) * SIN - z) * U ];
+    };
+    let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+    B.forEach(function(b){
+      [[b.gx,b.gy],[b.gx+b.w,b.gy],[b.gx+b.w,b.gy+b.d],[b.gx,b.gy+b.d]].forEach(function(c){
+        [0, b.h].forEach(function(z){
+          const p = P(c[0], c[1], z);
+          minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
+          minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]);
+        });
+      });
+    });
+    const ox = (VW - (maxX - minX)) / 2 - minX;
+    const oy = (VH - (maxY - minY)) / 2 - minY - 6;
+    const pt = function(x, y, z){
+      const p = P(x, y, z);
+      return (p[0] + ox).toFixed(1) + ',' + (p[1] + oy).toFixed(1);
+    };
+    const poly = function(pts, fill, sw){
+      return '<polygon points="' + pts + '" fill="' + fill + '" stroke="#1a1a1a" stroke-width="' + sw + '" stroke-linejoin="round"/>';
+    };
+
+    let s = '<svg viewBox="0 0 ' + VW + ' ' + VH + '" xmlns="http://www.w3.org/2000/svg">' +
+            '<rect width="' + VW + '" height="' + VH + '" fill="#cfe3f2"/>';
+    s += '<ellipse cx="' + (VW/2) + '" cy="' + (VH - 12) + '" rx="190" ry="14" fill="#000" opacity=".07"/>';
+
+    B.slice().sort(function(a,b){ return (a.gx+a.gy)-(b.gx+b.gy); }).forEach(function(b){
+      const x0=b.gx, x1=b.gx+b.w, y0=b.gy, y1=b.gy+b.d, h=b.h;
+      s += poly([pt(x0,y1,0), pt(x0,y1,h), pt(x1,y1,h), pt(x1,y1,0)].join(' '), '#e9e9e9', 1.0);
+      s += poly([pt(x1,y0,0), pt(x1,y0,h), pt(x1,y1,h), pt(x1,y1,0)].join(' '), '#d6d6d6', 1.0);
+      s += poly([pt(x0,y0,h), pt(x1,y0,h), pt(x1,y1,h), pt(x0,y1,h)].join(' '), '#ffffff', 1.7);
+    });
+    s += '</svg>';
+    return s;
+  }
+
+  // ========== SU 草模：推体块，看着它变 ==========
+  function massSVG(m, big){
+    const U = big ? 60 : 44, COS = Math.cos(Math.PI/6), SIN = Math.sin(Math.PI/6);
+    const VW = 620, VH = big ? 240 : 190;
+    const w = m.w, d = m.d, h = m.h;
+    const P = function(x, y, z){
+      return [ (x - y) * COS * U, ((x + y) * SIN - z) * U ];
+    };
+    let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+    [[0,0],[w,0],[w,d],[0,d]].forEach(function(c){
+      [0, h].forEach(function(z){
+        const p = P(c[0], c[1], z);
+        minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
+        minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]);
+      });
+    });
+    const ox = (VW - (maxX - minX)) / 2 - minX;
+    const oy = (VH - (maxY - minY)) / 2 - minY - 10;
+    const pt = function(x, y, z){
+      const p = P(x, y, z);
+      return (p[0] + ox).toFixed(1) + ',' + (p[1] + oy).toFixed(1);
+    };
+    const poly = function(pts, fill, sw){
+      return '<polygon points="' + pts + '" fill="' + fill + '" stroke="#1a1a1a" stroke-width="' + sw + '" stroke-linejoin="round"/>';
+    };
+
+    let s = '<svg viewBox="0 0 ' + VW + ' ' + VH + '" xmlns="http://www.w3.org/2000/svg">' +
+            '<rect width="' + VW + '" height="' + VH + '" fill="#cfe3f2"/>';
+    s += '<ellipse cx="' + (VW/2) + '" cy="' + (VH - 16) + '" rx="' + (U * (w + d) * 0.5) + '" ry="14" fill="#000" opacity=".08"/>';
+    // 左面 / 右面 / 顶面
+    s += poly([pt(0,d,0), pt(0,d,h), pt(w,d,h), pt(w,d,0)].join(' '), '#e6e6e6', 1.1);
+    s += poly([pt(w,0,0), pt(w,0,h), pt(w,d,h), pt(w,d,0)].join(' '), '#d2d2d2', 1.1);
+    s += poly([pt(0,0,h), pt(w,0,h), pt(w,d,h), pt(0,d,h)].join(' '), '#ffffff', 2.0);
+    // 中庭
+    if (m.court){
+      const a = w * 0.3, b = d * 0.3, c = w * 0.7, e = d * 0.7, ch = h * 0.55;
+      s += poly([pt(a,b,h), pt(c,b,h), pt(c,e,h), pt(a,e,h)].join(' '), '#8fa8bd', 1.4);
+      s += poly([pt(a,b,h-ch), pt(a,b,h), pt(c,b,h), pt(c,b,h-ch)].join(' '), '#b9c9d6', 1.0);
+      s += poly([pt(c,b,h-ch), pt(c,b,h), pt(c,e,h), pt(c,e,h-ch)].join(' '), '#a3b6c6', 1.0);
+    }
+    // 比例人（有它才知道多大）
+    const bx = VW * 0.16, by = VH - 18;
+    s += '<g stroke="#5a5a5a" stroke-width="1.3" fill="none" stroke-linecap="round">' +
+         '<circle cx="' + bx + '" cy="' + (by - 26) + '" r="3.4"/>' +
+         '<line x1="' + bx + '" y1="' + (by - 22) + '" x2="' + bx + '" y2="' + (by - 10) + '"/>' +
+         '<line x1="' + bx + '" y1="' + (by - 22) + '" x2="' + (bx - 5) + '" y2="' + (by - 14) + '"/>' +
+         '<line x1="' + bx + '" y1="' + (by - 22) + '" x2="' + (bx + 5) + '" y2="' + (by - 14) + '"/>' +
+         '<line x1="' + bx + '" y1="' + (by - 10) + '" x2="' + (bx - 3.4) + '" y2="' + by + '"/>' +
+         '<line x1="' + bx + '" y1="' + (by - 10) + '" x2="' + (bx + 3.4) + '" y2="' + by + '"/>' +
+         '</g>';
+    s += '</svg>';
+    return s;
+  }
 
   // ========== 内容卡 ==========
   // form: choice 抉择 / guess 猜 / none 无选择 / alloc 分配 / draw 抽题 / fork 分岔
@@ -325,17 +578,6 @@
          hook:{ at:'detail', card:'owe' }}
       ]},
 
-    plan: { name:'大三 · 平面', form:'choice',
-      text:'课程设计。一块 8 米 × 6 米的空地，北边是走廊，南边朝南。\n老师说：\"先排个平面。\"',
-      opts:[
-        { t:'门开北边，进门加一道隔断', eff:{work:1, skill:1},
-          r:'他绕着走了一圈，没说话。\n走完才说：\"进门先收一下，里面才是干活的地方。\"' },
-        { t:'门开南边，对着院子', eff:{hair:-1},
-          r:'\"南边是外面。\"\n他说：\"你让人从院子里绕进来。\"' },
-        { t:'不分隔断，通间，桌子摆里面', eff:{work:1},
-          r:'\"通间。\"\n他说：\"也行——但动线得你自己管住。\"' }
-      ]},
-
     structure: { name:'大三 · 结构选型', form:'choice',
       text:'结构课要求给方案选一个结构体系。\n你选了钢结构。老师说："为什么？"',
       opts:[
@@ -344,7 +586,7 @@
         {t:'改回混凝土', eff:{skill:-1}, r:'改完发现钢筋混凝土那节课你在睡觉。\n你照着同学的抄了一遍，抄错了一个系数，没人发现。'}
       ]},
 
-    intern: { name:'大五 · 实习', form:'choice',
+    intern: { name:'大五 · 实习', form:'choice', scene:'site',
       text:'在设计院实习两个月。\n带你的老师第一周给了你一套图纸，让你描。',
       opts:[
         {t:'认真描完', eff:{skill:1}, r:'描完了。第二周他给了你另一套。'},
@@ -378,20 +620,27 @@
         {t:'追上去问哪里不对', eff:{skill:1,hair:-1}, r:'他讲了二十分钟。前五分钟有用。'}
       ]},
 
-    seat: { name:'专教 · 抢座', form:'choice',
+    seat: { name:'专教 · 抢座', form:'seat',
       text:'专教一共 34 个座位，班里有 41 个人。\n你来得早，可以先挑一个。',
-      opts:[
-        { t:'靠窗那个位置', eff:{skill:1},
-          r:'自然光好，你画得比平时准。代价是你会花很多时间看外面那棵树。' },
-        { t:'靠门那个位置', eff:{skill:-1},
-          r:'人来人往，一节课有人从你背后过八趟。你什么都画不进去。' },
-        { t:'前排那个位置', eff:{hair:-1, skill:1},
-          r:'老师每次抬头都先看你。你不敢停。' },
-        { t:'后排那个位置', eff:{},
-          r:'没人管你。你也没画多少。' },
-        { t:'中间那个位置', eff:{skill:1, hair:-1},
-          r:'周围都在讨论，你听得见每一句。进度快，但一直很吵。' }
-      ]},
+      cols:7, rows:5, void:['4,3'],
+      pick:function(r, col){
+        const near   = r <= 1;          // 前排，老师眼皮底下
+        const back   = r >= 3;          // 后排
+        const window = col <= 0;        // 靠窗
+        const door   = col >= 6;        // 靠门
+        const mid    = col >= 3 && col <= 4;
+        if (window) return { t:'靠窗那个位置', eff:{skill:1},
+          r:'自然光好，你画得比平时准。代价是你会花很多时间看外面那棵树。' };
+        if (door)   return { t:'靠门那个位置', eff:{skill:-1},
+          r:'人来人往，一节课有人从你背后过八趟。你什么都画不进去。' };
+        if (near)   return { t:'前排那个位置', eff:{hair:-1, skill:1},
+          r:'老师每次抬头都先看你。你不敢停。' };
+        if (back)   return { t:'后排那个位置', eff:{},
+          r:'没人管你。你也没画多少。' };
+        if (mid)    return { t:'中间那个位置', eff:{skill:1, hair:-1},
+          r:'周围都在讨论，你听得见每一句。进度快，但一直很吵。' };
+        return { t:'那个位置', eff:{}, r:'你坐下了。' };
+      }},
 
     ink: { name:'大二 · 墨线图', form:'choice',
       text:'第一次用鸭嘴笔。你画废了六张。\n第七张画到一半，墨滴下来了。',
@@ -422,7 +671,7 @@
     sketch2: { name:'大四 · 一草', form:'mass',
       text:'老师把你带到一块空地边上。\n"先搭个体量看看。"' },
 
-    crit: { name:'评 图', form:'guess',
+    crit: { name:'评 图', form:'guess', scene:'crit',
       text:'老师看了很久，说："你这个方案，再想想。"\n他没说想什么。',
       opts:[
         {t:'他是在说空间', flag:'space', r:'你回去把平面重排了一遍。'},
@@ -432,11 +681,11 @@
          need:{skill:4}, eff:{work:1}, r:'他愣了一下，说"对，就是这个"。你第一次在评图上没被绕进去。'}
       ]},
 
-    thesis: { name:'大五 · 毕 设', form:'draw', stop:true,
+    thesis: { name:'大五 · 毕 设', form:'draw', stop:true, scene:'thesis',
       text:'毕设题目分配会。\n题目装在两个牛皮纸信封里，逐个念名字。',
       opts:[] },
 
-    allnight: { name:'专教 · 通 宵', form:'choice',
+    allnight: { name:'专教 · 通 宵', form:'choice', scene:'allnight',
       text:'交图前一晚。凌晨四点，楼道里有泡面的味道。\n你已经连续画了九个小时。',
       opts:[
         {t:'再撑两个小时', eff:{skill:1,hair:-2}, r:'六点的时候，鸟叫了。图赶完了。'},
@@ -472,7 +721,7 @@
         {t:'把作品集推过去，说"这几个是我做的"',
          need:{work:2}, eff:{work:1,hair:-1}, r:'他一页一页看完了。翻到最后一页时说了句"行"。'}
       ]},
-    f_desk: { name:'入职 · 工位 3-17', form:'choice', line:'firm',
+    f_desk: { name:'入职 · 工位 3-17', form:'choice', line:'firm', scene:'desk',
       text:'工位在走廊尽头，显示器是上一个人留下的，屏幕右下角有块亮斑。\n所里说，先跟一个住宅项目。',
       opts:[
         {t:'主动问有没有别的活', eff:{skill:1,hair:-1}, r:'于是你手里多了一个商业综合体的地下车库。'},
@@ -552,7 +801,7 @@
   };
 
   // ========== 路线 ==========
-  const COMMON = ['sketch','seat','ink','model','detail','plan','physics','structure','sketch2','crit','intern','thesis','allnight','defense','rework','fork'];
+  const COMMON = ['sketch','seat','ink','model','detail','physics','structure','sketch2','crit','intern','thesis','allnight','defense','rework','fork'];
   const LINES = {
     kaoyan:{ name:'考研线', now:'在读研', color:'var(--cyan)',   cards:['k_interview','k_lab','k_paper'], end:'在读研三，论文刚交' },
     firm:  { name:'设计院线', now:'在设计院', color:'var(--yellow)', cards:['f_interview','f_desk','f_revise'], end:'在一家民营院，第二年' },
@@ -563,7 +812,7 @@
   // ========== 状态 ==========
   let S;
   function reset(){
-    S = { work:0, skill:0, hair:100, step:0, path:COMMON.slice(), pos:0,
+    S = { work:0, skill:0, hair:100, score:rollMyScore(), step:0, path:COMMON.slice(), pos:0,
           line:null, title:'', school:'', flags:{}, memories:[], visited:{},
           useAlt:false, choices:[], hooks:{}, busy:false, over:false };
     document.getElementById('cmd').innerHTML = '';
@@ -574,14 +823,13 @@
   // ========== 开局：填志愿 → 投骰子 → 看那年录取线 ==========
   // 填志愿是你的选择；录不录取不由你定，那年的线是摇出来的
   const SCHOOLS = ['同济','东南','天大'];
-  const ADMIT_LINE = { 1:641, 2:634, 3:618, 4:605 };   // 1~2 滑档，3~4 录取
-  const LAST_LINE  = { 1:618, 2:611, 3:637, 4:598 };   // 上一年的线，用来把怪运气不怪人
-  const MY_SCORE = 621;
+  // 高考考多少分，不是你控制得了的事——每局都不一样
+  function rollMyScore(){ return 605 + Math.floor(Math.random() * 40); }   // 605~644
 
   function showSchool(){
     el('stage').innerHTML =
       '<div class="ttl">报 志 愿</div>' +
-      '<div class="txt">高考出分那天。你考了 ' + MY_SCORE + ' 分。\n' +
+      '<div class="txt">高考出分那天。你考了 ' + S.score + ' 分。\n' +
         '志愿表第一栏，你写下了：</div>' +
       '<div class="fill">' +
         '<input id="schoolInput" maxlength="14" autocomplete="off" placeholder="填你当年想去的那所">' +
@@ -627,8 +875,8 @@
       '<div class="ttl">' + (retry ? '复 读 一 年' : '等 通 知 书') + '</div>' +
       '<div class="txt">' +
         (retry
-          ? '你复读了一年。\n第二次高考，还是 ' + MY_SCORE + ' 分。'
-          : '你的分数 ' + MY_SCORE + '。\n录取线每年都不一样，谁也说不准。') +
+          ? '你复读了一年。\n第二次高考，还是 ' + S.score + ' 分。'
+          : '你的分数 ' + S.score + '。\n录取线每年都不一样，谁也说不准。') +
         '\n\n报纸上说，今年报的人比去年多。' +
       '</div>' +
       '<div class="big"><button class="act" id="rollBtn">投 骰 子</button></div>';
@@ -637,7 +885,10 @@
 
   function rollAdmit(name, retry){
     const n = 1 + Math.floor(Math.random() * 4);
-    const line = ADMIT_LINE[n];
+    // 录取线每年都在变。骰子决定今年线比你的分高还是低，差多少是随机的
+    const gap  = 3 + Math.floor(Math.random() * 18);              // 差 3~20 分
+    const line = (n >= 3) ? S.score - gap : S.score + gap;
+    const last = S.score - 22 + Math.floor(Math.random() * 44);    // 去年的线
     log('掷出 <span class="hl">' + n + '</span>。');
 
     if (n >= 3){
@@ -645,8 +896,8 @@
       log('那年' + esc(name) + '的录取线是 ' + line + ' 分。', '');
       el('stage').innerHTML =
         '<div class="ttl">录 取</div>' +
-        '<div class="txt">那年' + esc(name) + '的录取线是 ' + line + ' 分。\n你考了 ' + MY_SCORE +
-          ' 分，多了 ' + (MY_SCORE - line) + ' 分。\n\n你被录取了。</div>' +
+        '<div class="txt">那年' + esc(name) + '的录取线是 ' + line + ' 分。\n你考了 ' + S.score +
+          ' 分，多了 ' + (S.score - line) + ' 分。\n\n你被录取了。</div>' +
         '<div class="big"><button class="act" id="go">开 学</button></div>';
       el('go').onclick = function(){
         apply({ skill:2, hair:-6 });
@@ -658,14 +909,15 @@
     }
 
     // 滑档
-    log('那年' + esc(name) + '的录取线是 ' + line + ' 分，你差 ' + (line - MY_SCORE) + ' 分。', '');
+    const d = line - S.score;
+    log('那年' + esc(name) + '的录取线是 ' + line + ' 分，你差 ' + d + ' 分。', '');
 
     if (!retry){
       el('stage').innerHTML =
         '<div class="ttl">录 取 线 出 来 了</div>' +
         '<div class="txt">那年' + esc(name) + '的录取线是 ' + line + ' 分。\n' +
-          '你差了 ' + (line - MY_SCORE) + ' 分。\n\n' +
-          '<span class="bk">（前一年是 ' + LAST_LINE[n] + ' 分。没人知道为什么涨了这么多。）</span>\n\n' +
+          '你差了 ' + d + ' 分。' + (d <= 5 ? '\n<span class="bk">就差这么点。</span>' : (d >= 15 ? '\n<span class="bk">差得挺远的。</span>' : '')) + '\n\n' +
+          '<span class="bk">（前一年是 ' + last + ' 分。没人知道为什么涨了这么多。）</span>\n\n' +
           '你被第二志愿录取了。\n<span class="bk">（你当时随便填的那一所。）</span></div>' +
         '<div class="opts" id="opts"></div>';
       const box = el('opts');
@@ -778,8 +1030,10 @@
     renderHUD();
     // 让 HUD 上变动的数字闪一下，并飘出来——别让它悄悄跳过去
     const MAP = { '作品':'hWork', '技能':'hSkill', '头发':'hHair' };
+    const MAPW = { '作品':'sWork', '技能':'sSkill', '头发':'sHair' };   // 宽屏时数值在右侧面板
+    const wide = window.matchMedia('(min-width:820px)').matches;
     d.forEach(function(x){
-      const node = el(MAP[x[0]]);
+      const node = el(wide ? (MAPW[x[0]] || MAP[x[0]]) : (MAP[x[0]] || MAPW[x[0]]));
       if (!node) return;
       node.classList.remove('pulse'); void node.offsetWidth; node.classList.add('pulse');
       const r = node.getBoundingClientRect();
@@ -807,6 +1061,66 @@
     el('hStep').textContent  = S.school ? ((S.pos+1) + ' / ' + (COMMON.length + 3)) : '—';
     el('hLine').textContent  = !S.school ? '高中生'
                              : (S.line ? LINES[S.line].now : '建筑学在读');
+    renderSide();
+  }
+
+  // ========== 右侧面板：图层 / 特性 / 图签 ==========
+  function renderSide(){
+    const side = el('side');
+    if (!side) return;
+
+    // 图层：四条线就是四个图层。走过的那条"开"，其余"关"
+    let ly = '<div class="row"><span class="sw" style="background:#8a8a8a"></span>' +
+             '<span class="k">你</span><span class="n on">开</span></div>';
+    Object.keys(LINES).forEach(function(k){
+      const L = LINES[k], on = (S.line === k);
+      ly += '<div class="row">' +
+            '<span class="sw" style="background:' + (on ? L.color : '#3a3a3a') + '"></span>' +
+            '<span class="k"' + (on ? ' style="color:' + L.color + '"' : '') + '>' + L.name + '</span>' +
+            '<span class="n ' + (on ? 'on' : 'off') + '">' + (on ? '开' : '关') + '</span></div>';
+    });
+
+    const row = function(k, v){
+      return '<div class="row"><span class="k">' + k + '</span><span class="n">' + v + '</span></div>';
+    };
+
+    side.innerHTML =
+      '<h3>图层</h3><div class="grp">' + ly + '</div>' +
+      '<h3>特性</h3><div class="grp">' +
+        row('作品', '<b id="sWork">' + S.work + '</b>') +
+        row('技能', '<b id="sSkill">' + S.skill + '</b>') +
+        row('头发', '<b id="sHair">' + S.hair + '%</b>') +
+        row('进度', S.school ? ((S.pos+1) + ' / ' + (COMMON.length + 3)) : '—') +
+      '</div>' +
+      '<h3>图签</h3><div class="grp">' +
+        row('图号', 'YZ-2026-01') +
+        row('版次', 'REV.A') +
+        row('比例', '1:100') +
+      '</div>';
+  }
+
+  // ========== 命令行回显：进度也写进命令行，像 CAD 在等一个命令 ==========
+  function showPrompt(title, opts){
+    const cmd = el('cmd');
+    if (!cmd) return;
+    const old = cmd.querySelector('.prompt');
+    if (old) old.remove();
+    if (!opts || !opts.length) return;
+    const list = opts.map(function(o, i){
+      return String.fromCharCode(65 + i) + ' ' + (o.t || '').slice(0, 14);
+    }).join(' / ');
+    const d = document.createElement('div');
+    d.className = 'prompt';
+    d.innerHTML = '<span class="p">命令:</span> _' + esc(title) + ' ' +
+                  '<span class="opts">[ ' + esc(list) + ' ]</span> ' +
+                  '&lt;A&gt;: <span class="cur"></span>';
+    cmd.appendChild(d);
+    cmd.scrollTop = cmd.scrollHeight;
+  }
+  function clearPrompt(){
+    const cmd = el('cmd');
+    const old = cmd && cmd.querySelector('.prompt');
+    if (old) old.remove();
   }
 
   function renderTrack(){
@@ -837,6 +1151,7 @@
     if (S.hooks[id]) id = S.hooks[id];
     const c = CARDS[id];
     renderTrack(); renderHUD();
+    clearPrompt();
 
     const stage = el('stage');
     stage.innerHTML = '';
@@ -844,6 +1159,7 @@
     if (c.form === 'draw'){
       stage.innerHTML =
         '<div class="ttl">大 五 · 毕 设</div>' +
+        (c.scene && SCENES[c.scene] ? '<div class="scene">' + SCENES[c.scene] + '</div>' : '') +
         '<div class="txt">' + c.text.replace(/\n/g,'<br>') + '</div>' +
         '<div class="big"><div class="lbl">你 抽 到 了</div><div class="num" id="rolledTitle" style="font-size:19px;line-height:1.6">…</div></div>' +
         '<div id="drawBtns"></div>';
@@ -863,15 +1179,48 @@
 
     // ---- 推体块：搭你自己的草模 ----
     if (c.form === 'mass'){
-      if (!S.mass) S.mass = { floors:3, depth:14, court:false };
+      if (!S.mass) S.mass = { w:1.8, d:1.8, h:0.7, court:false };
       if (S.massLeft == null) S.massLeft = 4;
       renderMass(c);
+      return;
+    }
+
+    // ---- 座位平面图：在图上挑位置 ----
+    if (c.form === 'seat'){
+      let grid = '';
+      for (let r = 0; r < c.rows; r++){
+        for (let col = 0; col < c.cols; col++){
+          if ((c.void || []).indexOf(r + ',' + col) >= 0){
+            grid += '<span class="seat void"></span>';
+          } else {
+            grid += '<button class="seat" data-r="' + r + '" data-c="' + col + '"></button>';
+          }
+        }
+      }
+      el('stage').innerHTML =
+        '<div class="ttl">' + c.name + '</div>' +
+        '<div class="txt">' + c.text.replace(/\n/g,'<br>') + '</div>' +
+        '<div class="seatwrap">' +
+          '<div class="board">讲 台</div>' +
+          '<div class="seatmap" style="grid-template-columns:repeat(' + c.cols + ',1fr)">' + grid + '</div>' +
+        '</div>';
+      Array.prototype.forEach.call(el('stage').querySelectorAll('.seat[data-r]'), function(b){
+        b.onclick = function(){
+          const res = c.pick(+b.dataset.r, +b.dataset.c);
+          log('· 你坐了' + res.t);
+          if (res.r){ log('　' + res.r); S.memories.push({ tile: c.name, text: res.r }); }
+          apply(res.eff || {});
+          S.choices.push(res.eff || {});
+          showResult('你坐了' + res.t, res.r, res.eff || {});
+        };
+      });
       return;
     }
 
     const titleEl = '<div class="ttl">' + c.name + '</div>';
     // 同一格备两件事，骰子点数决定遇到哪件
     const v = (S.useAlt && c.alt) ? c.alt : c;
+    const sceneHTML = SCENES[v.scene || c.scene] ? '<div class="scene">' + SCENES[v.scene || c.scene] + '</div>' : '';
     let body = v.text;
     if (body.indexOf('@@THESIS@@') >= 0){
       const t = S.title || '';
@@ -882,11 +1231,12 @@
       body = '面试官翻到你简历最后一行：\n"《' + S.title + '》——这个讲讲？"';
     }
 
-    html = titleEl + '<div class="txt">' + body.replace(/\n/g,'<br>') + '</div>';
+    html = titleEl + sceneHTML + '<div class="txt">' + body.replace(/\n/g,'<br>') + '</div>';
 
     if (c.form === 'choice' || c.form === 'guess' || c.form === 'fork' || c.form === 'none'){
       html += '<div class="opts" id="opts"></div>';
       stage.innerHTML = html;
+      showPrompt(c.name, v.opts);
       const box = el('opts');
       (v.opts || []).forEach(function(o, i){
         const locked = o.need ? !meetNeed(o.need) : false;
@@ -931,10 +1281,10 @@
   function renderMass(c){
     const m = S.mass;
     const acts = [
-      { t:'加一层', fn:function(){ m.floors += 1; } },
-      { t:'减一层', fn:function(){ m.floors = Math.max(1, m.floors - 1); } },
-      { t:'拉长',   fn:function(){ m.depth = Math.min(48, m.depth + 4); } },
-      { t:'收进',   fn:function(){ m.depth = Math.max(6, m.depth - 4); } },
+      { t:'加一层', fn:function(){ m.h += 0.4; } },
+      { t:'减一层', fn:function(){ m.h = Math.max(0.4, m.h - 0.4); } },
+      { t:'拉长',   fn:function(){ m.d = Math.min(4.2, m.d + 0.4); } },
+      { t:'收进',   fn:function(){ m.d = Math.max(0.8, m.d - 0.4); } },
       { t:'挖中庭', fn:function(){ m.court = !m.court; } }
     ];
     let btns = acts.map(function(a, i){
@@ -945,7 +1295,7 @@
     el('stage').innerHTML =
       '<div class="ttl">' + c.name + '</div>' +
       '<div class="txt">' + c.text.replace(/\n/g,'<br>') + '</div>' +
-      massRead(m) +
+      '<div class="scene" id="massView">' + massSVG(m, true) + '</div>' +
       '<div class="massbar">' + btns + '</div>' +
       '<div class="massleft">还能改 <b>' + S.massLeft + '</b> 次</div>';
 
@@ -959,15 +1309,15 @@
     });
 
     el('massOK').onclick = function(){
-      const ratio = (m.floors * 3.6) / m.depth;
+      const ratio = m.h / m.w;
       let pick, eff, r;
       if (m.court){
         pick = '一个带中庭的体量'; eff = { work:1, hair:-1 };
         r = '老师绕着走了两圈，说："中间这个院子，有点意思。"';
-      } else if (ratio > 1.15){
+      } else if (ratio > 1.3){
         pick = '一个高高的体量'; eff = { work:1, skill:1 };
         r = '他说："你想让它当标志物。"你没反驳——其实你没想那么远。';
-      } else if (ratio < 0.55){
+      } else if (ratio < 0.6){
         pick = '一个扁扁的体量'; eff = { work:1, hair:-1 };
         r = '他说："太保守了。"你回去加了两层，然后觉得他说得对。';
       } else {
@@ -981,20 +1331,6 @@
       apply(eff);
       showResult(pick, r, eff);
     };
-  }
-
-  // 体量读数：不画图，用数字和条
-  function massRead(m){
-    const rows = [
-      { k:'层数', v:m.floors + ' 层',          pct:m.floors / 12 },
-      { k:'进深', v:m.depth.toFixed(0) + ' m', pct:m.depth / 48 },
-      { k:'中庭', v:m.court ? '有' : '无',      pct:m.court ? 1 : 0 }
-    ];
-    return '<div class="mread">' + rows.map(function(x){
-      return '<div class="mrow"><span class="mk">' + x.k + '</span>' +
-             '<span class="mbar"><i style="width:' + Math.round(Math.min(1, Math.max(0, x.pct)) * 100) + '%"></i></span>' +
-             '<span class="mv">' + x.v + '</span></div>';
-    }).join('') + '</div>';
   }
 
   // ========== 结果页：选完先看清发生了什么，再走下一步 ==========
@@ -1112,13 +1448,8 @@
       '<div class="ending">' +
         '<div class="lab">你 现 在</div>' +
         '<div class="big-t">' + end + '。</div>' +
+        '<div class="scene" style="margin-top:2px">' + suScene(S.work) + '</div>' +
         '<div class="body">' + lines.join('\n').replace(/\n/g,'<br>') + '</div>' +
-        '<div class="tblock">' +
-          '<span>图号<b>YZ-2026-01</b></span>' +
-          '<span>版次<b>REV.A</b></span>' +
-          '<span>设计<b>你</b></span>' +
-          '<span>比例<b>1:100</b></span>' +
-        '</div>' +
         '<div><button class="act" id="again">再 来 一 局</button></div>' +
       '</div>';
 
@@ -1136,17 +1467,14 @@
       v.style.left = e.clientX + 'px';
       pk.style.left = e.clientX + 'px';
       pk.style.top = e.clientY + 'px';
+      // 底部状态栏跟着显示图纸坐标（Y 轴朝上，和 CAD 一样）
+      const co = el('coords');
+      if (co){
+        co.textContent = (e.clientX * 4.217).toFixed(1) + ', ' +
+                         ((window.innerHeight - e.clientY) * 4.217).toFixed(1) + ', 0.0';
+      }
     });
     document.addEventListener('mouseleave', function(){ ch.classList.remove('on'); });
-  })();
-
-  // 状态栏坐标：鼠标一动就跳，才有"在 AutoCAD 里"的感觉
-  (function(){
-    const co = el('coords');
-    document.addEventListener('mousemove', function(e){
-      co.textContent = (e.clientX * 1.37).toFixed(1) + ', ' +
-                       ((window.innerHeight - e.clientY) * 1.19).toFixed(1) + ', 0.0';
-    });
   })();
 
   reset();

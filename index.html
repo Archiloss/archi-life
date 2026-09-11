@@ -58,6 +58,17 @@
   .stage .txt{font-size:15px;line-height:1.85;color:var(--white);white-space:pre-wrap;}
   .stage .txt .hot{color:var(--yellow);}
   .stage .txt .bk{color:var(--dim);}
+  .stage .picked{font-size:15px;color:var(--dim);line-height:1.9;}
+  .stage .res{font-size:16px;color:var(--white);line-height:1.95;}
+  .deltas{display:flex;gap:9px;flex-wrap:wrap;margin-top:2px;}
+  .chip{font-size:13.5px;padding:6px 12px;border:1px solid var(--line);
+        border-radius:2px;font-variant-numeric:tabular-nums;letter-spacing:.3px;
+        color:var(--dim);}
+  .chip.up{color:var(--green);border-color:#2f5a48;background:#182620;}
+  .chip.dn{color:var(--red);border-color:#5a2f2f;background:#261818;}
+  .chip.zero{color:var(--dim2);}
+  @keyframes hudPulse{0%{color:var(--cyan);}100%{color:var(--white);}}
+  .hud .st b.pulse{animation:hudPulse 1s ease-out;}
   .fill{display:flex;gap:10px;align-items:center;margin-top:2px;flex-wrap:wrap;}
   .fill input{
     flex:1;min-width:180px;
@@ -606,6 +617,12 @@
     if (S.work < 0) S.work = 0;
     if (S.skill < 0) S.skill = 0;
     renderHUD();
+    // 让 HUD 上变动的数字闪一下，别让它悄悄跳过去
+    const MAP = { '作品':'hWork', '技能':'hSkill', '头发':'hHair' };
+    d.forEach(function(x){
+      const node = el(MAP[x[0]]);
+      if (node){ node.classList.remove('pulse'); void node.offsetWidth; node.classList.add('pulse'); }
+    });
     if (d.length){
       log(d.map(function(x){
         return x[0] + ' ' + (x[1]>0?'<span class="up">+'+x[1]+'</span>':'<span class="dn">'+x[1]+'</span>');
@@ -705,12 +722,41 @@
             log('　' + o.r);
             S.memories.push(o.r);
           }
-          next();
+          showResult(o.t, o.r, o.eff || {});
         };
         box.appendChild(b);
       });
       return;
     }
+  }
+
+  // ========== 结果页：选完先看清发生了什么，再走下一步 ==========
+  function showResult(pick, res, eff){
+    const chips = [];
+    if (eff.work)  chips.push(['作品', eff.work]);
+    if (eff.skill) chips.push(['技能', eff.skill]);
+    if (eff.hair)  chips.push(['头发', eff.hair]);
+
+    let chipHTML = '';
+    if (chips.length){
+      chipHTML = '<div class="deltas">' + chips.map(function(c){
+        const sign = c[1] > 0 ? '+' : '';
+        return '<span class="chip ' + (c[1] > 0 ? 'up' : 'dn') + '">' +
+               c[0] + ' ' + sign + c[1] + (c[0] === '头发' ? '%' : '') + '</span>';
+      }).join('') + '</div>';
+    } else {
+      chipHTML = '<div class="deltas"><span class="chip zero">这一下没有立刻见效</span></div>';
+    }
+
+    el('stage').innerHTML =
+      '<div class="ttl">你 选 了</div>' +
+      '<div class="picked">' + esc(pick) + '</div>' +
+      (res ? '<div class="res">' + esc(res) + '</div>' : '') +
+      chipHTML +
+      '<div class="big" style="padding-top:2px">' +
+        '<button class="act" id="nextBtn">继 续</button>' +
+      '</div>';
+    el('nextBtn').onclick = next;
   }
 
   function chooseLine(line, label){

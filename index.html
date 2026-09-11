@@ -9,11 +9,14 @@
     --bg:#1a1a1a; --panel:#202020; --chrome:#2e2e2e; --line:#3a3a3a; --grid:#242424;
     --ink:#dcdcdc; --white:#fff; --dim:#8a8a8a; --dim2:#5f5f5f;
     --cyan:#35d6e8; --yellow:#ffd93d; --red:#ff5f5f; --green:#4ade80; --magenta:#e879f9;
+        /* 结构色（换肤时整组替换） */
+    --body-bg:#0f0f0f; --hud-bg:#141414; --box-bg:#232323;
+    --edge:#3d3d3d; --edge2:#4a4a4a; --sunken:#1f1f1f; --head-bg:#1c1c1c;
     --mono:ui-monospace,"SF Mono",Menlo,Consolas,"PingFang SC",monospace;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;height:100%;}
-  body{background:#0f0f0f;color:var(--ink);font-family:var(--mono);
+  body{background:var(--body-bg);color:var(--ink);font-family:var(--mono);
        font-size:13px;-webkit-font-smoothing:antialiased;padding:14px;
        cursor:crosshair;display:flex;}
 
@@ -38,14 +41,14 @@
   .titlebar .fn{color:var(--dim);}
   .titlebar .w{display:flex;gap:14px;color:var(--dim2);font-size:11px;}
 
-  .menubar{display:flex;gap:0;background:#262626;border-bottom:1px solid var(--line);
+  .menubar{display:flex;gap:0;background:var(--chrome);border-bottom:1px solid var(--line);
            height:26px;align-items:center;padding:0 4px;font-size:11.5px;overflow:hidden;}
   .menubar b{font-weight:400;padding:4px 9px;color:var(--ink);white-space:nowrap;}
 
-  .hud{display:flex;align-items:center;gap:0;background:#141414;
+  .hud{display:flex;align-items:center;gap:0;background:var(--hud-bg);
        border-bottom:1px solid var(--line);height:34px;overflow:hidden;}
   .hud .st{display:flex;align-items:center;gap:7px;padding:0 15px;height:100%;
-           border-right:1px solid #2c2c2c;font-size:11.5px;color:var(--dim);white-space:nowrap;}
+           border-right:1px solid var(--line);font-size:11.5px;color:var(--dim);white-space:nowrap;}
   .hud .st b{color:var(--white);font-weight:400;font-variant-numeric:tabular-nums;}
   .hud .st.sp{flex:1;justify-content:flex-end;border-right:0;color:var(--dim2);}
 
@@ -55,7 +58,7 @@
 
   .side{background:var(--chrome);border-left:1px solid var(--line);overflow-y:auto;}
   .side h3{margin:0;padding:7px 10px;font-size:10px;font-weight:400;
-           color:var(--dim2);letter-spacing:1.5px;background:#1c1c1c;
+           color:var(--dim2);letter-spacing:1.5px;background:var(--head-bg);
            border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
   .side h3:first-child{border-top:0;}
   .side .grp{padding:8px 10px;border-bottom:1px solid #242424;}
@@ -64,12 +67,12 @@
   .side .row .k{color:var(--dim);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .side .row .n{color:var(--ink);font-variant-numeric:tabular-nums;}
   .side .row .n.on{color:var(--white);}
-  .side .row .n.off{color:#4a4a4a;text-decoration:line-through;}
+  .side .row .n.off{color:var(--edge2);text-decoration:line-through;}
   .side .row .n b{color:var(--white);font-weight:400;}
 
   /* 图幅：一局的进度，一格一站（6 列） */
   .side .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;padding:8px 10px;}
-  .side .cell{aspect-ratio:1;border:1px solid #3d3d3d;background:#1f1f1f;
+  .side .cell{aspect-ratio:1;border:1px solid var(--edge);background:var(--sunken);
               display:grid;place-items:center;font-size:8.5px;color:var(--dim2);
               font-variant-numeric:tabular-nums;}
   .side .cell.done{background:#242424;color:#676767;}
@@ -78,12 +81,12 @@
   .side .cell.end{border-color:var(--magenta);color:var(--magenta);}
 
   /* ---- 底部状态栏（含实时坐标）---- */
-  .status{display:flex;align-items:center;background:#262626;
+  .status{display:flex;align-items:center;background:var(--chrome);
           border-top:1px solid var(--line);height:22px;font-size:10px;
           color:var(--dim2);overflow:hidden;}
   .status span{padding:0 11px;height:100%;display:flex;align-items:center;
                border-right:1px solid var(--line);white-space:nowrap;}
-  .status span.act{color:var(--white);background:#3a3a3a;}
+  .status span.act{color:var(--white);background:var(--line);}
   .status span.co{margin-left:auto;border-right:0;border-left:1px solid var(--line);
                   color:var(--dim);font-variant-numeric:tabular-nums;}
 
@@ -94,16 +97,16 @@
          overflow-x:auto;}
   .nodes{display:flex;align-items:flex-start;gap:0;min-width:min-content;}
   .nd{display:flex;flex-direction:column;align-items:center;gap:5px;padding:0 3px;}
-  .nd .bx{width:34px;height:26px;border:1px solid #3d3d3d;background:#1f1f1f;
+  .nd .bx{width:34px;height:26px;border:1px solid var(--edge);background:var(--sunken);
           display:grid;place-items:center;font-size:9.5px;color:var(--dim2);}
   .nd .nm{font-size:9.5px;color:var(--dim2);white-space:nowrap;max-width:56px;
           overflow:hidden;text-overflow:ellipsis;text-align:center;}
-  .nd.done .bx{background:#252525;color:#6a6a6a;}
+  .nd.done .bx{background:var(--sunken);color:#6a6a6a;}
   .nd.here .bx{border-color:var(--cyan);background:#243032;color:var(--cyan);font-weight:700;}
   .nd.here .nm{color:var(--cyan);}
   .nd.fork .bx{border-color:var(--yellow);color:var(--yellow);}
   .nd.end .bx{border-color:var(--magenta);color:var(--magenta);}
-  .sep{padding:0 2px;color:#3d3d3d;align-self:center;margin-top:6px;font-size:10px;}
+  .sep{padding:0 2px;color:var(--edge);align-self:center;margin-top:6px;font-size:10px;}
 
   .stage{padding:20px 18px;min-height:210px;display:flex;flex-direction:column;gap:14px;
          flex:1;min-height:0;overflow-y:auto;
@@ -117,17 +120,17 @@
   .stage .txt .bk{color:var(--dim);}
 
   /* ---- 场景图：每一站该有它的样子 ---- */
-  .scene{margin:0 0 12px;border:1px solid #2e2e2e;background:#151515;overflow:hidden;}
+  .scene{margin:0 0 12px;border:1px solid #2e2e2e;background:var(--sunken);overflow:hidden;}
   .scene svg{display:block;width:100%;height:auto;}
 
   /* ---- 座位平面图：在图上挑位置，不是在选项里挑 ---- */
-  .seatwrap{margin:2px 0 10px;border:1px solid #2e2e2e;background:#141414;padding:12px;}
+  .seatwrap{margin:2px 0 10px;border:1px solid #2e2e2e;background:var(--hud-bg);padding:12px;}
   .seatwrap .board{font-size:10px;color:var(--dim2);letter-spacing:4px;text-align:center;
                    padding-bottom:8px;margin-bottom:10px;border-bottom:1px dashed #333;}
   .seatmap{display:grid;gap:6px;}
-  .seat{aspect-ratio:2.3/1;border:1px solid #3d3d3d;background:#1e1e1e;cursor:pointer;
+  .seat{aspect-ratio:2.3/1;border:1px solid var(--edge);background:#1e1e1e;cursor:pointer;
         border-radius:1px;transition:border-color .1s,background .1s;position:relative;
-        font-family:var(--mono);font-size:9px;color:#4a4a4a;padding:0;}
+        font-family:var(--mono);font-size:9px;color:var(--edge2);padding:0;}
   .seat:hover{border-color:var(--cyan);background:#22302f;color:var(--cyan);}
   .seat.void{border:none;background:transparent;cursor:default;}
   .seat .tagn{position:absolute;left:3px;top:2px;font-size:8px;color:#3f3f3f;}
@@ -136,10 +139,10 @@
   /* ---- 推体块 ---- */
   .massbar{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 0;align-items:center;}
   .massbar button{font-family:var(--mono);font-size:12.5px;padding:9px 14px;min-height:40px;
-    background:#232323;color:var(--ink);border:1px solid #3d3d3d;border-radius:2px;cursor:pointer;}
+    background:var(--box-bg);color:var(--ink);border:1px solid var(--edge);border-radius:2px;cursor:pointer;}
   .massbar button:hover{border-color:var(--cyan);color:var(--cyan);}
   .massbar button:disabled{opacity:.3;cursor:not-allowed;border-color:#333;color:var(--dim2);}
-  .massbar button.done{background:var(--cyan);color:#0f0f0f;border-color:var(--cyan);font-weight:700;}
+  .massbar button.done{background:var(--cyan);color:var(--body-bg);border-color:var(--cyan);font-weight:700;}
   .massleft{font-size:11.5px;color:var(--dim);margin-top:9px;letter-spacing:.3px;}
   .massleft b{color:var(--yellow);font-weight:400;}
   .stage .picked{font-size:15px;color:var(--dim);line-height:1.9;}
@@ -156,7 +159,7 @@
   .fill{display:flex;gap:10px;align-items:center;margin-top:2px;flex-wrap:wrap;}
   .fill input{
     flex:1;min-width:180px;
-    background:#232323;border:1px solid #3d3d3d;border-radius:2px;
+    background:var(--box-bg);border:1px solid var(--edge);border-radius:2px;
     color:var(--white);font-family:var(--mono);font-size:16px;
     padding:12px 14px;min-height:48px;
   }
@@ -166,7 +169,7 @@
 
   .opts{display:flex;flex-direction:column;gap:7px;margin-top:2px;}
   .opt{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;min-height:44px;
-       background:#232323;border:1px solid #3d3d3d;border-radius:2px;
+       background:var(--box-bg);border:1px solid var(--edge);border-radius:2px;
        cursor:pointer;text-align:left;font-family:var(--mono);font-size:13px;
        color:var(--ink);transition:border-color .12s,background .12s;}
   .opt:hover{border-color:var(--cyan);background:#26302f;}
@@ -175,7 +178,7 @@
   .opt:hover .k{border-color:var(--cyan);color:var(--cyan);}
   /* 够不着的选项：看得见，点不了 */
   .opt.locked{opacity:.34;cursor:not-allowed;border-style:dashed;}
-  .opt.locked:hover{border-color:#3d3d3d;background:#232323;}
+  .opt.locked:hover{border-color:var(--edge);background:var(--box-bg);}
   .opt.locked:hover .k{border-color:#5a5a5a;color:var(--dim);}
   .opt.locked .cf{color:var(--yellow);}
   .opt.unlocked{border-color:var(--cyan);}
@@ -213,21 +216,21 @@
   .big .lbl{font-size:11px;color:var(--dim);letter-spacing:2px;}
 
   button.act{font-family:var(--mono);font-size:14px;letter-spacing:1px;padding:13px 34px;
-             min-height:48px;background:var(--cyan);color:#0f0f0f;border:1px solid var(--cyan);
+             min-height:48px;background:var(--cyan);color:var(--body-bg);border:1px solid var(--cyan);
              border-radius:3px;cursor:pointer;font-weight:700;transition:filter .12s;}
   button.act:hover{filter:brightness(1.1);}
-  button.act:disabled{background:#2e2e2e;border-color:#3d3d3d;color:var(--dim2);cursor:not-allowed;}
+  button.act:disabled{background:#2e2e2e;border-color:var(--edge);color:var(--dim2);cursor:not-allowed;}
 
   .alloc{display:flex;flex-direction:column;gap:9px;}
   .arow{display:flex;align-items:center;gap:12px;}
   .arow .an{width:76px;font-size:12.5px;color:var(--ink);}
   .arow .ab{width:30px;height:30px;display:grid;place-items:center;background:#2a2a2a;
-            border:1px solid #4a4a4a;border-radius:2px;cursor:pointer;color:var(--ink);}
+            border:1px solid var(--edge2);border-radius:2px;cursor:pointer;color:var(--ink);}
   .arow .ab:hover{border-color:var(--cyan);color:var(--cyan);}
   .arow .av{width:26px;text-align:center;font-size:14px;color:var(--white);font-variant-numeric:tabular-nums;}
   .arow .left{font-size:11px;color:var(--dim2);}
 
-  .cmd{background:#141414;border-top:1px solid var(--line);padding:9px 13px;
+  .cmd{background:var(--hud-bg);border-top:1px solid var(--line);padding:9px 13px;
        font-size:11.5px;line-height:1.8;max-height:118px;overflow-y:auto;}
   .cmd .l{color:#8f8f8f;}
   .cmd .l .p{color:var(--dim2);}
@@ -265,6 +268,43 @@
     .stage .txt{font-size:14px;}
     .track{padding:12px;}
   }
+
+
+/* ============================================================
+   皮肤：整组替换上面的颜色变量。用 body 上的 class 切换。
+   判定写在 game.js 的 skinsOf(S) 里——皮肤不是奖品，
+   是"你这辈子是怎么过的"的视觉总结。
+   ============================================================ */
+
+/* ---- SU：白模 + 浅蓝天空 ---- */
+body.skin-su{
+  --body-bg:#c3d5e4; --bg:#e6eff7; --panel:#dde9f3; --chrome:#c9d9e7;
+  --line:#aec1d2; --grid:#d7e4f0;
+  --ink:#21323e; --white:#0a1922; --dim:#617687; --dim2:#92a6b5;
+  --hud-bg:#d4e2ee; --box-bg:#dce8f3; --edge:#a6bacb; --edge2:#bdcddc;
+  --sunken:#d5e2ef; --head-bg:#cedde9;
+  --cyan:#0b7ba6; --yellow:#946f00; --red:#b5382c; --green:#1a7c45; --magenta:#8b2a98;
+}
+
+/* ---- 手绘：硫酸纸 + 针管笔 ---- */
+body.skin-sketch{
+  --body-bg:#cfc7b6; --bg:#f4f0e6; --panel:#eee9dd; --chrome:#ddd6c6;
+  --line:#c4bba8; --grid:#e8e2d4;
+  --ink:#39352c; --white:#1a1712; --dim:#7d7666; --dim2:#a8a091;
+  --hud-bg:#ebe5d8; --box-bg:#f0ebe0; --edge:#bfb6a3; --edge2:#d2c9b7;
+  --sunken:#e9e3d5; --head-bg:#e3dccd;
+  --cyan:#1f5f8b; --yellow:#8a6410; --red:#a33a2a; --green:#3d6b34; --magenta:#7a3a7a;
+}
+
+/* ---- Rhino：深灰视窗 + 蓝紫高亮 ---- */
+body.skin-rhino{
+  --body-bg:#0a0a0c; --bg:#141416; --panel:#1a1a1e; --chrome:#232327;
+  --line:#2e2e34; --grid:#1c1c20;
+  --ink:#c8c8d0; --white:#f0f0f6; --dim:#7a7a86; --dim2:#565660;
+  --hud-bg:#101012; --box-bg:#1e1e22; --edge:#33333a; --edge2:#424250;
+  --sunken:#18181c; --head-bg:#17171a;
+  --cyan:#4d9de0; --yellow:#e0b23c; --red:#e05c5c; --green:#5fc27e; --magenta:#c07de0;
+}
 </style>
 </head>
 <body>
@@ -786,6 +826,7 @@
     S = { work:0, skill:0, hair:100, score:rollMyScore(), path:COMMON.slice(), pos:0,
           line:null, title:'', school:'', flags:{}, memories:[], visited:{},
           useAlt:false, choices:[], hooks:{}, over:false };
+    applySkin('');                 // 新一局回到默认界面
     document.getElementById('cmd').innerHTML = '';
     log('新的一局。', 'p');
     renderTrack(); renderHUD(); showSchool();
@@ -1023,6 +1064,20 @@
         return x[0] + ' ' + (x[1]>0?'<span class="up">+'+x[1]+'</span>':'<span class="dn">'+x[1]+'</span>');
       }).join('　'), '');
     }
+  }
+
+  // ========== 皮肤：结局揭晓，它是"你这辈子怎么过的"视觉总结 ==========
+  // 不是攒够技能解锁的奖品——是走到哪、留下什么，界面就长成什么样
+  function skinOf(s){
+    if (s.line === 'leave')            return 'rhino';   // 转行＝换了软件
+    if (s.work >= 4)                   return 'su';      // 做出来的东西多＝建模的人
+    if (s.skill >= 18 && s.work <= 1)  return 'sketch';  // 一直在画、没留下东西＝手绘的人
+    return '';                                            // 默认：CAD 施工图
+  }
+  const SKIN_NAME = { '':'CAD', su:'SU', sketch:'手绘', rhino:'Rhino' };
+  function applySkin(name){
+    document.body.classList.remove('skin-su','skin-sketch','skin-rhino');
+    if (name) document.body.classList.add('skin-' + name);
   }
 
   function renderHUD(){
@@ -1308,6 +1363,7 @@
   // ========== 结局 ==========
   function ending(){
     S.over = true;
+    applySkin(skinOf(S));          // 界面跟着你这辈子变
     const end = S.line ? LINES[S.line].end : '毕业了';
     const stage = el('stage');
     renderTrack();
@@ -1380,6 +1436,14 @@
   })();
 
   reset();
+
+  // 调试用：?skin=su 直接看某套皮肤（正式入口是结局判定）
+  (function(){
+    const m = /[?&]skin=(\w+)/.exec(location.search);
+    if (m && ['su','sketch','rhino','cad'].indexOf(m[1]) >= 0){
+      applySkin(m[1] === 'cad' ? '' : m[1]);
+    }
+  })();
 })();
 </script>
 

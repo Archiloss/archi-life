@@ -67,6 +67,16 @@
   .side .row .n.off{color:#4a4a4a;text-decoration:line-through;}
   .side .row .n b{color:var(--white);font-weight:400;}
 
+  /* 图幅：一局的进度，一格一站（6 列） */
+  .side .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;padding:8px 10px;}
+  .side .cell{aspect-ratio:1;border:1px solid #3d3d3d;background:#1f1f1f;
+              display:grid;place-items:center;font-size:8.5px;color:var(--dim2);
+              font-variant-numeric:tabular-nums;}
+  .side .cell.done{background:#242424;color:#676767;}
+  .side .cell.here{border-color:var(--cyan);background:#243032;color:var(--cyan);font-weight:700;}
+  .side .cell.fork{border-color:var(--yellow);color:var(--yellow);}
+  .side .cell.end{border-color:var(--magenta);color:var(--magenta);}
+
   /* ---- 底部状态栏（含实时坐标）---- */
   .status{display:flex;align-items:center;background:#262626;
           border-top:1px solid var(--line);height:22px;font-size:10px;
@@ -96,6 +106,7 @@
   .sep{padding:0 2px;color:#3d3d3d;align-self:center;margin-top:6px;font-size:10px;}
 
   .stage{padding:20px 18px;min-height:210px;display:flex;flex-direction:column;gap:14px;
+         flex:1;min-height:0;overflow-y:auto;
          background-color:var(--bg);
          background-image:linear-gradient(var(--grid) 1px,transparent 1px),
            linear-gradient(90deg,var(--grid) 1px,transparent 1px);
@@ -282,8 +293,6 @@
 
   <div class="main">
     <div class="work">
-      <div class="track"><div class="nodes" id="nodes"></div></div>
-
       <div class="stage" id="stage"></div>
 
       <div class="cmd" id="cmd"></div>
@@ -1084,14 +1093,24 @@
       return '<div class="row"><span class="k">' + k + '</span><span class="n">' + v + '</span></div>';
     };
 
+    // 图幅：一局的进度。走过的格子才有名字（鼠标停上去能看到）
+    let figs = '';
+    S.path.forEach(function(id, i){
+      const c = CARDS[id];
+      const cls = (i < S.pos ? 'done' : '') + (i === S.pos ? ' here' : '')
+                + (c.form === 'fork' ? ' fork' : '') + (i === S.path.length - 1 ? ' end' : '');
+      figs += '<div class="cell ' + cls + '" title="' +
+              (S.visited[i] ? esc(c.name) : '未走到') + '">' + (i + 1) + '</div>';
+    });
+
     side.innerHTML =
       '<h3>图层</h3><div class="grp">' + ly + '</div>' +
       '<h3>特性</h3><div class="grp">' +
         row('作品', '<b id="sWork">' + S.work + '</b>') +
         row('技能', '<b id="sSkill">' + S.skill + '</b>') +
         row('头发', '<b id="sHair">' + S.hair + '%</b>') +
-        row('进度', S.school ? ((S.pos+1) + ' / ' + (COMMON.length + 3)) : '—') +
       '</div>' +
+      '<h3>图幅</h3><div class="grid">' + figs + '</div>' +
       '<h3>图签</h3><div class="grp">' +
         row('图号', 'YZ-2026-01') +
         row('版次', 'REV.A') +
@@ -1123,25 +1142,9 @@
     if (old) old.remove();
   }
 
+  // 进度条搬进侧边栏的「图幅」栏之后，这里只剩保持调用兼容
   function renderTrack(){
-    const box = el('nodes');
-    box.innerHTML = '';
-    S.path.forEach(function(id, i){
-      const c = CARDS[id];
-      const d = document.createElement('div');
-      d.className = 'nd' + (i < S.pos ? ' done' : '') + (i === S.pos ? ' here' : '')
-                    + (c.form==='fork' ? ' fork' : '') + (i===S.path.length-1 ? ' end' : '');
-      // 只揭示真正踩过的格子；骰子跳过去的，留空白
-      const known = !!S.visited[i];
-      d.innerHTML = '<div class="bx">' + (i+1) + '</div>' +
-                    '<div class="nm">' + (known ? c.name : '&nbsp;') + '</div>';
-      box.appendChild(d);
-      if (i < S.path.length - 1){
-        const sp = document.createElement('div');
-        sp.className = 'sep'; sp.textContent = '—';
-        box.appendChild(sp);
-      }
-    });
+    renderSide();
   }
 
   // ========== 主流程 ==========

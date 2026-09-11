@@ -207,6 +207,14 @@
   // ========== 内容卡 ==========
   // form: choice 抉择 / guess 猜 / none 无选择 / alloc 分配 / draw 抽题 / fork 分岔
   const CARDS = {
+    owe: { name:'同 学', form:'choice',
+      text:'同学在走廊叫住你。\n"上次那个模型……"他没说下去。',
+      opts:[
+        {t:'请他吃顿饭', eff:{hair:-1}, r:'你们吃到食堂关门。他再没提过那个模型。'},
+        {t:'装没听懂', eff:{}, r:'他说"没事"，走了。之后一学期他没再找你借东西。'},
+        {t:'把模型的钱转给他', eff:{work:-1}, r:'他没收，退回来了。备注写着"不用"。'}
+      ]},
+
     model: { name:'大二 · 模型', form:'choice',
       text:'第一次做手工模型。你切了三天卡纸。\n答辩前十分钟，它在楼梯上散架了。',
       alt:{ text:'模型做完了，你端着一路走得很稳。\n评图那天老师说："模型做得不错，方案再想想。"',
@@ -218,7 +226,8 @@
       opts:[
         {t:'用胶水抢救', eff:{skill:1,hair:-1}, r:'你把能粘的都粘回去了。远看还行。'},
         {t:'就说"这是概念模型"', eff:{work:-1}, r:'老师看了两眼，说："概念倒是挺概念。"'},
-        {t:'借同学的顶上', eff:{hair:-1}, r:'你的模型在楼梯上。他的模型在台上。'}
+        {t:'借同学的顶上', eff:{hair:-1}, r:'你的模型在楼梯上。他的模型在台上。',
+         hook:{ at:'detail', card:'owe' }}
       ]},
 
     structure: { name:'大三 · 结构选型', form:'choice',
@@ -445,7 +454,7 @@
   function reset(){
     S = { work:0, skill:0, hair:100, step:0, path:COMMON.slice(), pos:0,
           line:null, title:'', school:'', flags:{}, memories:[], visited:{},
-          useAlt:false, choices:[], busy:false, over:false };
+          useAlt:false, choices:[], hooks:{}, busy:false, over:false };
     document.getElementById('cmd').innerHTML = '';
     log('新的一局。', 'p');
     renderTrack(); renderHUD(); showSchool();
@@ -687,7 +696,9 @@
 
   // ========== 主流程 ==========
   function startTile(){
-    const id = S.path[S.pos];
+    let id = S.path[S.pos];
+    // 早先的选择可能把这一站换成了别的事
+    if (S.hooks[id]) id = S.hooks[id];
     const c = CARDS[id];
     renderTrack(); renderHUD();
 
@@ -743,6 +754,7 @@
         b.onclick = function(){
           if (c.form === 'fork'){ chooseLine(o.line, o.t); return; }
           if (o.flag) S.flags[o.flag] = true;
+          if (o.hook) S.hooks[o.hook.at] = o.hook.card;   // 埋下：几格后那一站会变成另一件事
           S.choices.push(o.eff || {});
           apply(o.eff || {});
           log('· ' + o.t);

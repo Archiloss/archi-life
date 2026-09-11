@@ -209,6 +209,12 @@
   const CARDS = {
     model: { name:'大二 · 模型', form:'choice',
       text:'第一次做手工模型。你切了三天卡纸。\n答辩前十分钟，它在楼梯上散架了。',
+      alt:{ text:'模型做完了，你端着一路走得很稳。\n评图那天老师说："模型做得不错，方案再想想。"',
+        opts:[
+          {t:'把模型带回去改方案', eff:{skill:1,hair:-1}, r:'你改了三天。模型还在桌上，方案换了一个。'},
+          {t:'先保住模型，方案下次再说', eff:{work:1}, r:'那个模型后来在走廊的柜子里放了一年。'},
+          {t:'两个都重来', eff:{skill:1,hair:-2}, r:'你重做了一遍。第二版模型没第一版好。'}
+        ]},
       opts:[
         {t:'用胶水抢救', eff:{skill:1,hair:-1}, r:'你把能粘的都粘回去了。远看还行。'},
         {t:'就说"这是概念模型"', eff:{work:-1}, r:'老师看了两眼，说："概念倒是挺概念。"'},
@@ -241,6 +247,12 @@
 
     sketch: { name:'大一 · 素描', form:'choice',
       text:'第一次上素描课，画石膏球。\n老师从你背后走过，停了两秒，没说话。',
+      alt:{ text:'第一次上素描课，画石膏球。\n老师在你旁边站了一会儿，说："型不准。"',
+        opts:[
+          {t:'擦掉重画', eff:{skill:1,hair:-1}, r:'你擦了三遍。第四遍他没再看。'},
+          {t:'问他哪里不准', eff:{skill:1}, r:'他指了三个地方。你只看出一个是真不对。'},
+          {t:'就这样交', eff:{}, r:'他走了。那张画在墙上挂了一学期。'}
+        ]},
       opts:[
         {t:'回去重画十张', eff:{skill:1,hair:-1}, r:'你重画了十张。第四张开始顺手了。'},
         {t:'就交这张', eff:{}, r:'你交了。老师在你的名字后面画了个圈，没说是好是坏。'},
@@ -249,14 +261,26 @@
 
     seat: { name:'专教 · 抢座', form:'choice',
       text:'专教一共 34 个座位，班里有 41 个人。\n公告栏上贴着一张纸：座位安排待定。',
+      alt:{ text:'开学第二周，专教座位重新分配了一次。\n你原来那个位置的插座是坏的。',
+        opts:[
+          {t:'换到有插座的那排', eff:{skill:1,hair:-1}, r:'那排在门口，人来人往，你画得比谁都慢。'},
+          {t:'不换，买个插排', eff:{}, r:'你用了一个学期。后来插排被谁的电脑烧了。'},
+          {t:'干脆搬去图书馆', eff:{skill:-1}, r:'安静，但不能讨论。你们组的方案你只能看群消息。'}
+        ]},
       opts:[
-        {t:'每天早上七点来占', eff:{skill:1,hair:-2}, r:'你连着占了三个星期，然后放弃了。但你的座位一直是那个。'},
-        {t:'放本书占着，人不在', eff:{hair:-0}, r:'书丢过两次。第二次丢的是图书馆借的。'},
+        {t:'每天早上七点来占', eff:{skill:1,hair:-2}, r:'你连着占了三个星期，然后放弃了。但那个座位一直是你坐。'},
+        {t:'放本书占着，人不在', eff:{hair:0}, r:'书丢过两次。第二次丢的是图书馆借的。'},
         {t:'去图书馆画', eff:{skill:-1}, r:'图书馆安静，但不能大声讨论。你们组的讨论你只能看群消息。'}
       ]},
 
     ink: { name:'大二 · 墨线图', form:'choice',
       text:'第一次用鸭嘴笔。你画废了六张。\n第七张画到一半，墨滴下来了。',
+      alt:{ text:'你买了支新笔。\n第一次用就堵了，笔尖在图纸上划开一道。',
+        opts:[
+          {t:'拆开洗干净再试', eff:{skill:1,hair:-1}, r:'你洗了半小时。它在第二张图的中途又堵了。'},
+          {t:'换回旧笔', eff:{}, r:'旧笔也不太行，但它至少不会突然漏。'},
+          {t:'改用针管笔', eff:{skill:1}, r:'从那以后你再没用过鸭嘴笔。'}
+        ]},
       opts:[
         {t:'重画第八张', eff:{skill:1,hair:-2}, r:'第八张干净。你在右下角签了名。'},
         {t:'用刀片刮掉重补', eff:{skill:1}, r:'刮破了一小块。补完远看没差，近看有。'},
@@ -420,7 +444,8 @@
   let S;
   function reset(){
     S = { work:0, skill:0, hair:100, step:0, path:COMMON.slice(), pos:0,
-          line:null, title:'', school:'', flags:{}, memories:[], visited:{}, busy:false, over:false };
+          line:null, title:'', school:'', flags:{}, memories:[], visited:{},
+          useAlt:false, choices:[], busy:false, over:false };
     document.getElementById('cmd').innerHTML = '';
     log('新的一局。', 'p');
     renderTrack(); renderHUD(); showSchool();
@@ -506,7 +531,7 @@
       el('go').onclick = function(){
         apply({ skill:2, hair:-6 });
         log('你去了' + esc(name) + '。建筑学，五年制。');
-        S.memories.push('开学第一周，你发现自己不是班里画得最好的那个。');
+        S.memories.push({ tile:'入学', text:'开学第一周，你发现自己不是班里画得最好的那个。' });
         renderTrack(); renderHUD(); showRoll();
       };
       return;
@@ -545,7 +570,7 @@
   function settleAdjust(again){
     S.school = '调剂';
     log('你去了第二志愿那所学校。');
-    S.memories.push('你的大学在另一个省，一所你当时随便填的学校。');
+    S.memories.push({ tile:'入学', text:'你的大学在另一个省，一所你当时随便填的学校。' });
     el('stage').innerHTML =
       '<div class="ttl">开 学</div>' +
       '<div class="txt">' + (again ? '复读也没用。' : '') +
@@ -690,7 +715,9 @@
     }
 
     const titleEl = '<div class="ttl">' + c.name + '</div>';
-    let body = c.text;
+    // 同一格备两件事，骰子点数决定遇到哪件
+    const v = (S.useAlt && c.alt) ? c.alt : c;
+    let body = v.text;
     if (body.indexOf('@@THESIS@@') >= 0){
       const t = S.title || '';
       const mid = Math.floor(t.length / 2);
@@ -706,7 +733,7 @@
       html += '<div class="opts" id="opts"></div>';
       stage.innerHTML = html;
       const box = el('opts');
-      c.opts.forEach(function(o, i){
+      (v.opts || []).forEach(function(o, i){
         const b = document.createElement('button');
         b.className = 'opt';
         const cf = o.eff ? delta(o.eff) : '';
@@ -716,11 +743,12 @@
         b.onclick = function(){
           if (c.form === 'fork'){ chooseLine(o.line, o.t); return; }
           if (o.flag) S.flags[o.flag] = true;
+          S.choices.push(o.eff || {});
           apply(o.eff || {});
           log('· ' + o.t);
           if (o.r){
             log('　' + o.r);
-            S.memories.push(o.r);
+            S.memories.push({ tile: c.name, text: o.r });
           }
           showResult(o.t, o.r, o.eff || {});
         };
@@ -773,8 +801,7 @@
   }
 
   // ========== 掷骰子 ==========
-  const DICE = 4;   // 骰子 1~4
-
+  // 骰子不决定"走几步"（人生阶段不能被跳过），只决定"这一段遇到哪件事"
   function showRoll(){
     renderTrack(); renderHUD();
     const here = S.pos === 0 ? '起点 · 入学' : CARDS[S.path[S.pos]].name;
@@ -787,16 +814,14 @@
   }
 
   function doRoll(){
-    const n = 1 + Math.floor(Math.random() * DICE);
+    const n = 1 + Math.floor(Math.random() * 6);
     log('掷出 <span class="hl">' + n + '</span>。');
-    let target = S.pos + n;
-    // 必停格（毕设抽题、毕业分岔）不能被骰子跳过
-    for (let i = S.pos + 1; i <= target && i < S.path.length; i++){
-      if (CARDS[S.path[i]].stop){ target = i; break; }
-    }
-    if (target > S.path.length - 1) target = S.path.length - 1;
-    S.pos = target;
-    S.visited[S.pos] = true;          // 只记真正踩过的格
+
+    // 前进一格：人生一段一段走，不跳
+    if (S.pos < S.path.length - 1) S.pos++;
+    S.visited[S.pos] = true;
+    S.useAlt = (n >= 4);          // 点数决定这一格触发哪件事
+
     renderTrack(); renderHUD();
     startTile();
   }
@@ -818,8 +843,27 @@
     if (S.flags.form)  lines.push('评图那次你把两片墙拆了，老师什么都没说。');
     if (S.flags.idle)  lines.push('评图那次你什么都没改，第二周他又提了一遍，在全组面前。');
 
-    const mem = S.memories.slice(-3);
-    if (mem.length) lines.push('\n' + mem.join('\n'));
+    // 一生里的几件事：同一站只出一条，开头雷同的也只留一条
+    const seenTile = {}, seenHead = {};
+    const picked = [];
+    S.memories.slice().reverse().forEach(function(m){
+      const tile = m.tile || '_';
+      const text = m.text || m;
+      const head = text.slice(0, 3);
+      if (!seenTile[tile] && !seenHead[head] && picked.length < 4){
+        seenTile[tile] = 1; seenHead[head] = 1;
+        picked.unshift(text);
+      }
+    });
+    if (picked.length) lines.push('\n' + picked.join('\n'));
+
+    // 整局的倾向：有多少次挑了最费劲的那个
+    const grind = S.choices.filter(function(e){ return (e.hair || 0) <= -2; }).length;
+    const coast = S.choices.filter(function(e){
+      return !e.hair && !e.work && !e.skill;
+    }).length;
+    if (grind >= 3) lines.push('\n这一路上，有 ' + grind + ' 次你挑了最费劲的那个。');
+    if (coast >= 3) lines.push('\n这一路上，有 ' + coast + ' 次你选了什么都不改变。');
 
     if (S.title) lines.push('\n你的毕设叫《' + S.title + '》。');
 

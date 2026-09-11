@@ -67,6 +67,13 @@
   .ucs .ax em{position:absolute;font-style:normal;font-size:8.5px;color:var(--dim);}
   .ucs .ax em.ex{left:31px;bottom:-2px;}
   .ucs .ax em.ey{left:-1px;bottom:31px;}
+  /* 左下角 UCS 图标是 AutoCAD 的规矩：别的软件不长这样
+     · SketchUp 的绘图轴在模型原点交汇，不在屏幕角上
+     · Rhino 另有自己的世界坐标轴图标（.raxe）
+     · 手绘根本没有软件界面 */
+  body.skin-su .ucs,
+  body.skin-rhino .ucs,
+  body.skin-sketch .ucs{display:none;}
 
   /* ---- 工作区 + 右侧面板 ---- */
   .main{display:grid;grid-template-columns:1fr 208px;flex:1;min-height:0;}

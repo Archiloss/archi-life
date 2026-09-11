@@ -431,13 +431,14 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   </div>
 
   <div class="main">
-    <div class="work" style="position:relative">
-      <div class="ucs"><div class="ax">
-        <i class="x"></i><i class="xh"></i><i class="y"></i><i class="yh"></i>
-        <em class="ex">X</em><em class="ey">Y</em>
-      </div></div>
+    <div class="work">
       <div class="canvas">
         <div class="deco" id="deco"></div>
+        <!-- CAD 的 UCS 坐标轴：贴在绘图区左下角，不是命令行左下角 -->
+        <div class="ucs"><div class="ax">
+          <i class="x"></i><i class="xh"></i><i class="y"></i><i class="yh"></i>
+          <em class="ex">X</em><em class="ey">Y</em>
+        </div></div>
         <div class="stage" id="stage"></div>
       </div>
 

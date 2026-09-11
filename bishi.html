@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>建筑学毕设题目抽签器</title>
+<style>
+  :root{
+    --bg:#1a1a1a; --grid:#242424; --line:#3a3a3a;
+    --ink:#e8e8e8; --dim:#8a8a8a; --dim2:#5f5f5f;
+    --cyan:#35d6e8;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,"PingFang SC",monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:#0f0f0f;color:var(--ink);font-family:var(--mono);
+    -webkit-font-smoothing:antialiased;
+    display:flex;align-items:center;justify-content:center;
+    padding:calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+    min-height:100%;
+  }
+  .app{width:100%;max-width:720px;background:var(--bg);border:1px solid #000;
+       box-shadow:0 10px 40px rgba(0,0,0,.7);display:flex;flex-direction:column;}
+
+  .head{display:flex;align-items:center;justify-content:space-between;gap:10px;
+        padding:10px 14px;background:#2e2e2e;border-bottom:1px solid var(--line);font-size:12px;}
+  .head .r{color:var(--dim);font-size:10.5px;white-space:nowrap;}
+
+  .stage{padding:34px 22px 26px;background-color:var(--bg);
+         background-image:linear-gradient(var(--grid) 1px,transparent 1px),
+           linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+         background-size:24px 24px;
+         display:flex;flex-direction:column;align-items:center;text-align:center;}
+  .lab{font-size:11px;color:var(--dim);letter-spacing:4px;margin-bottom:22px;}
+
+  /* 外层负责居中，内层负责换行——不能把文字直接塞进 flex 容器 */
+  .titlebox{min-height:4.6em;display:flex;align-items:center;justify-content:center;width:100%;}
+  .titlebox .tt{display:block;color:#fff;line-height:1.6;letter-spacing:.5px;
+                overflow-wrap:anywhere;text-align:center;}
+  .titlebox .tt .bk{color:var(--dim);}
+  @keyframes popIn{ from{opacity:.22;} to{opacity:1;} }
+  .titlebox .tt.anim{animation:popIn .16s ease-out;}
+
+  .btn{margin-top:30px;font-family:var(--mono);font-size:16px;letter-spacing:2px;
+       padding:15px 42px;min-height:52px;background:var(--cyan);color:#0f0f0f;
+       border:1px solid var(--cyan);border-radius:3px;cursor:pointer;font-weight:700;
+       transition:filter .12s, transform .06s;-webkit-tap-highlight-color:transparent;}
+  .btn:hover{filter:brightness(1.1);}
+  .btn:active{transform:translateY(1px);filter:brightness(.95);}
+
+  .foot{border-top:1px solid var(--line);padding:10px 14px;font-size:10px;color:var(--dim2);line-height:1.8;}
+  .foot b{color:var(--dim);font-weight:400;}
+
+  @media (max-width:420px){
+    .stage{padding:26px 16px 20px;}
+    .lab{letter-spacing:3px;margin-bottom:18px;}
+    .btn{font-size:15px;padding:14px 32px;width:100%;}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="head">
+    <span>建筑学 · 毕设题目抽签</span>
+    <span class="r">抽到什么做什么</span>
+  </div>
+
+  <div class="stage">
+    <div class="lab">你 抽 到 了</div>
+    <div class="titlebox"><span class="tt" id="title"></span></div>
+    <button class="btn" id="draw">再 抽 一 个</button>
+  </div>
+
+  <div class="foot">
+    词库：<b>《表 1.3.9 设计师黑话排列组合表》</b> 11 列 286 词 + <b id="ext">—</b> 个建筑专业词扩展<br>
+    共 <b id="pool">—</b> 词　·　可组合 <b id="combo">—</b> 种　·　全部实时随机，无预设题库
+  </div>
+</div>
+
+<script>
+(function(){
+  const BASE = [
+    ['智慧','公共','人性','历史','社会','新','正义','绿色','低碳','零碳','减排','国际','先锋','本源','人居','共享','交流','整合','全生命','5G','云端','活力','综合','老龄','复合','原生','自然','隐性','现代'],
+    ['城市','建筑','景观','园林','规划','空间','生态','大数据','社区','村镇','城乡','地域','乌托邦','异托邦','共同体','展演','休闲'],
+    ['公平','流动','可持续','文化','政策','资源','评估','协同','路径','创新','博弈','句法','仿真','治理','网络','利益','工具','参数','序列','秩序','节奏','韵律','精神','话语','隐喻','多义','均质','渗透','哲学','复杂','必要','支撑'],
+    ['艺术','流行','时尚','文化','事件','媚俗','反讽','行为','透明','通透','悖论','胜场','生长','穿插','呼应','模块','留白','流量','周期','离散','包容','可塑','可变','节点','统筹','专业','权力','批判','反思','肌理','矛盾','戏剧','气质'],
+    ['主义','设计','框架','语境','视角','理念','背景','技术','模式','适配','网络','实施','基础','意味','蒙太奇','优化','异化','基因','制度','形态','话语权','类型','控制','把控','维度','转化','转接','转嫁','修正','轴线','风格','神韵'],
+    ['下的','中的','上的'],
+    ['一站式','当代','消费','自我','自主','主动','被动','生命','巨构','微观','宏观','冷桥','漫射','高端','慢行','开放','多元','多维','下沉','良性','模糊','关键','正向','解构','新兴','衍生','显性','有机'],
+    ['场','场景','场所','场域','场地','私域','领域','体块','体量','材料','产业','公园','环境','绿洲','田园','邻里','家园','廊道'],
+    ['现象','指涉','细节','落地','人性','交通','矩阵','热岛','会客','设施','涡振','竖向','基本','误差','高地','表情','单位','界面','坐标','悬浮','漂浮','垂直','交叉','思维','集聚','集群','群落','社群','聚落','聚焦','聚集','构成'],
+    ['依赖','视线','视野','变迁','迁徙','分流','文脉','语言','姿态','核心','中心','格局','策略','范式','市场','属性','语义','氛围','气息','尺度','联结','布局','游弋','蜕变','相应','感知','边界','合理','关联','一致','方法','制式'],
+    ['性','化','度','率','学','式','论','符号','对话','结合','关系','调性','逻辑','阐述','算法','分析','研究','实践','意向','体系','导向','重塑','拆解','摸索','倾斜','建构','机制','认同','叙事','营造']
+  ];
+
+  const EXT = [
+    ['韧性','在地','乡土','日常','身体','边缘','临时','混合','极端','后工业','非正规','弱势','乡村','都市','山地','江河','遗产','工业','气候','数字','虚拟','智能','情绪','感知'],
+    ['城中村','老城区','工业遗址','滨水区','历史街区','菜市场','校园','车站','厂房','弄堂','胡同','巷弄','里份','山地聚落','城市边缘','地下空间','站城','城乡结合部'],
+    ['更新','活化','再生','织补','缝合','消解','叠加','折叠','嵌套','迭代','响应','适应','量化','可视化','脆弱','冗余','失衡','枯竭','蔓延','稀释','漂移','退化'],
+    ['网红','打卡','仿古','拼贴','怀旧','废墟','野性','混搭','戏剧化','纪念碑性','日常性','临时性','非正式','市井','烟火气','土味','廉价感','山寨'],
+    ['结构','构造','幕墙','钢构','混凝土','木构','砌体','装配式','参数化','数字化','遗产保护','城市设计','景观都市主义','空间生产','身体经验'],
+    [],
+    ['临时','廉价','粗糙','精致','克制','过剩','失序','匿名','灰色','非正式','低技','高技','极简','极繁','微小','冗余'],
+    ['天井','中庭','坡道','夹层','檐廊','缝隙','夹缝','灰空间','院落','廊桥','平台','地下','屋顶','表皮','界面','街巷','口袋公园','边角'],
+    ['渗水','空鼓','返潮','结露','眩光','噪声','遮挡','拥堵','闲置','荒废','烂尾','加建','违建','私搭','沉降','翘曲','污染'],
+    ['体验','记忆','身份','归属','权力','资本','消费','凝视','表演','仪式','阈限','温度','湿度','速度','密度','距离','痕迹'],
+    ['转向','想象','实验','操作','读解','再思','考辨','辨析','观察','表述','表征','策略','原型','谱系']
+  ];
+
+  const POOL = BASE.map(function(b, i){ return b.concat(EXT[i] || []); });
+
+  const titleEl = document.getElementById('title');
+  const pick = function(a){ return a[Math.floor(Math.random() * a.length)]; };
+  const SUP = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+
+  function sci(n){
+    const e = Math.floor(Math.log10(n));
+    const m = (n / Math.pow(10, e)).toFixed(2);
+    return m + ' × 10' + String(e).split('').map(function(d){ return SUP[d]; }).join('');
+  }
+
+  // 按真实可用宽度反推字号，保证最多三行
+  function fit(text){
+    const vw = Math.min(window.innerWidth, 720) - 58;
+    const chars = text.length;
+    let size = 30;
+    while (size > 14){
+      const perLine = Math.max(6, Math.floor(vw / (size + 0.6)));
+      if (Math.ceil(chars / perLine) <= 3) break;
+      size -= 1;
+    }
+    titleEl.style.fontSize = size + 'px';
+  }
+
+  // 去重：① 不出现两个完全相同的词 ② 一个词不是另一个词（≥2字）的子串
+  function ok(ws){
+    for (let i = 0; i < ws.length; i++){
+      for (let j = 0; j < ws.length; j++){
+        if (i === j) continue;
+        if (ws[i].length >= 2 && ws[j].indexOf(ws[i]) >= 0) return false;
+      }
+    }
+    return true;
+  }
+
+  function drawWords(){
+    for (let t = 0; t < 60; t++){
+      const ws = POOL.map(pick);
+      if (ok(ws)) return ws;
+    }
+    return POOL.map(pick);
+  }
+
+  // 同步更新，不用 setTimeout（后台标签页会把定时器节流成 1s）
+  function draw(){
+    const words = drawWords().join('');
+    titleEl.innerHTML = '<span class="bk">《</span>' + words + '<span class="bk">》</span>';
+    fit('《' + words + '》');
+    titleEl.classList.remove('anim');
+    void titleEl.offsetWidth;
+    titleEl.classList.add('anim');
+  }
+
+  let n = 1, extTotal = 0, poolTotal = 0;
+  POOL.forEach(function(p, i){
+    n *= p.length; poolTotal += p.length; extTotal += (EXT[i] || []).length;
+  });
+  document.getElementById('ext').textContent  = extTotal;
+  document.getElementById('pool').textContent = poolTotal;
+  document.getElementById('combo').textContent = sci(n);
+
+  document.getElementById('draw').addEventListener('click', draw);
+  window.addEventListener('resize', function(){ fit(titleEl.textContent || ''); });
+  draw();
+})();
+</script>
+
+</body>
+</html>

@@ -124,6 +124,9 @@
   .nd.end .bx{border-color:var(--magenta);color:var(--magenta);}
   .sep{padding:0 2px;color:var(--edge);align-self:center;margin-top:6px;font-size:10px;}
 
+  /* 画布：绘图区 + 皮肤装饰层（装饰只盖绘图区，不盖命令行） */
+  .canvas{position:relative;flex:1;min-height:0;display:flex;}
+  .deco{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden;}
   .stage{padding:20px 18px;min-height:210px;display:flex;flex-direction:column;gap:14px;
          flex:1;min-height:0;overflow-y:auto;position:relative;
          background-color:var(--bg);
@@ -292,15 +295,30 @@
    是"你这辈子是怎么过的"的视觉总结。
    ============================================================ */
 
-/* ---- SU：天空蓝的绘图区 + 浅灰工具栏（SU 的 sky / ground 是两件事）---- */
+/* ---- SU：蓝天 + 灰地面 + 三色轴（官方界面：无网格、地平线在约 40%）---- */
 body.skin-su{
-  --body-bg:#c0c0c0; --bg:#e8e8e8; --panel:#dedede; --chrome:#c8c8c8;
-  --line:#aeaeae; --grid:#dcdcdc;
-  --ink:#2e2e2e; --white:#141414; --dim:#6a6a6a; --dim2:#909090;
-  --hud-bg:#d2d2d2; --box-bg:#dcdcdc; --edge:#a4a4a4; --edge2:#bcbcbc;
-  --sunken:#d4d4d4; --head-bg:#cccccc;
+  --body-bg:#d4d4d4; --bg:#efefef; --panel:#e6e6e6; --chrome:#d8d8d8;
+  --line:#bdbdbd; --grid:#e4e4e4;
+  --ink:#2b2b2b; --white:#131313; --dim:#6c6c6c; --dim2:#909090;
+  --hud-bg:#e2e2e2; --box-bg:#eaeaea; --edge:#b4b4b4; --edge2:#cacaca;
+  --sunken:#e0e0e0; --head-bg:#dadada;
   --cyan:#14688f; --yellow:#8a6410; --red:#ab3428; --green:#2e7040; --magenta:#7c3a90;
 }
+/* 绘图区＝SU 的天空与地面（地平线 40%，上蓝下灰，无网格） */
+body.skin-su .stage{
+  background-color:#b8b8b8;
+  background-image:linear-gradient(#4a90d9 0%, #7db8e8 26%, #b9dcf2 39.6%, #b8b8b8 40%);
+  background-size:auto;
+}
+/* SU 的三色绘图轴：红 X 向右下、绿 Y 向右上、蓝 Z 竖直（虚线） */
+body.skin-su .deco .saxe{position:absolute;inset:0;pointer-events:none;opacity:.75;}
+body.skin-su .deco .saxe i{position:absolute;}
+body.skin-su .deco .saxe i.ax{left:34%;bottom:26%;width:22%;height:1.5px;background:#c0392b;transform:rotate(9deg);transform-origin:0 50%;}
+body.skin-su .deco .saxe i.ay{left:34%;bottom:26%;width:19%;height:1.5px;background:#3f9b3f;transform:rotate(-11deg);transform-origin:0 50%;}
+body.skin-su .deco .saxe i.az{left:34%;bottom:26%;width:0;height:30%;border-left:1.5px dashed #2f6fb0;}
+/* SU 的默认比例人（就在原点旁边站着） */
+body.skin-su .deco .sdana{position:absolute;left:14%;bottom:9%;pointer-events:none;opacity:.9;}
+body.skin-su .deco .sdana svg{display:block;width:26px;height:auto;}
 /* SU 的绘图区＝天空（这是 SU 唯一蓝的地方） */
 body.skin-su .stage{
   background-color:#cfe3f2;
@@ -321,15 +339,35 @@ body.skin-sketch{
   --cyan:#1f5f8b; --yellow:#8a6410; --red:#a33a2a; --green:#3d6b34; --magenta:#7a3a7a;
 }
 
-/* ---- Rhino：灰色工作视窗（官方默认背景就是灰色，不是深色）---- */
+/* ---- Rhino：中灰工作视窗 + 更亮的浅灰面板（官方默认）---- */
 body.skin-rhino{
-  --body-bg:#c8c8c8; --bg:#dcdcdc; --panel:#d2d2d2; --chrome:#c0c0c0;
-  --line:#a8a8a8; --grid:#d0d0d0;
-  --ink:#2b2b2b; --white:#141414; --dim:#666666; --dim2:#8e8e8e;
-  --hud-bg:#cdcdcd; --box-bg:#d5d5d5; --edge:#9e9e9e; --edge2:#b6b6b6;
-  --sunken:#d0d0d0; --head-bg:#c8c8c8;
-  --cyan:#1a6fa8; --yellow:#8a6410; --red:#b03028; --green:#2c6e3f; --magenta:#7a3a94;
+  --body-bg:#8f8f8f; --bg:#a0a0a0; --panel:#e2e2e2; --chrome:#d6d6d6;
+  --line:#8a8a8a; --grid:#969696;
+  --ink:#8c8c8c; --white:#8c8c8c; --dim:#5a5a5a; --dim2:#787878;
+  --hud-bg:#dcdcdc; --box-bg:#e6e6e6; --edge:#a8a8a8; --edge2:#bebebe;
+  --sunken:#b0b0b0; --head-bg:#d2d2d2;
+  --cyan:#0e6ba8; --yellow:#8a6410; --red:#a82f28; --green:#2c6b3f; --magenta:#763a8e;
 }
+/* 视窗内的构造平面网格（Rhino 的标志：视窗有网格，面板没有） */
+body.skin-rhino .stage{
+  background-color:#a0a0a0;
+  background-image:linear-gradient(#8f8f8f 1px,transparent 1px),
+    linear-gradient(90deg,#8f8f8f 1px,transparent 1px),
+    linear-gradient(#9a9a9a 1px,transparent 1px),
+    linear-gradient(90deg,#9a9a9a 1px,transparent 1px);
+  background-size:96px 96px,96px 96px,12px 12px,12px 12px;
+}
+/* 视窗标题（左上角蓝色小标签，Rhino 每个视窗都有） */
+body.skin-rhino .stage::before{
+  content:'Perspective';position:absolute;left:0;top:0;
+  background:#3d7ebf;color:#fff;font-size:9px;padding:1px 7px 2px;pointer-events:none;
+}
+/* 世界坐标轴图标（左下角三叉） */
+body.skin-rhino .deco .raxe{position:absolute;left:14px;bottom:14px;pointer-events:none;opacity:.9;}
+/* Rhino 的文字在灰底上要深色 */
+body.skin-rhino .stage .ttl,
+body.skin-rhino .stage .txt{color:#1c1c1c;}
+body.skin-rhino .stage .txt .bk{color:#4a4a4a;}
 
 /* ---- 光标：跟着皮肤换。CAD 是十字拾取，SU/Rhino 默认都是箭头 ---- */
 :root{
@@ -380,7 +418,10 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         <i class="x"></i><i class="xh"></i><i class="y"></i><i class="yh"></i>
         <em class="ex">X</em><em class="ey">Y</em>
       </div></div>
-      <div class="stage" id="stage"></div>
+      <div class="canvas">
+        <div class="deco" id="deco"></div>
+        <div class="stage" id="stage"></div>
+      </div>
 
       <div class="cmd" id="cmd"></div>
     </div>
@@ -1113,6 +1154,40 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     }
   }
 
+  // ========== 皮肤装饰：SU 的三色轴+比例人、Rhino 的世界轴 ==========
+  // 都塞进 .stage 的背景层（每站重渲染时跟着重注入），不挡内容
+  const SU_DANA =
+    '<svg viewBox="0 0 30 68" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle cx="15" cy="6.5" r="5.2" fill="#e3c49b"/>' +
+      '<rect x="13.4" y="11" width="3.2" height="3" fill="#e3c49b"/>' +
+      '<path d="M9.6 14 L20.4 14 L21.6 34 L8.4 34 Z" fill="#4c7a4f"/>' +
+      '<path d="M9.6 14 L8.2 24 L10.6 25 L11.6 15 Z" fill="#3f6a42"/>' +
+      '<path d="M20.4 14 L21.8 24 L19.4 25 L18.4 15 Z" fill="#3f6a42"/>' +
+      '<path d="M8.4 34 L14.2 34 L13.6 64 L9.2 64 Z" fill="#4a6584"/>' +
+      '<path d="M15.8 34 L21.6 34 L20.8 64 L16.4 64 Z" fill="#4a6584"/>' +
+      '<ellipse cx="11.4" cy="65.5" rx="4" ry="1.8" fill="#2e2e2e"/>' +
+      '<ellipse cx="18.6" cy="65.5" rx="4" ry="1.8" fill="#2e2e2e"/>' +
+    '</svg>';
+
+  const RAXE =
+    '<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">' +
+      '<line x1="6" y1="38" x2="40" y2="38" stroke="#c0392b" stroke-width="1.6"/>' +
+      '<line x1="6" y1="38" x2="6" y2="4" stroke="#3f9b3f" stroke-width="1.6"/>' +
+      '<line x1="6" y1="38" x2="22" y2="22" stroke="#2f6fb0" stroke-width="1.6"/>' +
+      '<text x="41" y="41" font-size="9" fill="#c0392b">x</text>' +
+      '<text x="2" y="11" font-size="9" fill="#3f9b3f">z</text>' +
+    '</svg>';
+
+  const DECO = {
+    su:    '<div class="saxe"><i class="ax"></i><i class="ay"></i><i class="az"></i></div>' +
+           '<div class="sdana">' + SU_DANA + '</div>',
+    rhino: '<div class="raxe">' + RAXE + '</div>'
+  };
+  function decoOf(){
+    const m = /skin-(\w+)/.exec(document.body.className || '');
+    return m ? (DECO[m[1]] || '') : '';
+  }
+
   // ========== 皮肤：结局揭晓，它是"你这辈子怎么过的"视觉总结 ==========
   // 不是攒够技能解锁的奖品——是走到哪、留下什么，界面就长成什么样
   function skinOf(s){
@@ -1125,6 +1200,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   function applySkin(name){
     document.body.classList.remove('skin-su','skin-sketch','skin-rhino');
     if (name) document.body.classList.add('skin-' + name);
+    const dbox = el('deco');
+    if (dbox) dbox.innerHTML = decoOf();
   }
 
   function renderHUD(){
@@ -1220,6 +1297,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     renderTrack(); renderHUD();
     clearPrompt();
 
+    const dbox = el('deco');
+    if (dbox) dbox.innerHTML = decoOf();   // 皮肤装饰（独立层，不会被内容覆盖）
     const stage = el('stage');
     stage.innerHTML = '';
 

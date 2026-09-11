@@ -393,6 +393,13 @@ body.skin-sketch .crosshair{ display:none !important; }
 /* 拾取框颜色也跟着皮肤走 */
 body.skin-su .crosshair .pick,
 body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
+
+  /* 状态栏里各软件特有的元素 */
+  .status span.tip{flex:1;color:var(--dim);border-right:0;font-size:9.5px;}
+  .status span.meas{margin-left:auto;border-right:0;border-left:1px solid var(--line);
+    background:var(--sunken);color:var(--ink);min-width:170px;justify-content:flex-start;}
+  .status span.co2{margin-left:auto;border-right:0;border-left:1px solid var(--line);
+    color:var(--ink);font-variant-numeric:tabular-nums;}
 </style>
 </head>
 <body>
@@ -922,6 +929,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
           line:null, title:'', school:'', flags:{}, memories:[], visited:{},
           useAlt:false, choices:[], hooks:{}, over:false };
     applySkin('');                 // 新一局回到默认界面
+    renderStatus();
     document.getElementById('cmd').innerHTML = '';
     log('新的一局。', 'p');
     renderTrack(); renderHUD(); showSchool();
@@ -1161,6 +1169,27 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     }
   }
 
+  // ========== 底部状态栏：每个软件都不一样 ==========
+  // AutoCAD 是捕捉开关 + 坐标；SketchUp 是工具提示 + Measurements 输入框；
+  // Rhino 是 CPlane + XYZ + 单位 + 开关；手绘没有软件界面，只有图签信息
+  const STATUS = {
+    '': '<span class="act">对象捕捉</span><span>栅格</span><span>正交</span>' +
+        '<span>极轴</span><span class="co" id="coords">0.0000, 0.0000, 0.0000</span>',
+    su: '<span class="act">选择</span>' +
+        '<span class="tip">Click or drag to select objects. Shift = Add/Subtract. Ctrl = Add.</span>' +
+        '<span class="meas">Measurements</span>',
+    rhino: '<span class="act">CPlane</span>' +
+           '<span class="co2" id="coords">X 0.000&nbsp;&nbsp;Y 0.000&nbsp;&nbsp;Z 0.000</span>' +
+           '<span>Millimeters</span><span>Grid Snap</span><span>Ortho</span><span>Osnap</span>',
+    sketch: '<span class="act">1:100</span><span>A1 硫酸纸</span><span>针管笔 0.1 / 0.3 / 0.5</span>'
+  };
+  function renderStatus(){
+    const bar = document.querySelector('.status');
+    if (!bar) return;
+    const m = /skin-(\w+)/.exec(document.body.className || '');
+    bar.innerHTML = STATUS[m ? m[1] : ''] || STATUS[''];
+  }
+
   // ========== 皮肤装饰：SU 的三色轴+比例人、Rhino 的世界轴 ==========
   // 都塞进 .stage 的背景层（每站重渲染时跟着重注入），不挡内容
   const SU_DANA =
@@ -1209,6 +1238,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     if (name) document.body.classList.add('skin-' + name);
     const dbox = el('deco');
     if (dbox) dbox.innerHTML = decoOf();
+    renderStatus();
   }
 
   function renderHUD(){
@@ -1558,11 +1588,16 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       v.style.left = e.clientX + 'px';
       pk.style.left = e.clientX + 'px';
       pk.style.top = e.clientY + 'px';
-      // 底部状态栏跟着显示图纸坐标（Y 轴朝上，和 CAD 一样）
+      // 底部状态栏跟着显示坐标（Y 轴朝上）。格式按软件来：
+      // AutoCAD 是「x, y, z」，Rhino 是「X _ Y _ Z _」
       const co = el('coords');
       if (co){
-        co.textContent = (e.clientX * 4.217).toFixed(1) + ', ' +
-                         ((window.innerHeight - e.clientY) * 4.217).toFixed(1) + ', 0.0';
+        const X = (e.clientX * 4.217).toFixed(1);
+        const Y = ((window.innerHeight - e.clientY) * 4.217).toFixed(1);
+        const isRhino = document.body.className.indexOf('skin-rhino') >= 0;
+        co.innerHTML = isRhino
+          ? 'X ' + X + '&nbsp;&nbsp;Y ' + Y + '&nbsp;&nbsp;Z 0.0'
+          : X + ', ' + Y + ', 0.0';
       }
     });
     document.addEventListener('mouseleave', function(){ ch.classList.remove('on'); });

@@ -5,13 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>营造大亨 v0.1</title>
 <style>
+html{ zoom:1.25; }
   :root{
     --bg:#1a1a1a; --panel:#202020; --chrome:#2e2e2e; --line:#3a3a3a; --grid:#242424;
     --ink:#dcdcdc; --white:#fff; --dim:#8a8a8a; --dim2:#5f5f5f;
-    --cyan:#35d6e8; --yellow:#ffd93d; --red:#ff5f5f; --green:#4ade80; --magenta:#e879f9;
+    --cyan:#35d6e8; --yellow:#ffd93d; --red:#ff5f5f; --green:#4ade80; --magenta:#e879f9; --orange:#ffb020;
+    /* 结构线 / 强调色 / 次级墨：三处被引用但一直没定义（分隔线整条不渲染），这里补齐（2026-09-12） */
+    --line-c:#4a4a4a; --accent:#35d6e8; --ink2:#b0b0b0;
         /* 结构色（换肤时整组替换） */
     --body-bg:#0f0f0f; --hud-bg:#141414; --box-bg:#232323;
     --edge:#3d3d3d; --edge2:#4a4a4a; --sunken:#1f1f1f; --head-bg:#1c1c1c;
+    /* 换肤敏感 token：以前是硬编码深色，浅皮会贴成黑板；统一走变量，浅皮整组覆盖 */
+    --seat-bg:#1e1e1e; --seat-ink:#4a4a4a; --seat-hov:#22302f;
+    --opt-hov:#26302f;
+    --opt-chosen-bg:#243032; --opt-chosen-ink:#fff;
+    --cell-done-bg:#242424; --cell-done-ink:#676767; --cell-here-bg:#243032;
+    --grp-line:#242424;
+    --chip-up-bg:#182620; --chip-dn-bg:#261818;
+    --k-line:#5a5a5a;
     --mono:ui-monospace,"SF Mono",Menlo,Consolas,"PingFang SC",monospace;
   }
   *{box-sizing:border-box;}
@@ -31,7 +42,7 @@
     border:1px solid rgba(180,180,180,.85);
     transform:translate(-50%,-50%);
   }
-  .app{max-width:1080px;margin:0 auto;background:var(--bg);border:1px solid #000;
+  .app{max-width:min(1080px, calc(100vw / 1.25));margin:0 auto;background:var(--bg);border:1px solid #000;
        box-shadow:0 10px 40px rgba(0,0,0,.7);display:flex;flex-direction:column;
        flex:1;min-height:0;}
 
@@ -77,14 +88,14 @@
 
   /* ---- 工作区 + 右侧面板 ---- */
   .main{display:grid;grid-template-columns:1fr 208px;flex:1;min-height:0;}
-  .work{display:flex;flex-direction:column;min-width:0;}
+  .work{display:flex;flex-direction:column;min-width:0;min-height:0;}
 
   .side{background:var(--chrome);border-left:1px solid var(--line);overflow-y:auto;}
   .side h3{margin:0;padding:7px 10px;font-size:10px;font-weight:400;
            color:var(--dim2);letter-spacing:1.5px;background:var(--head-bg);
            border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
   .side h3:first-child{border-top:0;}
-  .side .grp{padding:8px 10px;border-bottom:1px solid #242424;}
+  .side .grp{padding:8px 10px;border-bottom:1px solid var(--grp-line);}
   .side .row{display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11px;}
   .side .row .sw{width:9px;height:9px;flex:0 0 9px;border:1px solid rgba(0,0,0,.6);}
   .side .row .k{color:var(--dim);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -98,8 +109,8 @@
   .side .cell{aspect-ratio:1;border:1px solid var(--edge);background:var(--sunken);
               display:grid;place-items:center;font-size:8.5px;color:var(--dim2);
               font-variant-numeric:tabular-nums;}
-  .side .cell.done{background:#242424;color:#676767;}
-  .side .cell.here{border-color:var(--cyan);background:#243032;color:var(--cyan);font-weight:700;}
+  .side .cell.done{background:var(--cell-done-bg);color:var(--cell-done-ink);}
+  .side .cell.here{border-color:var(--cyan);background:var(--cell-here-bg);color:var(--cyan);font-weight:700;}
   .side .cell.fork{border-color:var(--yellow);color:var(--yellow);}
   .side .cell.end{border-color:var(--magenta);color:var(--magenta);}
 
@@ -125,7 +136,7 @@
   .nd .nm{font-size:9.5px;color:var(--dim2);white-space:nowrap;max-width:56px;
           overflow:hidden;text-overflow:ellipsis;text-align:center;}
   .nd.done .bx{background:var(--sunken);color:#6a6a6a;}
-  .nd.here .bx{border-color:var(--cyan);background:#243032;color:var(--cyan);font-weight:700;}
+  .nd.here .bx{border-color:var(--cyan);background:var(--cell-here-bg);color:var(--cyan);font-weight:700;}
   .nd.here .nm{color:var(--cyan);}
   .nd.fork .bx{border-color:var(--yellow);color:var(--yellow);}
   .nd.end .bx{border-color:var(--magenta);color:var(--magenta);}
@@ -154,10 +165,10 @@
   .seatwrap .board{font-size:10px;color:var(--dim2);letter-spacing:4px;text-align:center;
                    padding-bottom:8px;margin-bottom:10px;border-bottom:1px dashed #333;}
   .seatmap{display:grid;gap:6px;}
-  .seat{aspect-ratio:2.3/1;border:1px solid var(--edge);background:#1e1e1e;cursor:pointer;
+  .seat{aspect-ratio:2.3/1;border:1px solid var(--edge);background:var(--seat-bg);cursor:pointer;
         border-radius:1px;transition:border-color .1s,background .1s;position:relative;
-        font-family:var(--mono);font-size:9px;color:var(--edge2);padding:0;}
-  .seat:hover{border-color:var(--cyan);background:#22302f;color:var(--cyan);}
+        font-family:var(--mono);font-size:9px;color:var(--seat-ink);padding:0;}
+  .seat:hover{border-color:var(--cyan);background:var(--seat-hov);color:var(--cyan);}
   .seat.void{border:none;background:transparent;cursor:default;}
   .seat .tagn{position:absolute;left:3px;top:2px;font-size:8px;color:#3f3f3f;}
   .seat:hover .tagn{color:var(--cyan);}
@@ -178,8 +189,8 @@
   .chip{font-size:13.5px;padding:6px 12px;border:1px solid var(--line);
         border-radius:2px;font-variant-numeric:tabular-nums;letter-spacing:.3px;
         color:var(--dim);}
-  .chip.up{color:var(--green);border-color:#2f5a48;background:#182620;}
-  .chip.dn{color:var(--red);border-color:#5a2f2f;background:#261818;}
+  .chip.up{color:var(--green);border-color:#2f5a48;background:var(--chip-up-bg);}
+  .chip.dn{color:var(--red);border-color:#5a2f2f;background:var(--chip-dn-bg);}
   .chip.zero{color:var(--dim2);}
   @keyframes hudPulse{0%{color:var(--cyan);}100%{color:var(--white);}}
   .hud .st b.pulse{animation:hudPulse 1s ease-out;}
@@ -199,18 +210,18 @@
        background:var(--box-bg);border:1px solid var(--edge);border-radius:2px;
        cursor:pointer;text-align:left;font-family:var(--mono);font-size:13px;
        color:var(--ink);transition:border-color .12s,background .12s;}
-  .opt:hover{border-color:var(--cyan);background:#26302f;}
+  .opt:hover{border-color:var(--cyan);background:var(--opt-hov);}
   .opt .k{width:18px;height:18px;flex:0 0 18px;display:grid;place-items:center;
-          border:1px solid #5a5a5a;font-size:10.5px;color:var(--dim);margin-top:1px;}
+          border:1px solid var(--k-line);font-size:10.5px;color:var(--dim);margin-top:1px;}
   .opt:hover .k{border-color:var(--cyan);color:var(--cyan);}
   /* 够不着的选项：看得见，点不了 */
   .opt.locked{opacity:.34;cursor:not-allowed;border-style:dashed;}
   .opt.locked:hover{border-color:var(--edge);background:var(--box-bg);}
-  .opt.locked:hover .k{border-color:#5a5a5a;color:var(--dim);}
+  .opt.locked:hover .k{border-color:var(--k-line);color:var(--dim);}
   .opt.locked .cf{color:var(--yellow);}
   .opt.unlocked{border-color:var(--cyan);}
   /* 选择的那一刻：被选中的留下，其余退场 */
-  .opt.chosen{border-color:var(--cyan);background:#243032;color:var(--white);
+  .opt.chosen{border-color:var(--cyan);background:var(--opt-chosen-bg);color:var(--opt-chosen-ink);
               box-shadow:0 0 0 1px var(--cyan);}
   .opt.chosen .k{border-color:var(--cyan);color:var(--cyan);}
   .opt.faded{opacity:.15;transition:opacity .28s;}
@@ -274,9 +285,12 @@
                     vertical-align:-2px;animation:blink 1.05s steps(1) infinite;}
   @keyframes blink{50%{opacity:0;}}
 
-  .ending{padding:26px 22px;display:flex;flex-direction:column;gap:16px;}
+  .ending{padding:26px 22px;display:flex;flex-direction:column;gap:16px;position:relative;z-index:4;}
+  /* 结局面板底部的「再来一局」常驻：窗口不高时（900/800 高）以前要滚到最底才看得见 */
+  .ending .endbar{position:sticky;bottom:-26px;margin:6px 0 -26px;padding:10px 0 8px;
+                  background:var(--bg);border-top:1px solid var(--line-c);}
   .ending .lab{font-size:11px;color:var(--dim);letter-spacing:3px;}
-  .ending .big-t{font-size:24px;color:var(--white);line-height:1.5;}
+  .ending .big-t{font-size:24px;color:var(--ink);line-height:1.5;}
   .ending .body{font-size:14px;line-height:2;color:var(--ink);white-space:pre-wrap;}
   .ending .body .hot{color:var(--yellow);}
   .ending .body .dim{color:var(--dim);}
@@ -285,6 +299,12 @@
   @media (max-width:819px){
     .main{grid-template-columns:1fr;}
     .side{display:none;}
+    /* 窄屏时 HUD 数值贴菜单栏下面：飘字收短，别蹿上菜单 */
+    @keyframes floatUp{
+      0%{opacity:0;transform:translateY(0) scale(.9);}
+      18%{opacity:1;transform:translateY(-2px) scale(1.04);}
+      100%{opacity:0;transform:translateY(-12px) scale(1);}
+    }
   }
   /* 宽屏：顶部横条不再重复数值，交给右侧面板 */
   @media (min-width:820px){
@@ -313,7 +333,13 @@ body.skin-su{
   --ink:#2b2b2b; --white:#131313; --dim:#6c6c6c; --dim2:#909090;
   --hud-bg:#e2e2e2; --box-bg:#eaeaea; --edge:#b4b4b4; --edge2:#cacaca;
   --sunken:#e0e0e0; --head-bg:#dadada;
-  --cyan:#14688f; --yellow:#8a6410; --red:#ab3428; --green:#2e7040; --magenta:#7c3a90;
+  --cyan:#14688f; --yellow:#8a6410; --red:#ab3428; --green:#2e7040; --magenta:#7c3a90; --orange:#c07a14;
+  --line-c:#a8a8a8; --accent:#14688f; --ink2:#4a4a4a;
+  /* 换肤敏感 token：浅底深字（SU 蓝天灰地） */
+  --seat-bg:#f7f7f7; --seat-ink:#4a4a4a; --seat-hov:#d9eef5;
+  --opt-hov:#dff0f7; --opt-chosen-bg:#cfe9f4; --opt-chosen-ink:#0c2c3a;
+  --cell-done-bg:#dcdcdc; --cell-done-ink:#5c5c5c; --cell-here-bg:#d6eaf2;
+  --grp-line:#cfcfcf; --chip-up-bg:#e4f0e7; --chip-dn-bg:#f2e0dd; --k-line:#b0b8bc;
 }
 /* 绘图区＝SU 的天空与地面（地平线 40%，上蓝下灰，无网格） */
 body.skin-su .stage{
@@ -337,7 +363,7 @@ body.skin-su .stage{
   background-size:auto;
 }
 /* 地平线：天空下面压一条地面灰 */
-body.skin-su .stage::after{content:'';position:absolute;left:0;right:0;bottom:0;height:26%;
+body.skin-su .stage::after{content:'';position:absolute;left:0;right:0;bottom:0;height:min(26%,150px);
   background:linear-gradient(#cfcfcf,#c2c2c2);pointer-events:none;}
 
 /* ---- 手绘：硫酸纸 + 针管笔 ---- */
@@ -347,18 +373,46 @@ body.skin-sketch{
   --ink:#39352c; --white:#1a1712; --dim:#7d7666; --dim2:#a8a091;
   --hud-bg:#ebe5d8; --box-bg:#f0ebe0; --edge:#bfb6a3; --edge2:#d2c9b7;
   --sunken:#e9e3d5; --head-bg:#e3dccd;
-  --cyan:#1f5f8b; --yellow:#8a6410; --red:#a33a2a; --green:#3d6b34; --magenta:#7a3a7a;
+  --cyan:#1f5f8b; --yellow:#8a6410; --red:#a33a2a; --green:#3d6b34; --magenta:#7a3a7a; --orange:#a87415;
+  --line-c:#b3a992; --accent:#1f5f8b; --ink2:#4d4838;
+  /* 换肤敏感 token：浅底深字（硫酸纸） */
+  --seat-bg:#f4efe2; --seat-ink:#4d4838; --seat-hov:#e7e0cc;
+  --opt-hov:#eee7d4; --opt-chosen-bg:#e2e8cf; --opt-chosen-ink:#20221a;
+  --cell-done-bg:#ddd6c2; --cell-done-ink:#4f4a3a; --cell-here-bg:#dde5cd;
+  --grp-line:#c9c1ab; --chip-up-bg:#e3ead6; --chip-dn-bg:#f0dfd4; --k-line:#a89f8b;
+}
+/* 手绘：硫酸纸（无 CAD 网格；两层极淡噪点模拟纸张纤维，纯 CSS 不上图） */
+body.skin-sketch .stage{
+  background-color:#f4f0e6;
+  background-image:
+    radial-gradient(rgba(110,100,70,.07) 1px,transparent 1px),
+    radial-gradient(rgba(110,100,70,.05) 1px,transparent 1px);
+  background-size:9px 9px, 15px 15px;
+  background-position:0 0, 4px 7px;
 }
 
 /* ---- Rhino：中灰工作视窗 + 更亮的浅灰面板（官方默认）---- */
 body.skin-rhino{
   --body-bg:#8f8f8f; --bg:#a0a0a0; --panel:#e2e2e2; --chrome:#d6d6d6;
   --line:#8a8a8a; --grid:#969696;
-  --ink:#8c8c8c; --white:#8c8c8c; --dim:#5a5a5a; --dim2:#787878;
+  --ink:#2f2f2f; --white:#1a1a1a; --dim:#5a5a5a; --dim2:#787878;
   --hud-bg:#dcdcdc; --box-bg:#e6e6e6; --edge:#a8a8a8; --edge2:#bebebe;
   --sunken:#b0b0b0; --head-bg:#d2d2d2;
-  --cyan:#0e6ba8; --yellow:#8a6410; --red:#a82f28; --green:#2c6b3f; --magenta:#763a8e;
+  --cyan:#0e6ba8; --yellow:#8a6410; --red:#a82f28; --green:#2c6b3f; --magenta:#763a8e; --orange:#c67a1e;
+  --line-c:#6f6f6f; --accent:#0e6ba8; --ink2:#2f2f2f;
+  /* 换肤敏感 token：浅底深字（Rhino 亮面板） */
+  --seat-bg:#ececec; --seat-ink:#333333; --seat-hov:#d9e8f2;
+  --opt-hov:#deeaf2; --opt-chosen-bg:#cfe4f2; --opt-chosen-ink:#10283a;
+  --cell-done-bg:#cfcfcf; --cell-done-ink:#333333; --cell-here-bg:#cfe4f2;
+  --grp-line:#bdbdbd; --chip-up-bg:#dceade; --chip-dn-bg:#efd9d5; --k-line:#afafaf;
 }
+/* Rhino 的浅灰面板上，正文数字/图层关/排程主项用深墨——别用那组发灰的 --ink/--white */
+body.skin-rhino .side .row .n{color:#1f1f1f;}
+body.skin-rhino .side .row .n.on{color:#131313;}
+body.skin-rhino .side .row .n.off{color:#6a6a6a;}
+body.skin-rhino .side .row .n b{color:#131313;}
+body.skin-rhino .side .cell{color:#3a3a3a;}
+body.skin-rhino .place .nm{color:#1c1c1c;}
 /* 视窗内的构造平面网格（Rhino 的标志：视窗有网格，面板没有） */
 body.skin-rhino .stage{
   background-color:#a0a0a0;
@@ -406,7 +460,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     color:var(--ink);font-variant-numeric:tabular-nums;}
 
   /* ---- v2 排程：一学期挑 2 个去处 ---- */
-  .places{display:flex;flex-direction:column;gap:8px;margin-top:2px;}
+  .places{display:flex;flex-direction:column;gap:8px;margin-top:2px;position:relative;z-index:1;}
   .place{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:10px;
          width:100%;text-align:left;font-family:var(--mono);font-size:14px;
          padding:14px 15px;background:var(--box-bg);color:var(--ink);
@@ -437,6 +491,33 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   .ending .verdict{font-size:16px;line-height:1.75;color:var(--ink);font-weight:600;
                    letter-spacing:.6px;margin:22px 0 20px;padding-top:16px;
                    border-top:1px solid var(--line-c);}
+
+  /* ===== 结局·现场 ===== */
+  .ending .scene-txt{font-size:15px;line-height:2.0;color:var(--ink);
+                     letter-spacing:.4px;margin:12px 0 2px;
+                     padding:10px 12px;border-left:2px solid var(--accent);
+                     background:var(--panel);}
+
+  /* 排程按钮里「可能遇到：通宵 · 模型」那行小字（M5） */
+  .place .nt .ev{display:block;color:var(--dim2);font-size:10.5px;
+                 margin-top:2px;letter-spacing:.3px;}
+
+/* 对话流：新句淡入，旧句留在上方逐级变淡 */
+.dlg{ display:flex; flex-direction:column; gap:6px; }
+.dlg .ln{ line-height:1.55; transition:opacity .28s ease; }
+.dlg .ln.fresh{ animation: dlgIn .38s ease; }
+@keyframes dlgIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion: reduce){ .dlg .ln.fresh{ animation:none; } }
+
+/* 开场预设校名 chips */
+.presets{ margin-top:14px; color:var(--dim); font-size:11px; display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.presets button.pre{ background:transparent; border:1px solid var(--line); color:var(--ink); font:inherit; font-size:12px; padding:3px 9px; border-radius:4px; cursor:pointer; opacity:.85; }
+.presets button.pre:hover{ border-color:var(--accent); color:var(--accent); opacity:1; }
+
+/* 排程学年/线路横幅 */
+.yr{ font-family:var(--mono); letter-spacing:4px; font-size:13px; text-align:center;
+     color:var(--accent); padding:7px 0 2px; margin-bottom:2px;
+     border-top:1px solid var(--line-c); border-bottom:1px solid var(--line-c); }
 </style>
 </head>
 <body>
@@ -732,7 +813,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         {t:'改回混凝土', eff:{skill:-1}, r:'改完发现钢筋混凝土那节课你在睡觉。\n你照着同学的抄了一遍，抄错了一个系数，没人发现。'}
       ]},
 
-    intern: { name:'实 习', grade:[3,4], form:'choice', scene:'site',
+    intern: { name:'实 习', grade:[3,4], need:{skill:3}, form:'choice', scene:'site',
       text:'在设计院实习两个月。\n带你的老师第一周给了你一套图纸，让你描。',
       opts:[
         {t:'认真描完', eff:{skill:1}, r:'描完了。第二周他给了你另一套。'},
@@ -742,7 +823,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
          need:{skill:6}, eff:{work:1,hair:-3}, r:'他看了两分钟，说："你留下吧。"这是你第一次被人这么问。'}
       ]},
 
-    rework: { name:'改 图', grade:[3,4], form:'choice',
+    rework: { name:'改 图', grade:[3,4], need:{skill:4}, form:'choice',
       text:'毕设中期检查。老师说："你这个，再完善完善。"\n距离期末还有两周。',
       opts:[
         {t:'大改一遍', eff:{work:1,hair:-5}, r:'你改了两周。最后那版你自己也说不清好在哪。'},
@@ -857,8 +938,10 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       text:'毕业。\n你投了 47 份简历，收到 3 个回复。\n其中两个是同一个岗位。',
       opts:[
         {t:'考研', line:'kaoyan'},
+        {t:'留学', line:'liuxue'},
         {t:'进设计院', line:'firm'},
         {t:'进甲方', line:'client'},
+        {t:'进体制', line:'tizhi'},
         {t:'转行', line:'leave'}
       ]},
 
@@ -948,26 +1031,314 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       opts:[
         {t:'每天下班学两小时', eff:{skill:2,hair:-3}, r:'三个月后你能独立干活了。'},
         {t:'周末集中学', eff:{skill:1}, r:'花了两个月，进度比想象中慢。'}
-      ]}
+      ]},
+    // ---- 支线 · 留学 ----
+    s_apply: { name:'申 请', form:'choice', line:'liuxue',
+      text:'你投了三所国外的学校。作品集改了六遍，最终版叫"最终版2"。',
+      opts:[
+        {t:'雇人排版', eff:{skill:1,hair:-2}, r:'版式上去了。你自己的那几页，一眼能认出来。'},
+        {t:'自己校到最后一晚', eff:{skill:2,hair:-4}, r:'双语夹着看。你把自己写的那页翻来覆去看了八遍。'}
+      ]},
+    s_group: { name:'小 组', form:'choice', line:'liuxue',
+      text:'小组分好了。本地生两个，一个印度来的，一个你。\n方案讨论用的是另一种语言——但不是英语那种。',
+      opts:[
+        {t:'硬着头皮讲', eff:{skill:2,hair:-2}, r:'你讲到半截卡住了。有人帮你补了后半句，他讲的是你那个意思。'},
+        {t:'画图沟通', eff:{work:1,hair:-3}, r:'你不说了，直接把图推过去。对方看懂了。'}
+      ]},
+    s_paper: { name:'论 文', form:'choice', line:'liuxue',
+      text:'盲审意见回来了，英文的。你读完只确认了一件事：标题那个词没拼错。',
+      opts:[
+        {t:'全按意见改', eff:{skill:2,hair:-3}, r:'改完重读，你觉得他说的其实有点道理。'},
+        {t:'改一半', eff:{skill:1,hair:-1}, r:'剩下的一半，你赌他不会再细看。'}
+      ]},
+    // ---- 支线 · 体制 ----
+    t_screen: { name:'遴 选', form:'choice', line:'tizhi',
+      text:'选调生面试，五个考官里有两个是学建筑的。\n你聊到画图，他们都停了一下。',
+      opts:[
+        {t:'好好聊', eff:{skill:1,hair:-1}, r:'其中一位考官的桌上压着半卷图，被盖住了。'},
+        {t:'接住话头自嘲', eff:{hair:-2}, r:'你说了句自己通宵的玩笑。他笑了笑，没接。'}
+      ]},
+    t_review: { name:'审 图', form:'choice', line:'tizhi',
+      text:'你第一次审一套施工图。翻到第三页，一个转角节点没画。\n这种地方，你当年一眼就能看出来。',
+      opts:[
+        {t:'按规矩退回去', eff:{skill:1}, r:'你写了两行意见，手生，但意思到了。'}
+      ]},
+    t_desk: { name:'工 位', form:'choice', line:'tizhi',
+      text:'同事问：你学建筑的，到头来在这儿图什么？\n你想了想：图个准点下班。\n他顿了顿：那够呛。',
+      opts:[
+        {t:'自嘲一句', eff:{hair:-1}, r:'你俩都笑了。后来你确实很少准点。'},
+        {t:'认真回', eff:{skill:1}, r:'他听了，说：那也算个奔头。'}
+      ]},
+
+    // ---- 内容扩充(M9)：减少去处重复 ----
+    t_cad: { name:'画 底 图', grade:[1,2], form:'choice',
+      text:'帮老师把一套手稿转成 CAD。你第一次知道，按老师口述"再改一遍"能改七遍。',
+      opts:[
+        {t:'逐词对齐', eff:{skill:2,hair:-3,work:1}, r:'第七遍他点点头。你没问他到底哪遍对的。'},
+        {t:'先出个大概', eff:{skill:1,hair:-1}, r:'他看了一眼说：先这样吧。'}
+      ]},
+    t_ppt: { name:'改 汇 报', grade:[1,2,3], form:'choice', dlgName:'常老师',
+      talk:[
+        '常老师把你上周的图转了个九十度：「这张，我转过来看。」',
+        '师兄提醒你他还没开口，你先把手上那沓纸放下来。',
+        '常老师翻了两页。「你最早那张，我压在底下了。」他抽出来——那晚赶的，排线都不会。',
+        '「那会儿你不认识线，倒认得出胆子。」他合上图，等你说话。'
+      ],
+      text:'老师的汇报 PPT，你排版。他最后只改了标题的字号。',
+      opts:[
+        {t:'认真排', eff:{skill:1,hair:-2}, r:'花了三个晚上。他那页只改了字号。'},
+        {t:'套个模板', eff:{skill:1}, r:'模板他挺满意。你不好意思说那不是你排的。'}
+      ]},
+    t_measure: { name:'场 地 测 绘', grade:[2,3], form:'choice',
+      text:'跟着去测一个路口。太阳很晒，仪器只有一台，谁扛都行但大家都礼貌地推脱。',
+      opts:[
+        {t:'抢着扛仪器', eff:{skill:2,hair:-3,work:1}, r:'一下午。你学会了把水准仪支稳，别的没学会。'},
+        {t:'记数据', eff:{skill:1}, r:'你手快，记了两页。有个数字你现在还记得是错的。'}
+      ]},
+    c_deadline: { name:'交 图 前 夜', grade:[2,3,4], form:'choice',
+      text:'竞赛投稿截止前 48 小时。一个队友在改模型，另一个在翻英语摘要。',
+      opts:[
+        {t:'一个人把图赶完', eff:{skill:2,hair:-5,work:1}, r:'交之前你还把队友俩的一起改了。没人说你辛苦了。'},
+        {t:'保一份大概', eff:{skill:1,hair:-2}, r:'交了。你猜评委看没看第三张以后。'}
+      ]},
+    c_rework2: { name:'评 委 推 翻', grade:[3,4], form:'choice',
+      text:'二轮改稿。老师说他上周大意了，方向要重来。',
+      opts:[
+        {t:'重来一半', eff:{skill:2,hair:-4,work:1}, r:'你把一周的图作废了。重来那版你其实更喜欢。'},
+        {t:'只改表面', eff:{skill:1}, r:'贴了几张新分析图。他没看细节。'}
+      ]},
+    lib_night: { name:'图 书 馆 关 门', grade:[0,1,2], form:'choice',
+      text:'图书馆十点播关门音乐。你座位底下捡到一支没盖盖子的针管笔。',
+      opts:[
+        {t:'收好带走', eff:{skill:1}, r:'后来你一直没舍得用那支笔。'},
+        {t:'接着画完', eff:{skill:1,hair:-1}, r:'关门音乐放第二遍，你才起身。'}
+      ]},
+    st_flow: { name:'画 图', grade:[0,1], form:'choice', noChoice:true, eff:{skill:1, hair:-1},
+      talk:[
+        '你占了靠窗的位置。窗外有人在打羽毛球，你听见线绷紧又松开的声音。',
+        '图纸铺开，你画到线稿，发现署名栏还空着。你填了个学号。',
+        '画完你起身，窗外的球早就停了。你把灯留给了下一桌人。'
+      ]},
+    st_dev: { name:'最 后 一 间', grade:[3,4], form:'choice',
+      text:'专教的灯一盏盏灭了。你最后一个走，保安站在门口，等你锁门。',
+      opts:[
+        {t:'收尾就走', eff:{hair:1}, r:'你和他打了个照面。他说：又是你。'},
+        {t:'再拖一会儿', eff:{skill:2,hair:-3,work:1}, r:'他蹲在门口刷手机。你锁门时他也没说什么。'}
+      ]},
+    st_desk1: { name:'通 宵', noChoice:true, eff:{skill:2,hair:-2}, talk:['凌晨两点你在专教和一根斜线较劲。','旁边同学说这线歪了，你看也是歪的，但没人睡得着去叫醒老师。','天亮时你把斜线擦成正的，原来它从一开始就不该是斜的。','回宿舍路上你觉得自己长高了两公分。','后来量了，是夜里的水肿。']},
+    st_desk2: { name:'桌 子', noChoice:true, eff:{skill:1,hair:-1}, talk:['你把整张图纸平铺在桌上，占了三个人的位置。','隔壁班学姐往上看了圈，没说话，在你图角踩了个灰脚印。','你洗了七遍橡皮，脚印越擦越清楚。','最后你留了个鞋号在上面当签名。','学姐第二天换位了，据说因为闻到那鞋的胶水味。']},
+    st_desk3: { name:'踩 图', noChoice:true, eff:{skill:1,hair:-1}, talk:['你贴墙悬着画完一整天，就怕踩到刚铺的地上那张总图。','临收笔保洁阿姨推着拖把进来，一眼认出那图是要命的线。','她绕了两个教室擦完才回来拖你这块。','漏网的一滴把墙角那条轴线泡糊了。','你补线时阿姨在门口小声说，那地方本来就没人看。']},
+    st_desk4: { name:'接 水', noChoice:true, eff:{skill:1,hair:0}, talk:['画到一半墨水快没了，你去走廊尽头接水。','回来看见笔帽顺走了，水杯在窗台上，漂着半只蛾子。','你拿废图纸折个盖扣上，蛾子在里头迷了路。','后来你画图前先数一遍笔。','数完还是丢，丢的那些都爱往地下层滑。']},
+    st_desk5: { name:'进 度 墙', noChoice:true, eff:{skill:1,hair:0}, talk:['你把今天的过程图贴在专教后墙，没人看，贴给自己提气。','晚饭后回来隔壁班的图贴在你上面，压你一头。','你默默把自己的挪上去。','夜里又被挪回来。','最后两班老师批改时都假装没看见这堵墙，谁也说不清谁先动的手。']},
+    st_lib1: { name:'铁 架', noChoice:true, eff:{skill:1,hair:2}, talk:['你钻进书架最里面那排铁架，书摞到胸口。','保安说这里十点清场，你点点头。','九点五十你还在，铁架子挤得你直不起腰。','十点铃响，你抱着三本压得胳膊酸的书出来。','保安替你关门时说，这架子他值夜班天天看，从没见过有人搬走。']},
+    st_lib2: { name:'闭 馆', noChoice:true, eff:{skill:1,hair:1}, talk:['十点整图书馆放起那首听了三年的离别音乐。','很温柔，温柔到你以为还有二十分钟。','等你抬头灯已经灭了一半，你刚看到最关键的一页。','你夹着书跑下楼梯，管理员用扫把轻轻扫你的脚印。','出大门你决定明天再来，管理员认识你的背影。']},
+    st_lib3: { name:'借 书', noChoice:true, eff:{skill:1,hair:2}, talk:['你抱着十二本书到自助机前，机器响了十二次，像数落你。','你一本本放回书车，回头又续了一本。','门口老师问你是不是把整个书架搬空了。','你说没有，只搬了半排。','老师没接话，在还书单上给你划了一整个学期。']},
+    st_lib4: { name:'小 人', noChoice:true, eff:{skill:1,hair:2}, talk:['你在规范旁边的空白处画了个睡觉的小人，把椅子改成躺椅。','画完自己困得不行，真想躺进那本书里。','你决定陪它睡五分钟。','再睁眼管理员已经把书合上，小人被压成一条线。','从此你的小人只画在笔记本边角，那里没有管理员。']},
+    st_lib5: { name:'占 座', noChoice:true, eff:{skill:2,hair:1}, talk:['一楼暖气座是抢手货，你派了本书去占。','回来书还在座没了，被人连书一起挪到边上。','你找到它时它被盖在人家笔记下冷笑。','你认栽在备忘录记了教训。','第二天同一时间，你的书被挪到二楼——它升级了。']},
+    st_sleep1: { name:'室 友', noChoice:true, eff:{skill:0,hair:5}, talk:['你躺下时室友在打游戏，外放对面队的阵亡音效。','你数羊数到一千只，数到一只穿对面战袍的羊。','你爬起来戴耳机，反手开满音量。','室友回头看你一眼，默默戴上降噪耳塞。','凌晨你俩和好了，谁也没舍得关掉对方。']},
+    st_sleep2: { name:'闹 表', noChoice:true, eff:{skill:0,hair:5}, talk:['闹钟你按了三次，每次都顺手放十分钟。','第三次之后再没听见响，你睡到满天花板影子。','醒来手机四格电，闹表早自己关了省电。','你划掉今天上午的日程。','下午你照这作息活着，感觉天地倒转。']},
+    st_sleep3: { name:'电 话', noChoice:true, eff:{skill:0,hair:4}, talk:['午睡正深一个电话把你拽出梦，家里问饭吃了没。','你说吃了，挂了，躺回去游不回那个梦。','翻个身又通电话，快递喊你下楼。','你取完快递顺手买杯冰水清醒。','回宿舍一躺全是清醒，只好改晚上补觉。']},
+    st_sleep4: { name:'灯 灭', noChoice:true, eff:{skill:1,hair:4}, talk:['十一点熄灯，你还在床上看手机，屏幕照出半张熬夜脸。','室友翻身说你再放亮他也要起来干活。','你调暗一格，他也灭了手机。','黑暗里谁都睡得着，就你眼珠子瞪得圆。','后来你学会把手机扣在被子里，它比你自律。']},
+    st_mat1: { name:'老 板 娘', noChoice:true, eff:{skill:1,hair:0}, talk:['进店时老板娘在算账，本子全是草叉号。','她头也不抬问又要纸还是胶，你说纸。','她指指角落，你看见三摞纸码得比你都高。','你搬完最后一摞，她往你口袋里塞了块糖。','那糖是留给掉牙小孙子的，店里没人吃，可怜了你。']},
+    st_mat2: { name:'搬 纸', noChoice:true, eff:{skill:1,hair:-1}, talk:['这周硫酸纸你一个人搬回专教，一路磕三个门槛。','老板娘喊你小心点别蹭价签。','你回身看价签没动，纸角破了一道。','你把破角那面朝里压着画一天。','画完发现破的是正面，你对着光线看它像条河，莫名顺眼。']},
+    st_mat3: { name:'胶 味', noChoice:true, eff:{skill:1,hair:0}, talk:['店里那桶胶你凑近闻，闻不出型号，只觉得有点呛。','老板娘说这就是好胶，呛的才粘得牢。','你买回来试，果然撕不下来了。','后来为撕下来你把整张图重画一遍。','重画那张更好，老板娘不知道是哪桶胶的功劳。']},
+    st_mat4: { name:'薄 纸', noChoice:true, eff:{skill:1,hair:-1}, talk:['你要买薄一点的透光纸，老板娘翻出最薄那沓。','她用指肚捻捻，说这纸一使劲就穿。','你付钱转身走，她喊住你塞了把压纸角铁。','省着点画，这纸我进一次还用一年。','你握着角铁回专教，比攥着纸踏实。']},
+
+    
+  
+  kid_deadline: {
+    name:'帮 老 师 · 赶 活', form:'choice',
+    talk:[
+      '下午三点，老师推门进来，把一沓图压在你桌上：「明早院里的会要用，你今天给我理出来。」今天周四，那沓图是上周的。',
+      '他走到门口又回头，补了半句「不急——」门就带上了。后半句悬在走廊里，你猜他想说「尽量弄完」。'
+    ],
+    opts:[
+      {t:'熬一宿，按他的意思赶出来', eff:{skill:2, hair:-5, work:1}, r:'凌晨四点半，你对着第七版排完线。来取的是他助理，全程没提署名，你也懒得提了。'},
+      {t:'打电话说做不完，能不能晚一天', eff:{skill:-1}, r:'他在电话里沉默两秒：「那你先把手头那张图描了。」你第二天上午意外地闲。'},
+      {t:'接，但做到能看就交', eff:{skill:1, hair:-2}, r:'他翻完说「还行」。你没告诉他第三张以后线是留白的，他也没翻到那。'}
+    ]
+  },
+  kid_credit: {
+    name:'帮 老 师 · 署 名', form:'choice',
+    talk:[
+      '你查出自己描的那套图，图签栏里「方案」「校对」都是别人的名字。你那一栏，是空的。',
+      '教研室没人。你把图放回去，又拿出来，对着那个空格，站了一会儿。'
+    ],
+    opts:[
+      {t:'当面挑明：「这套图签我填谁」', eff:{skill:1, hair:-4}, r:'他说「排版排漏了」，当场给你补上。之后三套图，你都是最后一个名字，也都在。'},
+      {t:'憋着，当没看见', eff:{hair:1}, r:'那套图你没署名，也没再问。倒是自己记住一条规矩：接的活，图签自己先填。'},
+      {t:'不动声色，下次自己填', eff:{work:1}, r:'你把名字写在最后一栏。图照样过了。他提没提，你没听见。'}
+    ]
+  },
+  kid_wait: {
+    name:'帮 老 师 · 交 材 料', noChoice:true, eff:{skill:1},
+    talk:[
+      '周五下午，你帮老师去校办交材料。窗口刚关，门缝里贴着「周四下午收取件」。',
+      '你在楼下坐了一会儿，给老师发「已交进去」，把材料又带了回去。',
+      '下周一你再去，窗口开了，收件人拿章一盖，没问你这几天怎么来的。'
+    ]
+  },
+  kid_junior: {
+    name:'帮 老 师 · 带 学 弟', noChoice:true, eff:{skill:1, hair:-1},
+    talk:[
+      '老师让你看看研一的构图，「顺便把你当年那几个毛病也跟他说说」。',
+      '学弟楼梯平台的标高抄错了，跟你大一那阵错得一模一样。你讲的时候差点笑出来，忍回去了。',
+      '你走时说「这个线宽，我当年也这么错」。他点点头，把那根线画粗了。'
+    ]
+  },
+  kid_archive: {
+    name:'帮 老 师 · 整 档 案', noChoice:true, eff:{skill:1},
+    talk:[
+      '帮老师把柜子里的旧图纸建档。抽出来几十张，有一半没写名字。',
+      '你在最底下翻出一整套手稿，签名是个「×老师，2003」。那一年，你还没入学。',
+      '你原样放回去，在登记簿上填「年份不详」。它又回柜子里睡了。'
+    ]
+  },
+
+  
+  k1_48h: {
+    name:'竞 赛 · 四 十 八 小 时', form:'choice',
+    talk:[
+      '离投稿截止还有四十八小时。三个人的组，一个在改模型，一个在翻译一页谁也看不懂的英文摘要。',
+      '你手里还有一整张平面没排完。你数了数，这一摊里能用的手，是你自己。'
+    ],
+    opts:[
+      {t:'一个人把整套赶完', eff:{skill:2, hair:-5, work:1}, r:'交之前你把两个队友那份也顺手修了。各自的名字都在右下角，三个并排。没人说辛苦了。'},
+      {t:'只保一份能看的先交', eff:{skill:1, hair:-2}, r:'交的是排面没排完的版本。你去睡了，第二天群里没人提那张图，你也没提。'},
+      {t:'把大家叫到一起摊牌，分活', eff:{skill:1, work:-1, hair:-2}, r:'会开完各自认了活。最后那页 A2 是改模型那哥们出的，你说谢，他说没事。'}
+    ]
+  },
+  k1_topic: {
+    name:'竞 赛 · 题 还 没 定', form:'choice',
+    talk:[
+      '题材冲了两个方向都被毙了。距投稿还有一周，组里说，要不硬上一个谁都能做的话题，「做出来即留档」。',
+      '你看了眼桌面上那份「为什么是我们」的备忘录，还是空壳，一个论据没写。'
+    ],
+    opts:[
+      {t:'硬上，选个稳的做', eff:{work:1}, r:'题目是「城市里被遗忘的角落」。做成了。评委点评连举三个例子，一个都不是你们的。'},
+      {t:'换方向，重新想一个', eff:{skill:1, hair:-4}, r:'你写了六页，最后用的是第三页第二个。它稳得多，也普通得多，字还比第一版小一档。'},
+      {t:'稳住，这次宁可先不投', eff:{hair:1}, r:'你没投。学期末老师问竞赛，你说「没成」。第二年你真把第一页的论据补进去了。'}
+    ]
+  },
+  k1_meet: {
+    name:'竞 赛 · 小 组 会', noChoice:true, eff:{skill:1, hair:-1},
+    talk:[
+      '竞赛小组会开了四十分钟，议题是「中午吃什么」，最后定了吃那家第三贵的。',
+      '散会前有人把分工表投到墙上，填了三个名字，剩下两个空着没人认。',
+      '你领了一个空。出门的时候，另一个人在你背后说了声「谢了」。'
+    ]
+  },
+  k1_title: {
+    name:'竞 赛 · 起 名 字', noChoice:true, eff:{work:1, hair:-1},
+    talk:[
+      '作品还没影，名字先定下来了：谁都想往里塞「呼吸」「共生」这类词。',
+      '最后定的全名里，一共出现三个「空间」。评委大概记不住，你们自己念两遍也差点混。',
+      '排版前两天，你把标题字号又调大一档。这样至少名字有人看。'
+    ]
+  },
+  k1_check: {
+    name:'竞 赛 · 交 前 检 查', noChoice:true, eff:{skill:1},
+    talk:[
+      '交稿前一天检查，发现平面对不上模型：模型里有个天井，图纸上没开这个口。',
+      '谁也不愿动自己那份，最后是改模型那哥们自己把天井补进了模型里。',
+      '他补完说「这样，就都嵌上了」。你明天交的那份，比原方案本身还整齐。'
+    ]
+  },
+
+  
+  k2_machine: {
+    name:'工 坊 · 碰 机 床', form:'choice',
+    talk:[
+      '工坊的铣床早先说停机，下午才开。你下午来，机器真在响，师傅在磨另一台。',
+      '他抬头看见你：「会用吗？」你上一次握机床，是大二金工课，握的是那台小电钻，握了不到半天。'
+    ],
+    opts:[
+      {t:'说会，给我试试', eff:{skill:2, hair:-4, work:1}, r:'下刀那下你手抖，切歪一角。师傅一直没说话，收工了才说「料反正是废的，刀是干净的」。你后来每次下刀前都先量一遍。'},
+      {t:'说不会，给您打下手', eff:{skill:1}, r:'你递了一天料，太阳下山时师傅说「下回我教你开这台」。你听出那是句实话。'},
+      {t:'只拿废料试两下', eff:{skill:1, hair:-2}, r:'你切了两条废边，师傅扫一眼没说话，最后往你手边推了块好料。那块好料你一直没敢动。'}
+    ]
+  },
+  k2_cut: {
+    name:'工 坊 · 切 板', noChoice:true, eff:{skill:1, hair:-1},
+    talk:[
+      '工坊就一台激光机中午能空出来。你抱着半张 PVC 板来排，排在你前头的是设计课的，抱了三张。',
+      '轮到你要摸着机器，师傅说「先歇会，切多了对不上数」。你退到边上，听着机器一道一道走。',
+      '下午三点你抱着一摞板回专教。板是凉的，你的手是汗。'
+    ]
+  },
+  k2_dust: {
+    name:'工 坊 · 机 器 声', noChoice:true, eff:{skill:1, hair:-2},
+    talk:[
+      '你在工坊泡了一下午，满屋子切割的吱啦声。',
+      '回宿舍洗了把脸，耳朵里还嗡着一整天的频率。你张了张嘴，没听见自己说了什么——是声儿太大了。',
+      '第二天你说话正常了。工坊那台机器的音量，又往上调了一点。'
+    ]
+  },
+
+  
+  k3_redo: {
+    name:'设 计 课 · 还 要 大 改', form:'choice',
+    talk:[
+      '方案做到第五周。评图那天老师看了半晌，问：「这个方案，你觉得还要不要大改。」',
+      '他不是问你行不行。他是问你舍不舍得。桌上摆的是你熬了四版才定下来的那个。'
+    ],
+    opts:[
+      {t:'改，重来一遍', eff:{skill:2, hair:-5, work:1}, r:'你推倒重画。第八版交上去，老师什么都没说，只点了点头。你知道这一关算是过了。'},
+      {t:'不改，就它了', eff:{work:1}, r:'他说「行」。后来那版去做模型，模型师傅问「这入口是不是缺道门」。你没改，但把这句话记下了。'},
+      {t:'改一半，保个底', eff:{skill:1, hair:-2}, r:'你把两处硬伤修了，骨架没动。下次评图他又提那两处，这一回你没能答上来。'}
+    ]
+  },
+  k3_scale: {
+    name:'设 计 课 · 比 例', noChoice:true, eff:{skill:1, hair:-2},
+    talk:[
+      '设计课做 1:50 的模型，你钉了三个钟头，底板都粘实了。',
+      '打眼一看，里面站个人得弯腰——比例错了，把标准人画宽了半格。',
+      '你把做好的那面墙拆了从头来。拆的时候你格外慢，像在跟它告个别。'
+    ]
+  },
+  k3_foot: {
+    name:'设 计 课 · 关 门', noChoice:true, eff:{skill:1},
+    talk:[
+      '下课你想多磨十分钟，工坊师傅站在门口：「灯一关、机器一凉，你就走不了了。」',
+      '你磨到灯灭前交了货。走出门，师傅把门带上，在你背后说「明儿再来」。',
+      '那扇门合上的声音，在空教室里，比你想的响。'
+    ]
+  }
   };
 
   // ========== 路线 ==========
-  const COMMON = ['sketch','seat','ink','model','structure','plan','detail','physics','sketch2','crit','intern','thesis','allnight','defense','rework','fork'];
   const LINES = {
-    kaoyan:{ name:'考研线', now:'在读研', color:'var(--cyan)',   cards:['k_interview','k_lab','k_paper'], end:'在读研三，论文刚交' },
-    firm:  { name:'设计院线', now:'在设计院', color:'var(--yellow)', cards:['f_interview','f_desk','f_revise'], end:'在一家民营院，第二年' },
-    client:{ name:'甲方线', now:'在甲方', color:'var(--red)',    cards:['c_interview','c_desk','c_review'], end:'在一家房企，做项目对接' },
-    leave: { name:'转行线', now:'已转行', color:'var(--magenta)',cards:['l_interview','l_join','l_relearn'], end:'转行第二年' }
+    kaoyan:{ name:'考研线', now:'在读研', color:'var(--cyan)',
+      cards:['k_interview','k_lab','k_paper'], end:'在读研三，论文刚交',
+      scene:'盲审过了那晚，办公室空着。\n你听见自己的脚步声在走廊里，特别响。' },
+    liuxue:{ name:'留学线', now:'在国外', color:'var(--green)',
+      cards:['s_apply','s_group','s_paper'], end:'在国外读研，第二年',
+      scene:'小组讨论那天，老师说：这一版比上一版好。\n你点头。其实你想的是：我上一版根本没改。',
+      scene_home:'你拖着两箱书回国。面试官问：在国外学的跟这儿一样吗？\n你说：基础一样。',
+      scene_abroad:'你留下来了。办公室九点没人，你第一个到。\n你学会了当地人的"没事"。' },
+    firm:  { name:'设计院线', now:'在设计院', color:'var(--yellow)',
+      cards:['f_interview','f_desk','f_revise'], end:'在一家民营院，第二年',
+      scene:'你终于能在一版图上同时满足甲方和施工图。\n那天你在图签栏填自己的名字，填得比以往都顺。' },
+    client:{ name:'甲方线', now:'在甲方', color:'var(--red)',
+      cards:['c_interview','c_desk','c_review'], end:'在一家房企，做项目对接',
+      scene:'你把当年老师评你的那些词，原样说给了乙方。\n说出口你愣了一下——原来甲方就是这样。' },
+    tizhi: { name:'体制线', now:'在体制内', color:'var(--orange)',
+      cards:['t_screen','t_review','t_desk'], end:'在规划局，第二年',
+      scene:'你坐的工位，窗外的塔吊比你还忙。\n你负责审批别人画了好几年才拿来的图。' },
+    leave: { name:'转行线', now:'已转行', color:'var(--magenta)',
+      cards:['l_interview','l_join','l_relearn'], end:'转行第二年',
+      scene:'你偶尔还梦见在专教通宵。\n醒了有点庆幸，也有点说不清。' }
   };
 
   // ========== 状态 ==========
   let S;
   function reset(){
-    PLACES.forEach(function(pl){ pl._used = false; pl._count = 0; });
+    resetPlaceCounts();
     S = { work:0, skill:0, hair:100, score:rollMyScore(),
-          round:0, actionsLeft:0, picked:[], works:[],
-          line:null, title:'', school:'', flags:{}, memories:[], visited:{},
-          useAlt:false, choices:[], hooks:{}, over:false };
+          round:0, actionsLeft:0, picked:[], works:[], pendingCard:null,
+          line:null, title:'', school:'', memories:[],
+          useAlt:false, over:false,
+          sub:'', liuxue_done:false, gateDone:{}, gateFail:false, currentGate:'', _seenC:{}, _seenG:[] };
     applySkin('');                 // 新一局回到默认界面
     renderStatus();
     document.getElementById('cmd').innerHTML = '';
@@ -991,6 +1362,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         '<input id="schoolInput" maxlength="14" autocomplete="off" placeholder="填你当年想去的那所">' +
         '<button class="act" id="okBtn">就 填 这 个</button>' +
       '</div>' +
+      '<div class="presets" id="presets">你来不及想，先点一个：</div>' +
       '<div class="warn" id="warn"></div>' +
       '<div class="opts" id="opts"></div>';
 
@@ -999,6 +1371,17 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     b.innerHTML = '<span class="k">B</span><span class="t">不报建筑</span>';
     b.onclick = newLife;
     el('opts').appendChild(b);
+    showPrompt('报 志 愿', [{t:'就填这个'}, {t:'不报建筑'}]);
+
+    // 预设校名一键填入（还能改）
+    var PRE = ['同济','清华','东南','天大','哈工大','重庆','华南理工','西安建大','浙大'];
+    var pb = el('presets');
+    PRE.forEach(function(s){
+      var x = document.createElement('button');
+      x.className = 'pre'; x.textContent = s;
+      x.onclick = function(){ el('schoolInput').value = s; el('schoolInput').focus(); };
+      pb.appendChild(x);
+    });
 
     // 校名是后面所有文案的主语，太潦草会毁掉代入感
     const bad = function(v){
@@ -1080,7 +1463,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       const box = el('opts');
       [
         { k:'去上',  fn:function(){ settleAdjust(false); } },
-        { k:'复读一年', fn:function(){ apply({hair:-5}); S.school='__wait__'; log('你决定复读。头发 -2。'); showWaiting(name, true); } }
+        { k:'复读一年', fn:function(){ apply({hair:-5}); S.school='__wait__'; log('你决定复读。头发 -5。'); showWaiting(name, true); } }
       ].forEach(function(o, i){
         const b = document.createElement('button');
         b.className = 'opt';
@@ -1109,6 +1492,13 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   }
 
   // ========== 结局 1 · 新生 ==========
+  // ===== 彩蛋：不报建筑 → 随机三种「另一种人生」 =====
+  // 共有的刺朝外：土木互嘲 / 划掉的那栏 / 眼睛被训练过
+  const EGG = [
+    '你没报建筑。报了土木。\n大一你说：这下不用画图躲不开了。\n后来你发现，你们也建模、也画图、也通宵。\n区别是——你们不画"方案"，你们画"深化"。',
+    '你没报建筑。\n其实你第二志愿写的是建筑学，提交前划掉了。\n后来你路过新校区，在那片楼前站了一会儿。\n你说：还好没去。\n站得有点久。',
+    '你没报建筑。\n后来你带家里人逛商场，指着中庭说：这个动线设计得不错。\n你妈问：你又不是学建筑的，怎么看出来的？\n你说不清楚。'
+  ];
   function newLife(){
     S.over = true;
     log('你没报建筑。', 'p');
@@ -1117,11 +1507,9 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         '<div class="lab">结 局 1</div>' +
         '<div class="big-t">新 生。</div>' +
         '<div class="body">' +
-          '你没报建筑。\n\n' +
-          '四年后，你听说他们还在通宵赶图。\n' +
-          '你在睡觉。' +
+          EGG[Math.floor(Math.random() * EGG.length)] +
         '</div>' +
-        '<div><button class="act" id="again">再 来 一 局</button></div>' +
+        '<div class="endbar"><button class="act" id="again">再 来 一 局</button></div>' +
       '</div>';
     el('again').onclick = reset;
   }
@@ -1157,7 +1545,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   // 数值门槛：技能/作品/头发够不够，决定有些事你做不做得成
   function meetNeed(n){
     if (n.skill && S.skill < n.skill) return false;
-    if (n.work  && S.work  < n.work)  return false;
+    if (n.work && S.works.length < n.work)  return false;   // 作品只有一个真源：作品集条数
     if (n.hair  && S.hair  < n.hair)  return false;
     return true;
   }
@@ -1175,14 +1563,24 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     if (eff.hair)  parts.push('头发 '  + (eff.hair>0?'+':'')  + eff.hair + '%');
     return parts.join('　');
   }
+  // 作品统一入口：竞赛/毕设/事件卡做了东西，就命名、进作品集（单一真源）
+  function makeWork(){
+    const nm = workName();
+    S.works.push({ name: nm, from: S._cardName || '做过的一个方案', round: S.round });
+    S.work = S.works.length;
+    return nm;
+  }
+
   function apply(eff){
     const d = [];
-    if (eff.work){  S.work  += eff.work;  d.push(['作品', eff.work]); }
+    if (eff.work){
+      if (eff.work > 0){ makeWork(); d.push(['作品', 1]); }                       // 做出作品→进作品集
+      else if (S.works.length){ S.works.pop(); S.work = S.works.length; d.push(['作品', eff.work]); }
+    }
     if (eff.skill){ S.skill += eff.skill; d.push(['技能', eff.skill]); }
     if (eff.hair){  S.hair  += eff.hair;  d.push(['头发', eff.hair]); }
     if (S.hair > 100) S.hair = 100;
     if (S.hair < 0) S.hair = 0;
-    if (S.work < 0) S.work = 0;
     if (S.skill < 0) S.skill = 0;
     renderHUD();
     // 让 HUD 上变动的数字闪一下，并飘出来——别让它悄悄跳过去
@@ -1198,8 +1596,11 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       f.className = 'float';
       f.textContent = x[0] + ' ' + (x[1] > 0 ? '+' : '') + x[1] + (x[0] === '头发' ? '%' : '');
       f.style.color = x[1] > 0 ? 'var(--green)' : 'var(--red)';
-      f.style.left = (r.left + r.width / 2) + 'px';
-      f.style.top = (r.top - 2) + 'px';
+      // fixed 定位的坐标会被 html 上的 zoom 再乘一次（默认 1.25）：
+      // 1440 宽的屏上飘字会落到 x≈1723，整块飘出视口。先除掉 zoom 还原。
+      const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+      f.style.left = ((r.left + r.width / 2) / z) + 'px';
+      f.style.top = ((r.top - 2) / z) + 'px';
       f.style.transform = 'translateX(-50%)';
       document.body.appendChild(f);
       setTimeout(function(){ f.remove(); }, 1200);
@@ -1215,8 +1616,17 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   // ========== 键盘：在命令行敲字母选选项（CAD 就是这样的）==========
   // 敲 A/B/C/D 选中对应项，回车＝第一项。敲错了在命令行留一行回显。
   function cmdOptions(){
-    return Array.prototype.slice.call(document.querySelectorAll('.opt'))
-      .filter(function(b){ return !b.classList.contains('locked') && !b.disabled; });
+    // 事件卡收 .opt，排程屏收 .place（M5：命令行是全局入口，排程也能敲字母选）
+    // 返回的是「按钮 + 它自己印的字母」：字母必须取按钮上印的那个，
+    // 不能拿过滤后的下标当字母——排程屏第一个去处去过之后，敲 B 会发动第 3 个去处（2026-09-12 修）
+    return Array.prototype.slice.call(document.querySelectorAll('.opt, .place'))
+      .filter(function(b){
+        return !b.classList.contains('locked') && !b.classList.contains('used') && !b.disabled;
+      })
+      .map(function(b){
+        const kEl = b.querySelector('.k');
+        return { el: b, k: kEl ? String(kEl.textContent || '').trim().toUpperCase() : '' };
+      });
   }
   function cmdEcho(txt){
     const t = el('typed');
@@ -1226,24 +1636,36 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     const tag = (e.target && e.target.tagName) || '';
     if (tag === 'INPUT' || tag === 'TEXTAREA') return;   // 填学校名时别抢键
+    // 报志愿屏：这一屏的主操作是「填志愿」，唯一那个按钮是彩蛋「不报建筑」。
+    // 以前——没聚焦输入框时敲回车＝点第一个选项＝直接进结局 1，玩家一脸懵地被不报建筑了。
+    if (el('schoolInput')){
+      const ks = String(e.key || '').toUpperCase();
+      if (e.key === 'Enter' || e.key === ' ' || ks === 'A'){
+        e.preventDefault(); const ok = el('okBtn'); if (ok) ok.click(); return;
+      }
+      if (ks === 'B'){
+        e.preventDefault(); const nb = document.querySelector('#opts .opt'); if (nb) nb.click(); return;
+      }
+      return;
+    }
+    if (S._dlg){ if (e.key === ' ' || e.key === 'Enter' || (e.key||'').toUpperCase()==='SPACEBAR') dlgNext(); return; }
     const opts = cmdOptions();
     if (!opts.length) return;
 
-    const K = 'ABCDEF';
     const k = (e.key || '').toUpperCase();
 
-    if (k.length === 1 && K.indexOf(k) >= 0){
-      const i = K.indexOf(k);
+    if (k.length === 1 && 'ABCDEF'.indexOf(k) >= 0){
       e.preventDefault();
       cmdEcho(k);
-      if (opts[i]) opts[i].click();
+      const hit = opts.filter(function(o){ return o.k === k; })[0];
+      if (hit) hit.el.click();
       else { log('没有 ' + k + ' 这一项。', ''); cmdEcho(''); }
       return;
     }
     if (e.key === 'Enter' || e.key === ' '){
       e.preventDefault();
       cmdEcho('⏎');
-      opts[0].click();
+      opts[0].el.click();
       return;
     }
     if (e.key === 'Backspace'){ cmdEcho(''); return; }
@@ -1313,9 +1735,21 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     return '';                                            // 默认：CAD 施工图
   }
   const SKIN_NAME = { '':'CAD', su:'SU', sketch:'手绘', rhino:'Rhino' };
+    // 外壳（标题文件名 + 菜单栏）跟着皮肤走，避免 SU 界面露 .dwg 的破绽（M8c）
+  const SHELL_FILE = { '':'YZ-2026.dwg', 'su':'庭院小筑.skp', 'rhino':'方案_第三轮.3dm', 'sketch':'1:100 · A1 硫酸纸' };
+  const SHELL_MENU = {
+    '':       ['文件','编辑','视图','插入','格式','工具','绘图','标注'],
+    'su':     ['文件','编辑','视图','相机','绘图','工具','窗口','帮助'],
+    'rhino':  ['文件','编辑','视图','曲线','曲面','实体','网格','工具','分析','渲染'],
+    'sketch': ['描','淡','虚','收','排','注','HB · 0.1']
+  };
   function applySkin(name){
     document.body.classList.remove('skin-su','skin-sketch','skin-rhino');
     if (name) document.body.classList.add('skin-' + name);
+    const fn = document.querySelector('.titlebar .fn');
+    if (fn) fn.textContent = '\u2014 [ ' + (SHELL_FILE[name] || 'YZ-2026.dwg') + ' ]';
+    const mb = document.querySelector('.menubar');
+    if (mb) mb.innerHTML = (SHELL_MENU[name] || SHELL_MENU['']).map(function(m){ return '<b>' + m + '</b>'; }).join('');
     const dbox = el('deco');
     if (dbox) dbox.innerHTML = decoOf();
     renderStatus();
@@ -1420,7 +1854,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
 
   // 每站共用的底子：标题 + 场景线稿 + 正文（含占位符替换）
   function baseHTML(c, v){
-    let body = v.text;
+    let body = v.text || '';      // 有些卡只写了 talk 演出、没写 text：缺了不该整屏崩掉（会锁死在这一屏）
     if (body.indexOf('@@THESIS@@') >= 0){
       const t = S.title || '';
       const mid = Math.floor(t.length / 2);
@@ -1474,7 +1908,6 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         log('· 你坐了' + res.t);
         if (res.r){ log('　' + res.r); S.memories.push({ tile: c.name, text: res.r }); }
         apply(res.eff || {});
-        S.choices.push(res.eff || {});
         showResult('你坐了' + res.t, res.r, res.eff || {});
       };
     });
@@ -1495,14 +1928,13 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
                     (cf ? '<span class="cf">' + cf + '</span>' : '');
       if (locked){ box.appendChild(b); return; }     // 看得见，点不了
       b.onclick = function(){
-        if (c.form === 'fork'){ chooseLine(o.line, o.t); return; }
+        // 先问「这一次算不算数」，再锁按钮（2026-09-12 修死屏：以前是先锁后判，
+        // 被判掉的那次点击会把按钮全部 disable，这一屏就再没有出口了）
+        if (!commitChoice(c, o)) return;
         Array.prototype.forEach.call(box.querySelectorAll('.opt'), function(x){
           x.classList.add(x === b ? 'chosen' : 'faded');
           x.disabled = true;
         });
-        // 数据立刻结算（不用 setTimeout——后台标签页会节流）。
-        // "停一下再出结果"的体感交给结果页的 CSS 动画延迟。
-        commitChoice(c, o);
       };
       box.appendChild(b);
     });
@@ -1514,7 +1946,57 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   };
 
   // ========== 主流程 ==========
+  // ====== 对话引擎：▶ 点一下/空格推进台词流 → ✦ 决定点(opts) ======
+  function startTalk(card, doneFn){
+    const list = card.talk || [];
+    if (!list.length){ doneFn(); return; }
+    S._dlg = { list: list, idx: 0, card: card, done: doneFn };
+    bindDlgTap();
+    renderTalk();
+  }
+  let _dlgTapBound = false;
+  function bindDlgTap(){
+    // 标志必须放在页面级：#stage 跨局都活着，监听器不移除；
+    // 以前标志挂在每局重建的 S 上 → 第二局起每点一下推进两句、第四局四句（2026-09-12 修）
+    if (_dlgTapBound) return;
+    _dlgTapBound = true;
+    el('stage').addEventListener('click', function(e){
+      if (!S._dlg) return;
+      if (e.target && e.target.closest && e.target.closest('.opt,.prompt,.deltas')) return;
+      dlgNext();
+    });
+  }
+  function talkBR(s){ return String(s).replace(/\n/g, '<br>'); }
+  function renderTalk(){
+    const tl = S._dlg;
+    const who = (tl.card && (tl.card.dlgName || tl.card.name)) || '';
+    const upto = tl.idx;
+    const from = Math.max(0, upto - 4);                 // 最多显示最近 5 条
+    const show = tl.list.slice(from, upto + 1);
+    const grad = [0.28, 0.42, 0.58, 0.78, 1];           // 越旧越淡
+    const base = grad.length - show.length;
+    const html = show.map(function(s, i){
+      const last = (i === show.length - 1);
+      const o = last ? 1 : grad[base + i];
+      return '<div class="ln' + (last ? ' fresh' : '') + '" style="opacity:' + o + '">' + talkBR(s) + '</div>';
+    }).join('');
+    el('stage').innerHTML =
+      '<div class="ttl">' + esc(who) + '</div>' +
+      '<div class="dlg">' + html + '</div>' +
+      '<div class="dlgc">▸ 空格 / 点一下 继续</div>';
+  }
+  function dlgNext(){
+    if (!S._dlg) return;
+    const tl = S._dlg;
+    tl.idx++;
+    if (tl.idx >= tl.list.length){
+      const done = tl.done; S._dlg = null; if (done) done();
+    } else { renderTalk(); }
+  }
+
   function startTile(cardId){
+
+    S._optLocked = false;          // 新屏解锁（M7b）
     const id = cardId || S.pendingCard;
     const c = CARDS[id];
     if (!c) { afterCard(); return; }
@@ -1524,15 +2006,26 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     if (dbox) dbox.innerHTML = decoOf();
     el('stage').innerHTML = '';
     const v = (S.useAlt && c.alt) ? c.alt : c;
-    (RENDERERS[c.form] || renderChoices)(c, v);
+    if (v.talk && v.talk.length){
+      if (v.noChoice){        // 纯演出：看完自动结算(v.eff)，没得选
+        startTalk(v, function(){ apply(v.eff || {}); afterCard(); });
+        return;
+      }
+      startTalk(v, function(){ (RENDERERS[c.form])(c, v); });
+      return;
+    }
+    const renderer = RENDERERS[c.form];
+    if (!renderer) throw new Error('未知卡片类型 form: ' + c.form);
+    renderer(c, v);
   }
 
 
   // 真正执行一个选择（在"决定"的停顿之后）
+  // 返回 true = 这次点击真的算数了；false = 被挡掉，界面必须保持可点（否则整屏锁死，无路可走）
   function commitChoice(c, o){
-          if (o.flag) S.flags[o.flag] = true;
-          if (o.hook) S.hooks[o.hook.at] = o.hook.card;   // 埋下：几格后那一站会变成另一件事
-          S.choices.push(o.eff || {});
+          if (S._optLocked) return false;       // 这一屏已结算过
+          S._optLocked = true;
+          S._cardName = c.name;
           apply(o.eff || {});
           log('· ' + o.t);
           if (o.r){
@@ -1540,6 +2033,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
             S.memories.push({ tile: c.name, text: o.r });
           }
           showResult(o.t, o.r, o.eff || {});
+          return true;
   }
 
   // ========== 结果页：选完先看清发生了什么，再走下一步 ==========
@@ -1572,15 +2066,6 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       '</div>';
     el('nextBtn').onclick = next;
   }
-
-  function chooseLine(line, label){
-    log('你选择了「' + label + '」。', 'p');
-    PROGRESS.fork(line);
-    renderTrack(); renderHUD();
-    next();
-  }
-
-
 
   // ============================================================
   //  作品名：按真实竞赛获奖作品的路子写
@@ -1641,18 +2126,67 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   // ============================================================
   const PLACES = [
     { id:'studio', name:'专教画图', eff:{skill:2, hair:-4},
-      cards:['ink','model','allnight','structure'], note:'主力涨技能' },
-    { id:'library', name:'泡图书馆', eff:{skill:2, hair:1},
-      cards:['physics','detail','plan'], note:'慢，但养头发' },
-    { id:'teacher', name:'帮老师干活', eff:{skill:2, hair:-5},
-      cards:['rework'], note:'画完了，署名没有你' },
+      cards:['ink','model','allnight','structure','sketch','seat','st_dev','st_flow','st_desk1','st_desk2','st_desk3','st_desk4','st_desk5'], note:'主力涨技能' },
+    { id:'library', name:'泡图书馆', eff:{skill:1, hair:2},
+      cards:['physics','detail','plan','owe','lib_night','st_lib1','st_lib2','st_lib3','st_lib4','st_lib5'], note:'慢，但养头发' },
+    { id:'teacher', name:'帮老师干活', eff:{skill:3, hair:-6},
+      cards:['rework','intern','t_cad','t_ppt','t_measure','kid_deadline','kid_credit','kid_wait','kid_junior','kid_archive'], note:'挣得多，掉得也多——署名没有你' },
     { id:'contest', name:'做竞赛', eff:{hair:-6}, work:'contest',
-      chance:0.55, max:2, cards:['sketch2'], note:'东西是你的，但可能白做' },
-    { id:'rest', name:'睡觉', eff:{hair:4},
-      cards:[], note:'唯一的大额恢复' }
+      chance:0.55, max:2, cards:['sketch2','rework','c_deadline','c_rework2','k1_48h','k1_topic','k1_meet','k1_title','k1_check'], note:'东西是你的，但可能白做' },
+    { id:'rest', name:'睡觉', eff:{hair:5},
+      cards:['st_sleep1','st_sleep2','st_sleep3','st_sleep4'], note:'唯一的大额恢复' }
   ];
 
   // 回合表：8 回合 = 大学 5 年 + 毕业后 3 年
+  // 毕业后(线内)去处：不再图书馆/专教，按职业线换场景
+  const LINE_PLACES = {
+    kaoyan: [
+      { id:'kao_room', name:'刷 题 教 室', eff:{skill:2,hair:-3}, note:'真题比图诚实' },
+      { id:'kao_self', name:'自 习 室',    eff:{skill:1,hair:1},  note:'占得到座就是一半' },
+      { id:'kao_dorm', name:'宿 舍 补 觉', eff:{hair:5},          note:'明天这套题还在等你' }
+    ],
+    liuxue: [
+      { id:'sl_english', name:'背 单 词', eff:{skill:2,hair:-2}, note:'abandon 是第一页，也是最后一页' },
+      { id:'sl_ps',      name:'改 作 品 集', eff:{skill:2,hair:-3}, note:'把三年画的全塞进十页' },
+      { id:'sl_cafe',    name:'在 咖 啡 馆', eff:{skill:1,hair:2},  note:'点一杯，坐一下午，看别人都在准备' }
+    ],
+    firm: [
+      { id:'f_draw',  name:'改 图 室',   eff:{skill:2,hair:-4}, note:'第七版也看不出第七版' },
+      { id:'f_phone', name:'接 甲 方 电 话', eff:{skill:1,hair:-3}, note:'一听就是来加急了' },
+      { id:'f_desk',  name:'工 位 加 班', eff:{skill:1,hair:-4}, note:'灯比人早下班' }
+    ],
+    client: [
+      { id:'c_site',  name:'跟 现 场',    eff:{skill:2,hair:-3}, note:'晒了两公里的那种' },
+      { id:'c_meet',  name:'开 会',       eff:{skill:1,hair:-2}, note:'会开完了，会没开完' },
+      { id:'c_tu',    name:'催 图 递 话', eff:{skill:1,hair:-3}, note:'你自己也别信那期限' }
+    ],
+    tizhi: [
+      { id:'t_window', name:'靠 窗 的 座', eff:{skill:1,hair:3}, note:'窗明几净，文件不净' },
+      { id:'t_shen',   name:'审 图 科',    eff:{skill:2,hair:-2}, note:'图一摞摞过，章一个个盖' },
+      { id:'t_value',  name:'值 班',       eff:{hair:4},          note:'值班室里能看一晚上月亮' }
+    ],
+    leave: [
+      { id:'l_learn', name:'学 新 技 能', eff:{skill:2,hair:-3}, note:'从头开始，跟刚入学差不多' },
+      { id:'l_resume',name:'投 简 历',    eff:{skill:1,hair:-2}, note:'投出去第十封，你开始看邮箱' },
+      { id:'l_home',  name:'在 家 歇',    eff:{hair:5},           note:'歇着歇着就把自己歇展了' }
+    ]
+  };
+  // 一学期开始时要把「这个去处用过了」清干净。
+  // 只清 PLACES 是不够的：毕业后用的是各条线的 LINE_PLACES，
+  // 它们没被清 → 毕业后第二个学期所有去处都还挂着「去过」，行动点还剩着却无处可去（死屏）。
+  function allPlaces(){
+    const all = PLACES.slice();
+    Object.keys(LINE_PLACES).forEach(function(k){ all.push.apply(all, LINE_PLACES[k]); });
+    return all;
+  }
+  function resetPlaces(){ allPlaces().forEach(function(pl){ pl._used = false; }); }
+  function resetPlaceCounts(){ allPlaces().forEach(function(pl){ pl._used = false; pl._count = 0; }); }
+
+  function activePlaces(){
+    if (S.round >= 5 && S.line && LINE_PLACES[S.line]) return LINE_PLACES[S.line];
+    return PLACES;
+  }
+
   const ROUNDS = [
     { name:'大一', school:true },
     { name:'大二', school:true, gate:'crit' },
@@ -1670,13 +2204,19 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   //  答题不再是推进器——它是你花时间的方式，主线是时间。
   // ============================================================
   function showSchedule(){
+    S._optLocked = false;
+    S._lastPick = 0;
     renderTrack(); renderHUD(); clearPrompt();
     const R = ROUNDS[S.round];
     const dbox = el('deco');
     if (dbox) dbox.innerHTML = decoOf();
 
-    let rows = '';
-    PLACES.forEach(function(pl, i){
+    const lbl = (S.round >= 5 && S.line && LINES[S.line])
+                    ? ('毕 业 · ' + LINES[S.line].name)
+                    : (ROUNDS[S.round].name || '');
+    let rows = '<div class="yr">' + esc(lbl) + '</div>';
+    const places = activePlaces();
+    places.forEach(function(pl, i){
       const usedUp = pl.max && pl._count >= pl.max;      // 用过太多次了
       const taken = pl._used;
       const locked = (pl.need && !meetNeed(pl.need)) || usedUp;
@@ -1684,18 +2224,24 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       const cf = usedUp ? '这学期不做了'
                         : (locked ? ('需要 ' + needText(pl.need))
                                   : (Object.keys(pl.eff).length ? delta(pl.eff) : ''));
+      const evs = (pl.cards || []).slice(0, 3).map(function(id){ var c = CARDS[id]; return c ? c.name.replace(/\s/g,'') : ''; })
+                    .filter(Boolean).join(' · ');
+      const nt = (pl.note ? '<b>' + pl.note + '</b>' : '') +
+                 (evs ? '<span class="ev">可能遇到：' + esc(evs) + '</span>' : '');
       rows += '<button class="' + cls + '" data-i="' + i + '">' +
                 '<span class="k">' + String.fromCharCode(65+i) + '</span>' +
                 '<span class="nm">' + pl.name + '</span>' +
-                '<span class="nt">' + (pl.note || '') + '</span>' +
+                '<span class="nt">' + nt + '</span>' +
                 '<span class="cf">' + cf + '</span>' +
               '</button>';
     });
 
     el('stage').innerHTML =
       '<div class="ttl">' + R.name + ' · 这学期的时间花在哪</div>' +
+        (S.exhausted ? '<div class="warn" style="margin-top:-4px">（头发见底 · 只做得动一件事）</div>' : '') +
       '<div class="txt">还剩 <b class="hot">' + S.actionsLeft + '</b> 个行动点。' +
-        (S.picked.length ? '\n已经选了 ' + S.picked.length + ' 个。' : '') + '</div>' +
+        (S.picked.length ? '\n已经选了 ' + S.picked.length + ' 个。' : '') +
+        '\n<span class="dim">（每个去处一学期只能去一次）</span></div>' +
       '<div class="places">' + rows + '</div>';
 
     Array.prototype.forEach.call(el('stage').querySelectorAll('.place'), function(b){
@@ -1706,7 +2252,13 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
 
   // 选一个去处：扣行动点、结算产出、抽一件具体的事
   function pickPlace(i){
-    const pl = PLACES[i];
+    if (S.over) return;
+    // 连点 / 双击锁：200ms 内同一帧点进来的第三次直接挡掉（评审 M7b）
+    const now = Date.now();
+    if (now - (S._lastPick || 0) < 200) return;
+    S._lastPick = now;
+    const pl = activePlaces()[i];
+    if (!pl || pl._used || !PROGRESS.canAct()) return;
     pl._used = true;
     pl._count = (pl._count || 0) + 1;
     PROGRESS.spend();
@@ -1716,13 +2268,25 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       // 作品不是"点一下就+1"——竞赛可能白做
       if (pl.chance && Math.random() > pl.chance){
         log('　结果出来了：没进。方案是你的，但没人看见。');
-        S.memories.push({ tile: pl.name, text: '你做完的那个方案没进。' });
+        apply({ skill: 1 });          // 失败不白：图是练下来的，回一点技能
+        S.memories.push({ tile: pl.name, text: '你做完了那个方案，它没进。但手艺是练下了。' });
       } else {
         const nm = workName();
         S.works.push({ name: nm, from: pl.name, round: S.round });
-        S.work++;
+        S.work = S.works.length;            // 真源：作品 = 作品集条数
         log('　你做完了《<span class="hl">' + nm + '</span>》。');
         S.memories.push({ tile: pl.name, text: '你做完了《' + nm + '》。' });
+      }
+    }
+    // 毕业后（第 6~8 回合）：发你选的那条线的卡。
+    // 这是评审 M2——之前选了考研结果还是发通宵/平面，等于毕业白选。
+    if (S.round >= 5 && S.line){
+      const lc = LINES[S.line].cards.filter(function(x){ return CARDS[x]; });
+      if (lc.length){
+        const lid = lc[Math.floor(Math.random() * lc.length)];
+        S.pendingCard = lid;
+        startTile(lid);
+        return;
       }
     }
     if (pl.cards && pl.cards.length){
@@ -1731,7 +2295,12 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         return CARDS[x] && (!CARDS[x].grade || CARDS[x].grade.indexOf(S.round) >= 0);
       });
       if (!pool.length){ pool = pl.cards.filter(function(x){ return CARDS[x]; }); }   // 兜底
-      const id = pool[Math.floor(Math.random() * pool.length)];
+      // 无放回（全局，修重复题）：整一局所有去处事件本局抽过的卡不再抽，跨处所也不撞，池耗尽才重置
+      if (!S._seenG) S._seenG = [];
+      let avail = pool.filter(function(x){ return S._seenG.indexOf(x) < 0; });
+      if (!avail.length){ avail = pool; S._seenG = []; }
+      const id = avail[Math.floor(Math.random() * avail.length)];
+      S._seenG.push(id);
       S.pendingCard = id;
       startTile(id);
     } else {
@@ -1740,9 +2309,48 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     }
   }
 
+
+  function showLiuxueChoice(){
+    el('stage').innerHTML =
+      '<div class="ttl">回 国 ?</div>' +
+      '<div class="txt">你毕业了。签证还有半年。\n同学问你要不要留下。</div>' +
+      '<div class="opts" id="opts"></div>';
+    showPrompt('回 国 ?', [{t:'回国'}, {t:'留下'}]);
+    const box = el('opts');
+    var opts2 = [{t:'回国', sub:'home'}, {t:'留下', sub:'abroad'}];
+    opts2.forEach(function(o, i){
+      const b = document.createElement('button');
+      b.className = 'opt';
+      b.innerHTML = '<span class="k">' + String.fromCharCode(65+i) + '</span>' +
+                    '<span class="t">' + (i===0 ? '回 国' : '留 下') + '</span>';
+      b.onclick = function(){
+        Array.prototype.forEach.call(box.querySelectorAll('.opt'), function(x){
+          x.classList.add(x === b ? 'chosen' : 'faded'); x.disabled = true;
+        });
+        S.sub = o.sub;
+        log('你选择了「' + (o.sub==='home' ? '回国' : '留下') + '」。', 'p');
+        S.memories.push({ tile:'留学去向', text: (o.sub==='home' ? '你毕业就回国了。' : '你留了下来。') });
+        setTimeout(function(){ ending(); }, 380);
+      };
+      box.appendChild(b);
+    });
+  }
   // 一件过完，回排程或进下一回合
   function afterCard(){
     if (PROGRESS.canAct()){ showSchedule(); return; }
+    // 学期末关卡：这学期行动点用完了，先过本学期的关（M1）
+    const R0 = ROUNDS[S.round];
+    if (R0.gate && !S.gateDone[S.round]){
+      S.gateDone[S.round] = true;
+      callGate(R0.gate);
+      return;
+    }
+    // 留学线末日：所有回合走完、弹「回不回国」，选完才出结局
+    if (S.line === 'liuxue' && !S.liuxue_done && S.round >= ROUNDS.length - 1){
+      S.liuxue_done = true;
+      showLiuxueChoice();
+      return;
+    }
     // 本回合行动点用完 → 进下一回合；全部走完才结局
     if (S.round >= ROUNDS.length - 1){ ending(); return; }
     PROGRESS.nextRound();
@@ -1752,7 +2360,11 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   // 开始一个回合
   function beginRound(){
     const R = PROGRESS.begin();
+    // 头发是资源：掉到 20% 以下，这学期只做得动一件事
+    if (S.hair < 20 || S.gateFail){ S.actionsLeft = 1; S.gateFail = false; S.exhausted = true; }
+    else { S.exhausted = false; }
     PLACES.forEach(function(pl){ pl._used = false; });
+    resetPlaces();       // 毕业后各条线的去处也要清（只清 PLACES 会让毕业后第二学期全处「去过」→ 死屏）
     renderTrack(); renderHUD();
     // 毕业那一回合：先分岔（选一条线），再排程
     if (R.fork && !S.line){
@@ -1774,13 +2386,118 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
           S.line = o.line;
           log('你选择了「' + o.t + '」。', 'p');
           S.memories.push({ tile:'毕业', text:'毕业那年你选了' + o.t + '。' });
-          setTimeout(function(){ renderSide(); showSchedule(); }, 420);
+          renderSide(); showSchedule();   // 直接同步渲染，停顿交给 CSS 过渡（避免后台标签页被节流）
         };
         box.appendChild(b);
       });
       return;
     }
     showSchedule();
+  }
+
+  // ============================================================
+  //  M1 关卡检定：每学期末一关。不是选择题，是「拿头发换过关」。
+  //  门槛随学期涨：大二8 / 大三12 / 大四16 / 大五20
+  //  过关 = 技能(按态度打折) + 做过作品×2 + 一点运气 ≥ 门槛
+  //  认真做 pass 概率高但掉 12 发；差不多 5 发；随便交不掉发但基本功不保险。
+  //  这正好让「头发是资源」——你用头发买过关。
+  // ============================================================
+  const GATE_T = { crit:8, detail:12, sketch2:16, thesis:20 };
+  function gatePass(mode){
+    const coef = (mode==='care' ? 1.5 : mode==='ok' ? 1.0 : 0.7);
+    const rnd = Math.floor(Math.random() * 5);
+    const req = (GATE_T[S.currentGate] || 12);
+    const score = (S.skill * coef) + (S.works.length * 2) + rnd;
+    S._gateLog = '技能 ' + S.skill + ' ×' + coef + ' + 作品 ' + S.works.length + ' ×2 + 运气 +' + rnd + ' = ' + score + ' / 门槛 ' + req;
+    return score >= req;
+  }
+  // 显示三个态度（认真/差不多/随便交），点完就判定、结算，然后下一回合
+  function showGateAttitude(resultText){
+    const c = CARDS[S.currentGate];
+    const gateName = c.name;
+    el('stage').innerHTML =
+      '<div class="ttl">' + gateName + ' · 学期末</div>' +
+      '<div class="txt">' + c.text.replace(/\n/g, '<br>') + '</div>' +
+      (resultText ? '<div class="warn">结果：' + resultText + '</div>' : '') +
+      '<div class="opts" id="opts"></div>';
+    showPrompt(gateName + ' · 学期末', [
+      {t:'认真做'}, {t:'差不多'}, {t:'随便交'}
+    ]);
+    const A = [
+      { t:'认真做——熬夜把它磨出来', mode:'care', label:'认真做' },
+      { t:'差不多就行', mode:'ok',     label:'差不多' },
+      { t:'随便交——不想再碰了', mode:'slack', label:'随便交' }
+    ];
+    const box = el('opts');
+    A.forEach(function(o, i){
+      const b = document.createElement('button');
+      b.className = 'opt';
+      b.innerHTML = '<span class="k">' + String.fromCharCode(65+i) + '</span>' +
+                    '<span class="t">' + o.t + '</span>';
+      b.onclick = function(){
+        Array.prototype.forEach.call(box.querySelectorAll('.opt'), function(x){
+          x.classList.add(x === b ? 'chosen' : 'faded'); x.disabled = true;
+        });
+        const pass = gatePass(o.mode);
+        log('　判定：' + (S._gateLog || '') + (pass ? ' · 过了' : ' · 不够'), 'gate');
+        const cost = (o.mode==='care' ? 12 : o.mode==='ok' ? 5 : 0) + (pass ? 0 : 6);
+        S.hair -= cost;
+        if (S.hair < 0) S.hair = 0;
+        let resLine;
+        if (pass){
+          S.memories.push({ tile: gateName, text: gateName + '过了。那学期你拿头发换的。' });
+          log('「' + gateName + '」过了。', 'p');
+          resLine = gateName + '过了。那学期你拿头发换的。';
+          // 毕设过 = 唯一确定的作品，从此进作品集
+          if (S.currentGate === 'thesis'){
+            S.works.push({ name: S.title || '毕业设计', from:'毕设', round:S.round });
+            S.work = S.works.length;
+            S.memories.push({ tile: gateName, text: '你的毕设《' + (S.title||'') + '》做完了。' });
+          }
+        } else {
+          S.gateFail = true;               // 下回合只做得动一件事
+          S.memories.push({ tile: gateName, text: gateName + '没过。那学期白搭了。' });
+          log('「' + gateName + '」没过。', 'w');
+          resLine = gateName + '没过。那学期白搭了。';
+        }
+        renderHUD();
+        // 关卡是全游戏情绪最高的一屏，以前选完只剩一行判定公式就跳走，
+        // 还留着全项目唯一那个 420ms 定时器（后台标签页会被节流）。现在补一屏结果页，点「继续」再走。
+        showResult(o.label, resLine, { hair: -cost });
+        el('nextBtn').onclick = finishGate;
+      };
+      box.appendChild(b);
+    });
+  }
+  // 毕设关：先抽题（复用黑话生成器），再让态度决定这关过不过
+  function callGate(id){
+    S.currentGate = id;
+    if (id === 'thesis'){
+      el('stage').innerHTML =
+        '<div class="ttl">毕 设 · 学期末</div>' +
+        '<div class="txt">毕设题目分配会。题目装在两个牛皮纸信封里，逐个念名字。</div>' +
+        '<div class="big"><div class="lbl">你 抽 到 了</div>' +
+        '<div class="num" id="tTitle" style="font-size:19px;line-height:1.6">…</div></div>' +
+        '<div id="tBtn"></div>';
+      const t = drawTitle();
+      S.title = t;
+      el('tTitle').textContent = '《' + t + '》';
+      const b = document.createElement('button');
+      b.className = 'act'; b.textContent = '接 受 这 个 题';
+      b.onclick = function(){
+        log('毕设你做《' + t + '》。', 'p');
+        showGateAttitude('');
+      };
+      el('tBtn').appendChild(b);
+      return;
+    }
+    showGateAttitude('');
+  }
+  // 关卡结束 → 进下一回合 / 结局
+  function finishGate(){
+    renderSide(); renderHUD();
+    if (S.round >= ROUNDS.length - 1){ ending(); return; }
+    PROGRESS.nextRound(); beginRound();
   }
 
   // ============================================================
@@ -1809,10 +2526,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     nextRound(){
       S.round++;
       if (S.round >= ROUNDS.length) return false;
-      S.bonus = 0;
       return true;
     },
-    atEnd(){ return S.round >= ROUNDS.length - 1 && !this.canAct(); },
     // 进度文本
     label(){ return (S.round + 1) + ' / ' + ROUNDS.length; }
   };
@@ -1820,20 +2535,6 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
 
   function next(){
     afterCard();
-  }
-
-  // ========== 掷骰子 ==========
-  // 骰子不决定"走几步"（人生阶段不能被跳过），只决定"这一段遇到哪件事"
-  function doRoll(){
-    if (S.over) return;              // 结局之后不再推进
-    const n = 1 + Math.floor(Math.random() * 6);
-    log('掷出 <span class="hl">' + n + '</span>。');
-
-    PROGRESS.step();              // 前进一格：人生一段一段走，不跳
-    S.useAlt = (n >= 4);          // 点数决定这一格触发哪件事
-
-    renderTrack(); renderHUD();
-    startTile();
   }
 
   // ========== 结局 ==========
@@ -1866,6 +2567,12 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
 
     const st = stateOf(S);
     const works = S.works || [];
+    // 现场：属于这条毕业线的一小段，落点句正下方
+    const line = S.line ? LINES[S.line] : null;
+    let sceneText = (line && line.scene) ? line.scene : '';
+    if (line && line.id === 'liuxue') sceneText = '';      // 留学现场由去向分岔决定
+    if (S.line === 'liuxue' && S.sub === 'home')   sceneText = line.scene_home;
+    if (S.line === 'liuxue' && S.sub === 'abroad') sceneText = line.scene_abroad;
 
     // ── 证据：一句话说清你留下了什么 ────────────────────────
     let claim = '';
@@ -1902,6 +2609,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       '<div class="ending">' +
         '<div class="lab">你 现 在</div>' +
         '<div class="big-t">' + end + '。</div>' +
+        (sceneText ? '<div class="scene-txt">' + sceneText.replace(/\n/g, '<br>') + '</div>' : '') +
         '<div class="scene" style="margin-top:4px">' + suScene(Math.max(1, works.length)) + '</div>' +
         '<div class="body">' +
           '<div class="claim">' + claim + '</div>' +
@@ -1914,7 +2622,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
           (one ? '<div class="one">' + one + '</div>' : '') +
         '</div>' +
         '<div class="verdict">' + verdict + '</div>' +
-        '<div><button class="act" id="again">再 来 一 局</button></div>' +
+        '<div class="endbar"><button class="act" id="again">再 来 一 局</button></div>' +
       '</div>';
 
     log('—— 一局结束 ——', 'p');
@@ -1956,7 +2664,25 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     }
   })();
   // 调试入口：?dev 时把生成器挂出来，方便批量看
-  if (location.search.indexOf('dev') >= 0){ window.workName = workName; }
+  if (location.search.indexOf('dev') >= 0){
+    window.workName = workName;
+    // 自动试玩（tools/playtest/harvest.js）要读到内部状态：只读快照，不改任何流程
+    window.__GAME = {
+      S: function(){ return S; },
+      cardIds: function(){ return Object.keys(CARDS); },
+      card: function(id){ return CARDS[id] || null; },
+      lines: function(){ return Object.keys(LINES); },
+      lineCards: function(k){ return LINES[k] ? LINES[k].cards : []; },
+      roundCount: function(){ return ROUNDS.length; },
+      placeIds: function(){ return (activePlaces() || []).map(function(p){ return p.id; }); },
+      places: function(){
+        return (activePlaces() || []).map(function(p){
+          return { id:p.id, name:p.name, eff:p.eff, note:p.note, used:!!p._used,
+                   count:p._count || 0, cards:p.cards || [], need:p.need || null };
+        });
+      }
+    };
+  }
 })();
 </script>
 

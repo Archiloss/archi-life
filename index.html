@@ -404,6 +404,39 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     background:var(--sunken);color:var(--ink);min-width:170px;justify-content:flex-start;}
   .status span.co2{margin-left:auto;border-right:0;border-left:1px solid var(--line);
     color:var(--ink);font-variant-numeric:tabular-nums;}
+
+  /* ---- v2 排程：一学期挑 2 个去处 ---- */
+  .places{display:flex;flex-direction:column;gap:8px;margin-top:2px;}
+  .place{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:10px;
+         width:100%;text-align:left;font-family:var(--mono);font-size:14px;
+         padding:14px 15px;background:var(--box-bg);color:var(--ink);
+         border:1px solid var(--edge);border-radius:2px;cursor:pointer;
+         transition:border-color .12s,background .12s;}
+  .place:hover{border-color:var(--cyan);background:var(--sunken);}
+  .place .k{width:18px;height:18px;display:grid;place-items:center;
+            border:1px solid var(--edge2);font-size:10.5px;color:var(--dim);}
+  .place .nm{color:var(--white);}
+  .place .nt{grid-column:2;font-size:11px;color:var(--dim);margin-top:2px;}
+  .place .cf{font-size:11px;color:var(--dim2);white-space:nowrap;text-align:right;}
+  .place.used{opacity:.32;cursor:default;border-style:dashed;}
+  .place.used:hover{border-color:var(--edge);}
+  .place.locked{opacity:.42;cursor:not-allowed;}
+  .place.locked .cf{color:var(--yellow);}
+
+  /* 作品集：列名字，不是列数字 */
+  .side .row .k.wk{color:var(--ink);font-size:10.5px;line-height:1.5;
+                   white-space:normal;overflow:visible;text-overflow:clip;}
+
+  /* ===== 结局：判词 ===== */
+  .ending .claim{font-size:13px;line-height:1.9;color:var(--ink);margin-bottom:10px;}
+  .ending .wlist{margin:0 0 12px 0;padding-left:2px;border-left:2px solid var(--line-c);}
+  .ending .wlist .wl{font-size:12px;line-height:1.9;color:var(--ink2);padding-left:9px;letter-spacing:.2px;}
+  .ending .hair{font-size:12px;line-height:1.9;color:var(--dim);margin-bottom:14px;}
+  .ending .one{font-size:12px;line-height:1.9;color:var(--dim);font-style:italic;
+               margin-bottom:0;padding-left:10px;border-left:2px solid var(--line);}
+  .ending .verdict{font-size:16px;line-height:1.75;color:var(--ink);font-weight:600;
+                   letter-spacing:.6px;margin:22px 0 20px;padding-top:16px;
+                   border-top:1px solid var(--line-c);}
 </style>
 </head>
 <body>
@@ -665,7 +698,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         {t:'把模型的钱转给他', eff:{work:-1}, r:'他没收，退回来了。备注写着"不用"。'}
       ]},
 
-    model: { name:'大二 · 模型', form:'choice',
+    model: { name:'模 型', grade:[0,1,2], form:'choice',
       text:'第一次做手工模型。你切了三天卡纸。\n答辩前十分钟，它在楼梯上散架了。',
       alt:{ text:'模型做完了，你端着一路走得很稳。\n评图那天老师说："模型做得不错，方案再想想。"',
         opts:[
@@ -680,7 +713,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
          hook:{ at:'detail', card:'owe' }}
       ]},
 
-    plan: { name:'大三 · 平面', form:'choice',
+    plan: { name:'平 面', grade:[1,2,3], form:'choice',
       text:'课程设计。一块 8 米 × 6 米的空地，北边是走廊，南边朝南。\n老师说："先排个平面。"',
       opts:[
         {t:'门开北边，进门加一道隔断', eff:{work:1,skill:1},
@@ -691,7 +724,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
          r:'"通间。"他说："也行——但动线得你自己管住。"'}
       ]},
 
-    structure: { name:'大三 · 结构选型', form:'choice',
+    structure: { name:'结 构 选 型', grade:[1,2,3], form:'choice',
       text:'结构课要求给方案选一个结构体系。\n你选了钢结构。老师说："为什么？"',
       opts:[
         {t:'说因为跨度大', eff:{skill:1}, r:'"跨度多大？"你报了个数。"那混凝土也行。"'},
@@ -699,7 +732,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         {t:'改回混凝土', eff:{skill:-1}, r:'改完发现钢筋混凝土那节课你在睡觉。\n你照着同学的抄了一遍，抄错了一个系数，没人发现。'}
       ]},
 
-    intern: { name:'大五 · 实习', form:'choice', scene:'site',
+    intern: { name:'实 习', grade:[3,4], form:'choice', scene:'site',
       text:'在设计院实习两个月。\n带你的老师第一周给了你一套图纸，让你描。',
       opts:[
         {t:'认真描完', eff:{skill:1}, r:'描完了。第二周他给了你另一套。'},
@@ -709,7 +742,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
          need:{skill:6}, eff:{work:1,hair:-3}, r:'他看了两分钟，说："你留下吧。"这是你第一次被人这么问。'}
       ]},
 
-    rework: { name:'大五 · 改 图', form:'choice',
+    rework: { name:'改 图', grade:[3,4], form:'choice',
       text:'毕设中期检查。老师说："你这个，再完善完善。"\n距离期末还有两周。',
       opts:[
         {t:'大改一遍', eff:{work:1,hair:-5}, r:'你改了两周。最后那版你自己也说不清好在哪。'},
@@ -719,7 +752,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
          need:{work:2}, eff:{work:1,skill:1}, r:'你翻出了大二那个。改完之后，它比原来那个好。'}
       ]},
 
-    sketch: { name:'大一 · 素描', form:'choice',
+    sketch: { name:'素 描', grade:[0,1], form:'choice',
       text:'第一次上素描课，画石膏球。\n老师从你背后走过，停了两秒，没说话。',
       alt:{ text:'第一次上素描课，画石膏球。\n老师在你旁边站了一会儿，说："型不准。"',
         opts:[
@@ -755,7 +788,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         return { t:'那个位置', eff:{}, r:'你坐下了。' };
       }},
 
-    ink: { name:'大二 · 墨线图', form:'choice',
+    ink: { name:'墨 线 图', grade:[0,1,2], form:'choice',
       text:'第一次用鸭嘴笔。你画废了六张。\n第七张画到一半，墨滴下来了。',
       alt:{ text:'你买了支新笔。\n第一次用就堵了，笔尖在图纸上划开一道。',
         opts:[
@@ -769,7 +802,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         {t:'就这样交', eff:{work:-1}, r:'交了。老师没提那个墨点。\n后来那张图挂在走廊上，那个墨点在右下角，谁都没看见——除了你自己，每次路过都看见。'}
       ]},
 
-    detail: { name:'大三 · 构造课', form:'choice',
+    detail: { name:'构 造 课', grade:[1,2,3], form:'choice',
       text:'画楼梯大样。老师说："回去看看规范。"\n你看完了，还是不确定。',
       opts:[
         {t:'再改一版交上去', eff:{skill:1,hair:-3}, r:'改完老师说："对，就这样。"'},
@@ -777,11 +810,11 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         {t:'先交了再说', eff:{}, r:'交上去，没退回来。你以为过了。\n期末才知道这门课按图纸打分，你那张图纸的线宽全不对。'}
       ]},
 
-    physics: { name:'大三 · 建筑物理', form:'none',
+    physics: { name:'建 筑 物 理', grade:[1,2,3], form:'none',
       text:'开卷考。你带了三本书进场。\n三本都没用上。',
       opts:[{t:'继 续', eff:{}, r:'你交了卷，提前四十分钟。考场外面没有人。\n你在台阶上坐到铃响。'}]},
 
-    sketch2: { name:'大四 · 一草', form:'choice',
+    sketch2: { name:'一 草', grade:[2,3,4], form:'choice',
       text:'老师把你带到一块空地边上。\n"先搭个体量看看。"',
       opts:[
         {t:'用桌上的马克笔和橡皮摆一个', eff:{work:1,hair:-3}, r:'你摆了一桌子。老师看了两眼，说："再想想。"'},
@@ -799,7 +832,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
          need:{skill:4}, eff:{work:1}, r:'他愣了一下，说"对，就是这个"。你第一次在评图上没被绕进去。'}
       ]},
 
-    thesis: { name:'大五 · 毕 设', form:'draw', scene:'thesis',
+    thesis: { name:'毕 设', grade:[3,4], form:'draw', scene:'thesis',
       text:'毕设题目分配会。\n题目装在两个牛皮纸信封里，逐个念名字。',
       opts:[] },
 
@@ -930,7 +963,9 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   // ========== 状态 ==========
   let S;
   function reset(){
-    S = { work:0, skill:0, hair:100, score:rollMyScore(), path:COMMON.slice(), pos:0,
+    PLACES.forEach(function(pl){ pl._used = false; pl._count = 0; });
+    S = { work:0, skill:0, hair:100, score:rollMyScore(),
+          round:0, actionsLeft:0, picked:[], works:[],
           line:null, title:'', school:'', flags:{}, memories:[], visited:{},
           useAlt:false, choices:[], hooks:{}, over:false };
     applySkin('');                 // 新一局回到默认界面
@@ -1024,7 +1059,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         apply({ skill:2, hair:-8 });
         log('你去了' + esc(name) + '。建筑学，五年制。');
         S.memories.push({ tile:'入学', text:'开学第一周，你发现自己不是班里画得最好的那个。' });
-        renderTrack(); renderHUD(); showRoll();
+        S.school = name;
+        beginRound();                      // ← 进第一回合
       };
       return;
     }
@@ -1069,7 +1105,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       '<div class="txt">' + (again ? '复读也没用。' : '') +
         '你去了那所学校。\n建筑学，五年制。\n\n开学第一周，你发现全班 41 个人里，只有三个是第一志愿。</div>' +
       '<div class="big"><button class="act" id="go">开 学</button></div>';
-    el('go').onclick = function(){ renderTrack(); renderHUD(); showRoll(); };
+    el('go').onclick = function(){ beginRound(); };
   }
 
   // ========== 结局 1 · 新生 ==========
@@ -1289,7 +1325,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     el('hWork').textContent  = S.work;
     el('hSkill').textContent = S.skill;
     el('hHair').textContent  = S.hair + '%';
-    el('hStep').textContent  = S.school ? ((S.pos+1) + ' / ' + (COMMON.length + 3)) : '—';
+    el('hStep').textContent  = S.school ? PROGRESS.label() : '—';
     el('hLine').textContent  = !S.school ? '高中生'
                              : (S.line ? LINES[S.line].now : '建筑学在读');
     renderSide();
@@ -1315,14 +1351,13 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       return '<div class="row"><span class="k">' + k + '</span><span class="n">' + v + '</span></div>';
     };
 
-    // 图幅：一局的进度。走过的格子才有名字（鼠标停上去能看到）
+    // 图幅：v2 是 8 个回合。走过的变灰，当前高亮，最后一格是结局
     let figs = '';
-    S.path.forEach(function(id, i){
-      const c = CARDS[id];
-      const cls = (i < S.pos ? 'done' : '') + (i === S.pos ? ' here' : '')
-                + (c.form === 'fork' ? ' fork' : '') + (i === S.path.length - 1 ? ' end' : '');
-      figs += '<div class="cell ' + cls + '" title="' +
-              (S.visited[i] ? esc(c.name) : '未走到') + '">' + (i + 1) + '</div>';
+    ROUNDS.forEach(function(R, i){
+      const cls = (i < S.round ? 'done' : '') + (i === S.round ? ' here' : '')
+                + (R.final ? ' end' : '') + (R.gate ? ' fork' : '');
+      figs += '<div class="cell ' + cls + '" title="' + R.name +
+              (R.gate ? ' · 有关卡' : '') + '">' + (i + 1) + '</div>';
     });
 
     side.innerHTML =
@@ -1331,6 +1366,13 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         row('作品', '<b id="sWork">' + S.work + '</b>') +
         row('技能', '<b id="sSkill">' + S.skill + '</b>') +
         row('头发', '<b id="sHair">' + S.hair + '%</b>') +
+      '</div>' +
+      '<h3>作品集</h3><div class="grp">' +
+        (S.works && S.works.length
+          ? S.works.map(function(w){
+              return '<div class="row"><span class="k wk">' + esc(w.name) + '</span></div>';
+            }).join('')
+          : '<div class="row"><span class="k" style="color:var(--dim2)">还没有</span></div>') +
       '</div>' +
       '<h3>图幅</h3><div class="grid">' + figs + '</div>' +
       '<h3>图签</h3><div class="grp">' +
@@ -1370,76 +1412,14 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   }
 
   // ========== 主流程 ==========
-  function startTile(){
-    let id = S.path[S.pos];
-    // 早先的选择可能把这一站换成了别的事
-    if (S.hooks[id]) id = S.hooks[id];
-    const c = CARDS[id];
-    renderTrack(); renderHUD();
-    clearPrompt();
+    // ============================================================
+  //  渲染分派表
+  //  以前：一个 if 链全堆在 startTile 里（加一种交互要动多处、OR 条件越堆越长）。
+  //  现在：每种 form 一个函数，新交互只往 RENDERERS 里加一项。
+  // ============================================================
 
-    const dbox = el('deco');
-    if (dbox) dbox.innerHTML = decoOf();   // 皮肤装饰（独立层，不会被内容覆盖）
-    const stage = el('stage');
-    stage.innerHTML = '';
-
-    if (c.form === 'draw'){
-      stage.innerHTML =
-        '<div class="ttl">大 五 · 毕 设</div>' +
-        (c.scene && SCENES[c.scene] ? '<div class="scene">' + SCENES[c.scene] + '</div>' : '') +
-        '<div class="txt">' + c.text.replace(/\n/g,'<br>') + '</div>' +
-        '<div class="big"><div class="lbl">你 抽 到 了</div><div class="num" id="rolledTitle" style="font-size:19px;line-height:1.6">…</div></div>' +
-        '<div id="drawBtns"></div>';
-      const t = drawTitle();
-      S.title = t;
-      el('rolledTitle').textContent = '《' + t + '》';
-      const btns = el('drawBtns');
-      const b = document.createElement('button');
-      b.className = 'act'; b.textContent = '接 受';
-      b.onclick = function(){
-        log('你接受了《<span class="hl">' + t + '</span>》。');
-        next();
-      };
-      btns.appendChild(b);
-      return;
-    }
-
-    // ---- 座位平面图：在图上挑位置 ----
-    if (c.form === 'seat'){
-      let grid = '';
-      for (let r = 0; r < c.rows; r++){
-        for (let col = 0; col < c.cols; col++){
-          if ((c.void || []).indexOf(r + ',' + col) >= 0){
-            grid += '<span class="seat void"></span>';
-          } else {
-            grid += '<button class="seat" data-r="' + r + '" data-c="' + col + '"></button>';
-          }
-        }
-      }
-      el('stage').innerHTML =
-        '<div class="ttl">' + c.name + '</div>' +
-        '<div class="txt">' + c.text.replace(/\n/g,'<br>') + '</div>' +
-        '<div class="seatwrap">' +
-          '<div class="board">讲 台</div>' +
-          '<div class="seatmap" style="grid-template-columns:repeat(' + c.cols + ',1fr)">' + grid + '</div>' +
-        '</div>';
-      Array.prototype.forEach.call(el('stage').querySelectorAll('.seat[data-r]'), function(b){
-        b.onclick = function(){
-          const res = c.pick(+b.dataset.r, +b.dataset.c);
-          log('· 你坐了' + res.t);
-          if (res.r){ log('　' + res.r); S.memories.push({ tile: c.name, text: res.r }); }
-          apply(res.eff || {});
-          S.choices.push(res.eff || {});
-          showResult('你坐了' + res.t, res.r, res.eff || {});
-        };
-      });
-      return;
-    }
-
-    const titleEl = '<div class="ttl">' + c.name + '</div>';
-    // 同一格备两件事，骰子点数决定遇到哪件
-    const v = (S.useAlt && c.alt) ? c.alt : c;
-    const sceneHTML = SCENES[v.scene || c.scene] ? '<div class="scene">' + SCENES[v.scene || c.scene] + '</div>' : '';
+  // 每站共用的底子：标题 + 场景线稿 + 正文（含占位符替换）
+  function baseHTML(c, v){
     let body = v.text;
     if (body.indexOf('@@THESIS@@') >= 0){
       const t = S.title || '';
@@ -1449,40 +1429,104 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     } else if (body.indexOf('@@THESIS_INTERVIEW@@') >= 0){
       body = '面试官翻到你简历最后一行：\n"《' + S.title + '》——这个讲讲？"';
     }
-
-    let html = titleEl + sceneHTML + '<div class="txt">' + body.replace(/\n/g,'<br>') + '</div>';
-
-    if (c.form === 'choice' || c.form === 'guess' || c.form === 'fork' || c.form === 'none'){
-      html += '<div class="opts" id="opts"></div>';
-      stage.innerHTML = html;
-      showPrompt(c.name, v.opts);
-      const box = el('opts');
-      (v.opts || []).forEach(function(o, i){
-        const locked = o.need ? !meetNeed(o.need) : false;
-        const b = document.createElement('button');
-        b.className = 'opt' + (locked ? ' locked' : (o.need ? ' unlocked' : ''));
-        const cf = locked ? ('需要 ' + needText(o.need))
-                          : (o.eff ? delta(o.eff) : '');
-        b.innerHTML = '<span class="k">' + String.fromCharCode(65+i) + '</span>' +
-                      '<span class="t">' + o.t + '</span>' +
-                      (cf ? '<span class="cf">' + cf + '</span>' : '');
-        if (locked){ box.appendChild(b); return; }   // 看得见，点不了
-        b.onclick = function(){
-          if (c.form === 'fork'){ chooseLine(o.line, o.t); return; }
-          // 选择的那一刻：选中的留下，其余退场
-          Array.prototype.forEach.call(box.querySelectorAll('.opt'), function(x){
-            x.classList.add(x === b ? 'chosen' : 'faded');
-            x.disabled = true;
-          });
-          // 数据立刻结算（不再用 setTimeout 当通道——后台标签页会把它节流掉）。
-          // "停一下再出结果"的体感交给结果页的 CSS 动画延迟。
-          commitChoice(c, o);
-        };
-        box.appendChild(b);
-      });
-      return;
-    }
+    const sn = v.scene || c.scene;
+    return '<div class="ttl">' + c.name + '</div>' +
+           (SCENES[sn] ? '<div class="scene">' + SCENES[sn] + '</div>' : '') +
+           '<div class="txt">' + body.replace(/\n/g,'<br>') + '</div>';
   }
+
+  // ---- 抽题（毕设）----
+  function renderDraw(c, v){
+    el('stage').innerHTML = baseHTML(c, v) +
+      '<div class="big"><div class="lbl">你 抽 到 了</div>' +
+      '<div class="num" id="rolledTitle" style="font-size:19px;line-height:1.6">…</div></div>' +
+      '<div id="drawBtns"></div>';
+    const t = drawTitle();
+    S.title = t;
+    el('rolledTitle').textContent = '《' + t + '》';
+    const b = document.createElement('button');
+    b.className = 'act'; b.textContent = '接 受';
+    b.onclick = function(){
+      log('你接受了《<span class="hl">' + t + '</span>》。');
+      next();
+    };
+    el('drawBtns').appendChild(b);
+  }
+
+  // ---- 座位平面图：在图上挑位置 ----
+  function renderSeat(c, v){
+    let grid = '';
+    for (let r = 0; r < c.rows; r++){
+      for (let col = 0; col < c.cols; col++){
+        grid += ((c.void || []).indexOf(r + ',' + col) >= 0)
+          ? '<span class="seat void"></span>'
+          : '<button class="seat" data-r="' + r + '" data-c="' + col + '"></button>';
+      }
+    }
+    el('stage').innerHTML = baseHTML(c, v) +
+      '<div class="seatwrap">' +
+        '<div class="board">讲 台</div>' +
+        '<div class="seatmap" style="grid-template-columns:repeat(' + c.cols + ',1fr)">' + grid + '</div>' +
+      '</div>';
+    Array.prototype.forEach.call(el('stage').querySelectorAll('.seat[data-r]'), function(b){
+      b.onclick = function(){
+        const res = c.pick(+b.dataset.r, +b.dataset.c);
+        log('· 你坐了' + res.t);
+        if (res.r){ log('　' + res.r); S.memories.push({ tile: c.name, text: res.r }); }
+        apply(res.eff || {});
+        S.choices.push(res.eff || {});
+        showResult('你坐了' + res.t, res.r, res.eff || {});
+      };
+    });
+  }
+
+  // ---- 选项（choice / guess / fork / none 共用一套）----
+  function renderChoices(c, v){
+    el('stage').innerHTML = baseHTML(c, v) + '<div class="opts" id="opts"></div>';
+    showPrompt(c.name, v.opts);
+    const box = el('opts');
+    (v.opts || []).forEach(function(o, i){
+      const locked = o.need ? !meetNeed(o.need) : false;
+      const b = document.createElement('button');
+      b.className = 'opt' + (locked ? ' locked' : (o.need ? ' unlocked' : ''));
+      const cf = locked ? ('需要 ' + needText(o.need)) : (o.eff ? delta(o.eff) : '');
+      b.innerHTML = '<span class="k">' + String.fromCharCode(65+i) + '</span>' +
+                    '<span class="t">' + o.t + '</span>' +
+                    (cf ? '<span class="cf">' + cf + '</span>' : '');
+      if (locked){ box.appendChild(b); return; }     // 看得见，点不了
+      b.onclick = function(){
+        if (c.form === 'fork'){ chooseLine(o.line, o.t); return; }
+        Array.prototype.forEach.call(box.querySelectorAll('.opt'), function(x){
+          x.classList.add(x === b ? 'chosen' : 'faded');
+          x.disabled = true;
+        });
+        // 数据立刻结算（不用 setTimeout——后台标签页会节流）。
+        // "停一下再出结果"的体感交给结果页的 CSS 动画延迟。
+        commitChoice(c, o);
+      };
+      box.appendChild(b);
+    });
+  }
+
+  const RENDERERS = {
+    draw: renderDraw, seat: renderSeat,
+    choice: renderChoices, guess: renderChoices, fork: renderChoices, none: renderChoices
+  };
+
+  // ========== 主流程 ==========
+  function startTile(cardId){
+    const id = cardId || S.pendingCard;
+    const c = CARDS[id];
+    if (!c) { afterCard(); return; }
+    renderTrack(); renderHUD();
+    clearPrompt();
+    const dbox = el('deco');
+    if (dbox) dbox.innerHTML = decoOf();
+    el('stage').innerHTML = '';
+    const v = (S.useAlt && c.alt) ? c.alt : c;
+    (RENDERERS[c.form] || renderChoices)(c, v);
+  }
+
 
   // 真正执行一个选择（在"决定"的停顿之后）
   function commitChoice(c, o){
@@ -1530,39 +1574,262 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   }
 
   function chooseLine(line, label){
-    S.line = line;
     log('你选择了「' + label + '」。', 'p');
-    S.path = S.path.concat(LINES[line].cards);
+    PROGRESS.fork(line);
     renderTrack(); renderHUD();
     next();
   }
 
+
+
+  // ============================================================
+  //  作品名：按真实竞赛获奖作品的路子写
+  //  参考霍普杯 2025 实际获奖名——《老摊日记》《长亭外，铁道边》
+  //  《呼吸的祭仪：光与烟雾的当代净化仪式》《边角新生，暮年新趣》
+  //  《楼道里也会吹来想你的风》《涌现——后疫情时代大学生宿舍重塑》
+  //  套路只有五种：概念＋长说明 / 冒号叠大词 / 化用旧句 / 四字对仗 / 大白话
+  //  真正普通的是"XX社区活动中心"——那是招标公告，不是学生作品。
+  // ============================================================
+  const WN = {
+    abstract: ['涌现','折叠','缝合','呼吸','生长','退让','漫游','失重','回声','留白','间隙',
+               '重叠','转译','重构','切片','编织','渗透','漂浮','凝固','悬置','溶解','折叠'],
+    site:     ['老城区','城中村','工业遗址','菜市场','旧厂房','筒子楼','老社区','半地下室',
+               '屋顶','围墙','楼道','巷弄','街角','渡口','防空洞','天桥下','大院','老澡堂'],
+    verb:     ['重塑','再生','更新','改造','激活','共生','再定义','重写','消解','延展','归位'],
+    era:      ['后疫情时代','存量时代','屏幕时代','收缩城市','老龄社会','气候危机','县城','算法时代'],
+    nounA:    ['祭仪','考古','地层','标本','纪念碑','遗言','招魂','解剖','测绘','田野'],
+    nounB:    ['净化仪式','日常','地层','褶皱','残片','回声','切面','剖面','纪念物','织物'],
+    oldLine:  ['长亭外','铁道边','春江花月','斜阳草树','寻常巷陌','山高水长','落花时节',
+               '黄昏疏雨','斜风细雨','半亩方塘','苔痕上阶','众里寻他'],
+    oldLine2: ['铁道边','旧巷口','老渡头','雨巷','梧桐道','晒台','檐下','天井','灶间','学堂'],
+    flatA:    ['楼道里也会吹来','屋顶上晾着','巷子里还留着','窗台外挂着','操场边坐着','楼梯间藏着'],
+    flatB:    ['想你的风','去年的雨','过期的信','我妈的竹竿','没人收的衣服','谁的旧课本','半截粉笔'],
+    flatSolo: ['楼下那张桌子','一楼的灶间','这条街的下午','一块钱的场地','他们家的窗户','巷口那棵树'],
+    b1:       ['边角','暮年','旧墙','老树','窄巷','矮屋','窗下','檐前'],
+    b2:       ['新生','余温','回声','微光','晚照','余响','夕照','碎影']
+  };
+  function pick(a){ return a[Math.floor(Math.random() * a.length)]; }
+  function workName(){
+    // 权重照真实获奖名单来：概念+破折号最多，大白话最少（少才惊艳）
+    const r = Math.random();
+    const k = r < 0.35 ? 0 : r < 0.60 ? 1 : r < 0.80 ? 3 : r < 0.92 ? 2 : 4;
+    if (k === 0) return pick(WN.abstract) + '——' + pick(WN.era) + pick(WN.site) + pick(WN.verb);
+    if (k === 1){
+      // "地层的地层"这种前后撞词要拦掉
+      const a = pick(WN.nounA);
+      let b = pick(WN.nounB), g = 0;
+      while (a === b && g++ < 20) b = pick(WN.nounB);
+      return pick(WN.abstract) + '的' + a + '：' + b + '的当代' + pick(WN.verb);
+    }
+    if (k === 2) return pick(WN.oldLine) + '，' + pick(WN.oldLine2);
+    if (k === 3){
+      // 对仗不能撞字（"老树新趣，旧墙新生"两个"新"就露馅了）
+      const a1 = pick(WN.b1), a2 = pick(WN.b2);
+      let b1 = pick(WN.b1), b2 = pick(WN.b2), guard = 0;
+      while ((b1 === a1 || b2 === a2 || /[新老余]/.test(b2) && /[新老余]/.test(a2)) && guard++ < 30){
+        b1 = pick(WN.b1); b2 = pick(WN.b2);
+      }
+      return a1 + a2 + '，' + b1 + b2;
+    }
+    return Math.random() < 0.5 ? (pick(WN.flatA) + pick(WN.flatB)) : pick(WN.flatSolo);
+  }
+
+  // ============================================================
+  //  v2 · 去处（排程的单位）
+  //  每回合从这些里挑 2 个。选了什么，决定你这学期会遇到什么事。
+  //  数值按 P0 配平：一局 8 回合 × 2 = 16 次行动。
+  // ============================================================
+  const PLACES = [
+    { id:'studio', name:'专教画图', eff:{skill:2, hair:-4},
+      cards:['ink','model','allnight','structure'], note:'主力涨技能' },
+    { id:'library', name:'泡图书馆', eff:{skill:2, hair:1},
+      cards:['physics','detail','plan'], note:'慢，但养头发' },
+    { id:'teacher', name:'帮老师干活', eff:{skill:2, hair:-5},
+      cards:['rework'], note:'画完了，署名没有你' },
+    { id:'contest', name:'做竞赛', eff:{hair:-6}, work:'contest',
+      chance:0.55, max:2, cards:['sketch2'], note:'东西是你的，但可能白做' },
+    { id:'rest', name:'睡觉', eff:{hair:4},
+      cards:[], note:'唯一的大额恢复' }
+  ];
+
+  // 回合表：8 回合 = 大学 5 年 + 毕业后 3 年
+  const ROUNDS = [
+    { name:'大一', school:true },
+    { name:'大二', school:true, gate:'crit' },
+    { name:'大三', school:true, gate:'detail' },
+    { name:'大四', school:true, gate:'sketch2' },
+    { name:'大五', school:true, gate:'thesis' },
+    { name:'毕业第一年', fork:true },
+    { name:'第二年' },
+    { name:'第三年' }
+  ];
+
+
+  // ============================================================
+  //  排程：v2 的核心界面。一学期给你 2 个行动点，挑 2 个去处。
+  //  答题不再是推进器——它是你花时间的方式，主线是时间。
+  // ============================================================
+  function showSchedule(){
+    renderTrack(); renderHUD(); clearPrompt();
+    const R = ROUNDS[S.round];
+    const dbox = el('deco');
+    if (dbox) dbox.innerHTML = decoOf();
+
+    let rows = '';
+    PLACES.forEach(function(pl, i){
+      const usedUp = pl.max && pl._count >= pl.max;      // 用过太多次了
+      const taken = pl._used;
+      const locked = (pl.need && !meetNeed(pl.need)) || usedUp;
+      const cls = 'place' + (taken ? ' used' : '') + (locked ? ' locked' : '');
+      const cf = usedUp ? '这学期不做了'
+                        : (locked ? ('需要 ' + needText(pl.need))
+                                  : (Object.keys(pl.eff).length ? delta(pl.eff) : ''));
+      rows += '<button class="' + cls + '" data-i="' + i + '">' +
+                '<span class="k">' + String.fromCharCode(65+i) + '</span>' +
+                '<span class="nm">' + pl.name + '</span>' +
+                '<span class="nt">' + (pl.note || '') + '</span>' +
+                '<span class="cf">' + cf + '</span>' +
+              '</button>';
+    });
+
+    el('stage').innerHTML =
+      '<div class="ttl">' + R.name + ' · 这学期的时间花在哪</div>' +
+      '<div class="txt">还剩 <b class="hot">' + S.actionsLeft + '</b> 个行动点。' +
+        (S.picked.length ? '\n已经选了 ' + S.picked.length + ' 个。' : '') + '</div>' +
+      '<div class="places">' + rows + '</div>';
+
+    Array.prototype.forEach.call(el('stage').querySelectorAll('.place'), function(b){
+      if (b.classList.contains('locked') || b.classList.contains('used')) return;
+      b.onclick = function(){ pickPlace(+b.dataset.i); };
+    });
+  }
+
+  // 选一个去处：扣行动点、结算产出、抽一件具体的事
+  function pickPlace(i){
+    const pl = PLACES[i];
+    pl._used = true;
+    pl._count = (pl._count || 0) + 1;
+    PROGRESS.spend();
+    log('· ' + pl.name);
+    apply(pl.eff);
+    if (pl.work){
+      // 作品不是"点一下就+1"——竞赛可能白做
+      if (pl.chance && Math.random() > pl.chance){
+        log('　结果出来了：没进。方案是你的，但没人看见。');
+        S.memories.push({ tile: pl.name, text: '你做完的那个方案没进。' });
+      } else {
+        const nm = workName();
+        S.works.push({ name: nm, from: pl.name, round: S.round });
+        S.work++;
+        log('　你做完了《<span class="hl">' + nm + '</span>》。');
+        S.memories.push({ tile: pl.name, text: '你做完了《' + nm + '》。' });
+      }
+    }
+    if (pl.cards && pl.cards.length){
+      // 卡片标了能出现的学期（grade）——别让大一遇上构造课
+      let pool = pl.cards.filter(function(x){
+        return CARDS[x] && (!CARDS[x].grade || CARDS[x].grade.indexOf(S.round) >= 0);
+      });
+      if (!pool.length){ pool = pl.cards.filter(function(x){ return CARDS[x]; }); }   // 兜底
+      const id = pool[Math.floor(Math.random() * pool.length)];
+      S.pendingCard = id;
+      startTile(id);
+    } else {
+      // 这个去处没有具体的事（比如睡觉），直接回排程
+      afterCard();
+    }
+  }
+
+  // 一件过完，回排程或进下一回合
+  function afterCard(){
+    if (PROGRESS.canAct()){ showSchedule(); return; }
+    // 本回合行动点用完 → 进下一回合；全部走完才结局
+    if (S.round >= ROUNDS.length - 1){ ending(); return; }
+    PROGRESS.nextRound();
+    beginRound();
+  }
+
+  // 开始一个回合
+  function beginRound(){
+    const R = PROGRESS.begin();
+    PLACES.forEach(function(pl){ pl._used = false; });
+    renderTrack(); renderHUD();
+    // 毕业那一回合：先分岔（选一条线），再排程
+    if (R.fork && !S.line){
+      el('stage').innerHTML =
+        '<div class="ttl">毕 业</div>' +
+        '<div class="txt">毕业。\n你投了 47 份简历，收到 3 个回复。\n其中两个是同一个岗位。</div>' +
+        '<div class="opts" id="opts"></div>';
+      showPrompt('毕 业', CARDS.fork.opts);
+      const box = el('opts');
+      CARDS.fork.opts.forEach(function(o, i){
+        const b = document.createElement('button');
+        b.className = 'opt';
+        b.innerHTML = '<span class="k">' + String.fromCharCode(65+i) + '</span>' +
+                      '<span class="t">' + o.t + '</span>';
+        b.onclick = function(){
+          Array.prototype.forEach.call(box.querySelectorAll('.opt'), function(x){
+            x.classList.add(x === b ? 'chosen' : 'faded'); x.disabled = true;
+          });
+          S.line = o.line;
+          log('你选择了「' + o.t + '」。', 'p');
+          S.memories.push({ tile:'毕业', text:'毕业那年你选了' + o.t + '。' });
+          setTimeout(function(){ renderSide(); showSchedule(); }, 420);
+        };
+        box.appendChild(b);
+      });
+      return;
+    }
+    showSchedule();
+  }
+
+  // ============================================================
+  //  进度中枢：唯一能改"走到哪了"的地方
+  //  v2 模型 = 回合制：一局 8 回合，每回合把 2 个行动点花在"去处"上。
+  //  所有调用方只管调这里的函数，不碰内部字段。
+  // ============================================================
+  const PROGRESS = {
+    // 开始一个回合
+    begin(){
+      const R = ROUNDS[S.round];
+      S.actionsLeft = 2;
+      S.picked = [];
+      S.useAlt = false;
+      return R;
+    },
+    // 花掉一个行动点（选了一个去处）
+    spend(){
+      if (S.actionsLeft > 0) S.actionsLeft--;
+      S.picked.push(1);
+      return S.actionsLeft;
+    },
+    // 本回合还选不选得了
+    canAct(){ return S.actionsLeft > 0; },
+    // 进下一回合；返回 false 表示全部走完
+    nextRound(){
+      S.round++;
+      if (S.round >= ROUNDS.length) return false;
+      S.bonus = 0;
+      return true;
+    },
+    atEnd(){ return S.round >= ROUNDS.length - 1 && !this.canAct(); },
+    // 进度文本
+    label(){ return (S.round + 1) + ' / ' + ROUNDS.length; }
+  };
+
+
   function next(){
-    if (S.pos >= S.path.length - 1){ ending(); return; }
-    showRoll();
+    afterCard();
   }
 
   // ========== 掷骰子 ==========
   // 骰子不决定"走几步"（人生阶段不能被跳过），只决定"这一段遇到哪件事"
-  function showRoll(){
-    renderTrack(); renderHUD();
-    const here = S.pos === 0 ? '起点 · 入学' : CARDS[S.path[S.pos]].name;
-    el('stage').innerHTML =
-      '<div class="big">' +
-        '<div class="lbl">当前位置 · ' + here + '</div>' +
-        '<button class="act" id="rollBtn">掷 骰 子</button>' +
-      '</div>';
-    el('rollBtn').onclick = doRoll;
-  }
-
   function doRoll(){
     if (S.over) return;              // 结局之后不再推进
     const n = 1 + Math.floor(Math.random() * 6);
     log('掷出 <span class="hl">' + n + '</span>。');
 
-    // 前进一格：人生一段一段走，不跳
-    if (S.pos < S.path.length - 1) S.pos++;
-    S.visited[S.pos] = true;
+    PROGRESS.step();              // 前进一格：人生一段一段走，不跳
     S.useAlt = (n >= 4);          // 点数决定这一格触发哪件事
 
     renderTrack(); renderHUD();
@@ -1575,11 +1842,11 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   // 现在 = ① 落点句（走的线决定）+ ② 状态句（数值落点决定）。
   // 五种状态不是"好坏"，是"什么样的人"——守「不排名不比人」。
   const STATE = {
-    spent:  '你干得挺好。就是镜子里的那个人有点陌生。',
-    steady: '你按时下班，活也没耽误。',
-    bear:   '活儿最后都到你手上。你也确实扛得住。',
-    stuck:  '说不上一件事做成了，也没出什么错。',
-    mid:    '你在这行里，不快也不慢。'
+    spent:  '你把自己用完了。活都干得不错。',
+    steady: '你按时下班。在这个行业里，这是本事。',
+    bear:   '活儿最后都到你手上。你从没说过不行。',
+    stuck:  '没做成什么，也没做错什么。',
+    mid:    '你还在画。'
   };
   // 判定线按实测定的：一局技能 11~16、作品 3~5、头发 42~56
   function stateOf(s){
@@ -1597,48 +1864,56 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     const stage = el('stage');
     renderTrack();
 
-    const lines = [];
     const st = stateOf(S);
-    if (S.school === '调剂') lines.push('你的大学是一所你当时随便填的学校。');
-    else if (S.school && S.school !== '__wait__') lines.push('你从' + esc(S.school) + '毕业。');
-    lines.push(STATE[st]);                       // ← 状态句：由数值算出来的
-    lines.push('头发还剩 ' + S.hair + '%。');
-    lines.push('作品 ' + S.work + ' 个，技能 ' + S.skill + '。');
+    const works = S.works || [];
 
-    if (S.flags.space) lines.push('评图那次你以为他在说空间，后来发现他说的是形式。');
-    if (S.flags.form)  lines.push('评图那次你把两片墙拆了，老师什么都没说。');
-    if (S.flags.idle)  lines.push('评图那次你什么都没改，第二周他又提了一遍，在全组面前。');
+    // ── 证据：一句话说清你留下了什么 ────────────────────────
+    let claim = '';
+    if (works.length >= 2){
+      claim = '你留下了两样东西。都不是给谁交的作业。';
+    } else if (works.length === 1){
+      claim = '你留下了一样东西。它没拿过奖，但它一直在。';
+    } else {
+      claim = '你没留下什么。你交过的图都在柜子里。';
+    }
 
-    // 一生里的几件事：同一站只出一条，开头雷同的也只留一条
+    // ── 头发：不报数，报它意味着什么 ──────────────────────
+    let hairLine;
+    if (S.hair <= 15)      hairLine = '头发剩 ' + S.hair + '%。镜子里的那个人已经不太像你了。';
+    else if (S.hair <= 45) hairLine = '头发剩 ' + S.hair + '%。这几年，你好几次拿它换过东西。';
+    else if (S.hair <= 75) hairLine = '头发剩 ' + S.hair + '%。这个行业里，算多的。';
+    else                   hairLine = '头发剩 ' + S.hair + '%。你没怎么拼过。';
+
+    // ── 一件事：从这一辈子里挑一件，只挑一件 ────────────────
     const seenTile = {}, seenHead = {};
-    const picked = [];
+    let one = '';
     S.memories.slice().reverse().forEach(function(m){
-      const tile = m.tile || '_';
       const text = m.text || m;
+      const tile = m.tile || '_';
       const head = text.slice(0, 3);
-      if (!seenTile[tile] && !seenHead[head] && picked.length < 4){
-        seenTile[tile] = 1; seenHead[head] = 1;
-        picked.unshift(text);
-      }
+      if (!one && !seenTile[tile] && !seenHead[head]){ seenTile[tile] = 1; seenHead[head] = 1; one = text; }
     });
-    if (picked.length) lines.push('\n' + picked.join('\n'));
+    if (S.title) one = one || ('你的毕设叫《' + S.title + '》。');
 
-    // 整局的倾向：有多少次挑了最费劲的那个
-    const grind = S.choices.filter(function(e){ return (e.hair || 0) <= -2; }).length;
-    const coast = S.choices.filter(function(e){
-      return !e.hair && !e.work && !e.skill;
-    }).length;
-    if (grind >= 3) lines.push('\n这一路上，有 ' + grind + ' 次你挑了最费劲的那个。');
-    if (coast >= 3) lines.push('\n这一路上，有 ' + coast + ' 次你选了什么都不改变。');
-
-    if (S.title) lines.push('\n你的毕设叫《' + S.title + '》。');
+    // ── 定论：由数值算出来的那句，放最后 ────────────────────
+    const verdict = STATE[st];
 
     stage.innerHTML =
       '<div class="ending">' +
         '<div class="lab">你 现 在</div>' +
         '<div class="big-t">' + end + '。</div>' +
-        '<div class="scene" style="margin-top:2px">' + suScene(S.work) + '</div>' +
-        '<div class="body">' + lines.join('\n').replace(/\n/g,'<br>') + '</div>' +
+        '<div class="scene" style="margin-top:4px">' + suScene(Math.max(1, works.length)) + '</div>' +
+        '<div class="body">' +
+          '<div class="claim">' + claim + '</div>' +
+          (works.length
+            ? '<div class="wlist">' + works.map(function(w){
+                return '<div class="wl">《' + esc(w.name) + '》</div>';
+              }).join('') + '</div>'
+            : '') +
+          '<div class="hair">' + hairLine + '</div>' +
+          (one ? '<div class="one">' + one + '</div>' : '') +
+        '</div>' +
+        '<div class="verdict">' + verdict + '</div>' +
         '<div><button class="act" id="again">再 来 一 局</button></div>' +
       '</div>';
 
@@ -1680,6 +1955,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       applySkin(m[1] === 'cad' ? '' : m[1]);
     }
   })();
+  // 调试入口：?dev 时把生成器挂出来，方便批量看
+  if (location.search.indexOf('dev') >= 0){ window.workName = workName; }
 })();
 </script>
 

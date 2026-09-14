@@ -4762,7 +4762,11 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       // 去处连续性+进展（2026-09-14，清单 32/32-2/32-3）：6 套反馈 = 学年档（大一二/大三四/大五）
       //   × 次数档（初识 _count===0 / 熟了 _count≥1）。g 是学年档；again:1 是熟了档；
       //   left 是这次留下的实物（写进 pl._last，下次熟了文案用 {last} 指回它）；
-      //   low 是头发见底（S.hair≤30，同 _hairLow30 阈值）时的另一套。eff/need/max 不动，去处一直可选。
+      //   low 是头发见底（S.hair≤30，同 _hairLow30 阈值）时的另一套。
+      //   sameTerm:1 是「同学期内第 2~3 次进专教」的档（2026-09-14 用户拍板放开
+      //   一学期一次的限制后补的）：优先于 again 档，{last} 指回上一次留下的实物
+      //   （上次可能在本学期，也可能在上学期——都按上次留下的东西说）。
+      //   eff/need/max 不动，去处一直可选。
       notes:[
         { g:[0,1], left:'块切歪的泡沫板',
           text:'你在专教转了两圈才找到台锯的开关，工具墙上一半挂着空钩。',
@@ -4770,6 +4774,17 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         { g:[0,1], again:1, left:'个没合完的草模',
           text:'台角那{last}还在没人动，这回开关你一摸就着，就是刀还是不顺手。',
           low:'又熬到专教只剩你一个。台角那{last}还在，台灯替你把夜点完了。' },
+        // 同学期再来（放开一学期一次后补的，2026-09-14）：同学期内第 2~3 次进专教。
+        // 语气与上面 6 套一致：短句、白描、只写发生的事。{last} 指回上次留下的实物。
+        { g:[0,1], sameTerm:1, left:'张画了一半的平面图',
+          text:'上回那{last}还摊在台面上。你绕过它占了旁边的位，先去机床排了号。',
+          low:'这学期第三回进专教。上回那{last}还摊在台面上，你接着排机床的号，头发又少了一把。' },
+        { g:[2,3], sameTerm:1, left:'块磨了边的有机板',
+          text:'上回那{last}搁在窗台上晾着。你先把自己那台激光机排上，才去看这周的排期表。',
+          low:'头发薄了还得来。上回那{last}搁在窗台上，你排上激光机，等着的时候把刀片换了。' },
+        { g:[4], sameTerm:1, left:'把拆下来的模板螺丝',
+          text:'上回那{last}装回盒里带走了，这回台面是空的。毕设的板子进场，你从第一刀重新切。',
+          low:'头发见底的学期，专教这学期你已经来了三回。上回那{last}带走了，台面空的，接着切。' },
         { g:[2,3], left:'摞切好的板料',
           text:'这回进专教你直奔激光机——那堆别人切剩的边角料里，正好有你要的厚度。',
           low:'头发见底也得把激光机排上——那堆边角料里翻出能用的，省一趟材料店。' },
@@ -4853,8 +4868,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     Object.keys(LINE_PLACES).forEach(function(k){ all.push.apply(all, LINE_PLACES[k]); });
     return all;
   }
-  function resetPlaces(){ allPlaces().forEach(function(pl){ pl._used = false; }); }
-  function resetPlaceCounts(){ allPlaces().forEach(function(pl){ pl._used = false; pl._count = 0; pl._last = ''; }); }
+  function resetPlaces(){ allPlaces().forEach(function(pl){ pl._used = false; pl._term = 0; }); }
+  function resetPlaceCounts(){ allPlaces().forEach(function(pl){ pl._used = false; pl._term = 0; pl._count = 0; pl._last = ''; }); }
 
   // 去处反馈（清单 32/32-2/32-3，2026-09-14）：目前只有 studio 落了 notes 数组。
   // 学年档：大一二(grade 0,1) / 大三四(2,3) / 大五(4)；次数档：来之前的 _count===0 → 初识，≥1 → 熟了。
@@ -4864,8 +4879,13 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     if (!pl.notes || !pl.notes.length) return null;
     const g = (S.round <= 1) ? 0 : (S.round <= 3) ? 2 : 4;
     const again = (pl._count || 0) >= 1;                 // 来之前来过 → 熟了
+    // 同学期再来档（2026-09-14 放开一学期一次后补的）：同学期内第 2 次及以后，
+    // 优先走 sameTerm 专属文案（指回上一次留下的实物）；没有匹配的学年档才退回 again 档。
     let pool = pl.notes.filter(function(n){
-      return (n.g || []).indexOf(g) >= 0 && (!!n.again) === again;
+      return n.sameTerm && (n.g || []).indexOf(g) >= 0 && again;
+    });
+    if (!pool.length) pool = pl.notes.filter(function(n){
+      return !n.sameTerm && (n.g || []).indexOf(g) >= 0 && (!!n.again) === again;
     });
     if (!pool.length) pool = pl.notes.filter(function(n){ return (n.g || []).indexOf(g) >= 0; });
     if (!pool.length) pool = pl.notes;                   // 兜底：总能给出一条
@@ -4978,10 +4998,11 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       const usedUp = pl.max && pl._count >= pl.max;      // 用过太多次了
       const taken = pl._used;
       const locked = (pl.need && !meetNeed(pl.need)) || usedUp;
-      const cls = 'place' + (taken ? ' used' : '') + (locked ? ' locked' : '');
+      // 2026-09-14：一学期内允许重复去，used 不再灰掉，只用于文案（去过几次）
+      const cls = 'place' + (locked ? ' locked' : '');
       const cf = usedUp ? UI('schedule.usedUp', {}, '这学期不做了')
                         : (locked ? UI('lock.need', {need: needText(pl.need)}, '需要 ' + needText(pl.need))
-                                  : (taken ? UI('schedule.used', {}, '这学期去过了')
+                                  : (taken ? UI('schedule.used', {n: (pl._term||1)}, '这学期来过 ' + (pl._term||1) + ' 次')
                                            : (Object.keys(pl.eff).length ? delta(pl.eff) : '')));
       // 2026-09-13 用户：「把可能遇到 隐藏」--不再预告这个去处可能撞上什么卡
       // （与暗牌同一道理：提前说出来就没意思）。只删这行小字，动作本身与数值不变。
@@ -5001,11 +5022,11 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
                                     : UI('schedule.exhausted', {}, '（头发见底。这学期，你只做得动一件事。）')) + '</div>' : '') +
       '<div class="txt">' + UI('schedule.points', {n: S.actionsLeft}, '还剩 ' + S.actionsLeft + ' 个行动点。') +
         (S.picked.length ? '\n' + UI('schedule.picked', {n: S.picked.length}, '已经选了 ' + S.picked.length + ' 个。') : '') +
-        '\n<span class="dim">' + UI('schedule.once', {}, '（每个去处一学期只能去一次）') + '</span></div>' +
+        '\n<span class="dim">' + UI('schedule.once', {}, '（同一个去处可以再去）') + '</span></div>' +
       '<div class="places">' + rows + '</div>';
 
     Array.prototype.forEach.call(el('stage').querySelectorAll('.place'), function(b){
-      if (b.classList.contains('locked') || b.classList.contains('used')) return;
+      if (b.classList.contains('locked')) return;   // used 不再拦：同一个去处可以再去
       b.onclick = function(){ pickPlace(+b.dataset.i); };
     });
   }
@@ -5018,8 +5039,9 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     if (now - (S._lastPick || 0) < 200) return;
     S._lastPick = now;
     const pl = activePlaces()[i];
-    if (!pl || pl._used || !PROGRESS.canAct()) return;
+    if (!pl || !PROGRESS.canAct()) return;
     pl._used = true;
+    pl._term = (pl._term || 0) + 1;      // 这学期来过几次（每学期清）
     const fb = placeFeedback(pl);          // 先取文案：用「来之前」的 _count 定初识/熟了
     pl._count = (pl._count || 0) + 1;
     PROGRESS.spend();
@@ -5200,7 +5222,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     // 头发是资源：掉到 20% 以下，这学期只做得动一件事
     if (S.hair < 20 || S.gateFail){ S.actionsLeft = 1; S.exhaustedBy = S.hair < 20 ? 'hair' : 'fail'; S.gateFail = false; S.exhausted = true; }
     else { S.exhausted = false; S.exhaustedBy = ''; }
-    PLACES.forEach(function(pl){ pl._used = false; });
+    PLACES.forEach(function(pl){ pl._used = false; pl._term = 0; });
     resetPlaces();       // 毕业后各条线的去处也要清（只清 PLACES 会让毕业后第二学期全处「去过」→ 死屏）
     renderTrack(); renderHUD();
     // 毕业那一回合：先分岔（选一条线），再排程

@@ -2836,7 +2836,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     st_sleep1: { name:'室 友', noChoice:true, eff:{skill:0,hair:5}, talk: ['你躺下时室友在打游戏，外放对面队的阵亡音效。','你数羊数到一千只。床头那副耳机，线缠成一个结，你摸黑解到第三只羊。','解开你戴上，反手开满音量。','室友问：「你今晚还敲吗？」','你说十一点。他十一点半睡了，你敲到三点。他后来没再问。']},
     st_sleep2: { name:'闹 表', noChoice:true, eff:{skill:0,hair:5}, talk: ['闹钟你按了三次，每次都顺手延长十分钟。','手机压在枕头底下，连着充电线。第四次你摸黑划过去的时候，线缠住了手腕。','再睁眼，天花板上的影子和睡前换了位置。','你划掉今天上午的日程。','下午你按这个作息过。']},
     st_sleep3: { name:'电 话', noChoice:true, eff:{skill:0,hair:4}, talk: ['午睡正深，一个电话把你拽出梦，家里问饭吃了没。','你说吃了，挂了，躺回去--那个梦的位置已经没了。','翻个身，第二个电话。驿站让你带取件码下楼。','你趿着拖鞋下去，在货架上翻了半天，纸箱有一个角是湿的。','回宿舍一躺全是清醒，只好改晚上补觉。']},
-    st_sleep4: { name:'灯 灭', noChoice:true, eff:{skill:1,hair:4}, talk: ['十一点熄灯，你还在床上看手机，屏幕照出半张黑眼圈。','被子底下压着白天那张速写，纸角硌在你腰上。','室友说：「你把亮度调低点，明早我还得起。」','你调暗一格。他那边也灭了。','后来你学会把手机扣在枕头下。']},
+    st_sleep4: { name:'灯 灭', noChoice:true, eff:{skill:1,hair:4}, talk: ['十一点熄灯，你还在床上看手机，屏幕照出半张黑眼圈。','被子底下压着白天那支笔，笔杆硌在你腰上。','室友说：「你把亮度调低点，明早我还得起。」','你调暗一格。他那边也灭了。','后来你学会把手机扣在枕头下。']},
     st_mat1: { name:'老 板 娘', noChoice:true, eff:{skill:1,hair:0}, talk: ['进店时老板娘在写单子，一行一个叉。','她头也不抬：又要纸还是胶。你说纸。','她指指角落，三摞纸码得比柜台高。','你搬完最后一摞，她往你口袋里塞了块糖，包装纸有点黏。','糖是店里存着的，没人舍得拆，倒便宜了你。']},
     st_mat2: { name:'搬 纸', noChoice:true, eff:{skill:1,hair:-1}, talk: ['这周的描图纸你一个人搬回专教，卷成一筒，皮筋扎两道。','一路磕了三个门槛。老板娘在后面喊：小心点，别蹭破了。','你回身看，皮筋没断，纸角破了一道。','你把破角那面朝里，压着画了一天。','画完才发现破的是正面。对着光看它像条河，你看着莫名顺眼。']},
     st_mat3: { name:'胶 味', noChoice:true, eff:{skill:1,hair:0}, talk: ['店里那桶胶你凑近闻，闻不出型号，只觉得有点呛。','桶盖边上结了一圈干胶，你用指甲抠了半天。','老板娘说这就是好胶，呛的才粘得牢。','你买回来试，果然撕不下来了。','后来为撕下来你把整张图重画一遍。','重画那张更好，老板娘不知道是哪桶胶的功劳。']},
@@ -3825,7 +3825,18 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       f.style.left = ((r.left + r.width / 2) / z) + 'px';
       f.style.top = ((r.top - 2) / z) + 'px';
       f.style.transform = 'translateX(-50%)';
+      f.style.visibility = 'hidden';            // 先藏起来，量完宽度再决定落点
       document.body.appendChild(f);
+      // 2026-09-14 用户：「特性 变更的文字还是挤在一起」「出边界了」。
+      // 只除 zoom 不够：宽屏时数值挂在右侧面板，靠边的飘字被 translateX(-50%)
+      // 顶出右边界（左边同理）。改成「先量宽度、再夹进视口」，左右各留 8px。
+      const half = f.offsetWidth / 2;
+      const cx = (r.left + r.width / 2) / z;
+      const maxX = (window.innerWidth / z) - half - 8;
+      const minX = half + 8;
+      if (cx > maxX) f.style.left = maxX + 'px';
+      else if (cx < minX) f.style.left = minX + 'px';
+      f.style.visibility = '';
       setTimeout(function(){ f.remove(); }, 3000);   // 与 floatUp 的 2.4s 对齐：别提前删，让人读得完
     });
     if (d.length){

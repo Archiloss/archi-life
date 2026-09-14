@@ -882,6 +882,33 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
 .ending .retro + .retro{margin-top:4px;padding-top:0;border-top:0;}
 .galwrap .grow .gn{grid-column:1 / -1;color:var(--accent);font-size:11px;letter-spacing:1px;opacity:.9;}
 @media (max-width:700px){ .galwrap .grow .gn{font-size:11px;} }
+
+
+/* ============================================================
+   2026-09-14 · 手机端桌面外壳收口
+   ------------------------------------------------------------
+   背景：窄屏那一段 @media 刻意保留了 CAD 外壳，但实测（390×844）这些在手机上
+   要么点不了、要么是死交互，白占屏：
+     菜单栏 30px ｜ 命令提示行 96px ｜ 状态栏 24px ｜ UCS 图标 34px ≈ 占屏 22%
+   这里只做「收口」，不动配色与皮肤：桌面端一行不受影响（全部锁在窄屏媒体查询里）。
+   ============================================================ */
+@media (max-width:819px), (max-width:960px) and (max-height:520px){
+  /* ① 死交互：点了没反应，纯占位 */
+  .menubar{ display:none; }                  /* 文件/编辑/视图/插入/格式/工具/绘图/标注 */
+  .status{ display:none; }                   /* 对象捕捉/栅格/正交/极轴 + 0.0000,0.0000,0.0000 */
+  .titlebar .w > span:last-child{ display:none; }   /* 桌面窗口按钮 — □ ✕ */
+
+  /* ② 纯装饰：UCS 坐标轴，而且浮在舞台空白上 */
+  .ucs{ display:none; }
+
+  /* ③ 命令行：手机上只留日志回显（+作品/−头发 那种），
+        「命令: _xx  [ A … / B … ]  <A>:▌」整条是选项按钮的重复 + 一个假输入框 */
+  .cmd .prompt{ display:none; }
+  .cmd{ max-height:56px; }
+
+  /* ④ 可点字段抬到 44（这一段 CSS 自己在注释里写的规矩，之前 HUD 实际只有 39） */
+  .hud .st.tap{ min-height:44px; display:inline-flex; align-items:center; }
+}
 </style>
 </head>
 <body>

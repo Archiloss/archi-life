@@ -120,6 +120,20 @@ html{ zoom:1.25; }
   .side .row .n.on{color:var(--white);}
   .side .row .n.off{color:var(--edge2);text-decoration:line-through;}
   .side .row .n b{color:var(--white);font-weight:400;}
+  /* 特性行是飘字的挂点容器：行内文本 1 行 + 下方 30px 飘字带（padding-bottom），
+     飘字 absolute 在容器内 top=100%+24px 起步（即 padding-bottom 带里），上浮 ≤16px
+     仍在容器内——不出容器、不压行内文字；行高从 50px(现状) 增到 76px */
+  .side .float-host{ position:relative; min-height:40px; padding-bottom:30px; align-items:center; }
+  .hud .st.float-host{ min-height:64px; padding-bottom:26px; align-items:flex-start; position:relative; }
+  /* 窄屏移动端块（840-865 行）会再压 .hud .st 的 min-height —— 飘字带必须保住 */
+  html .hud .st.float-host{ min-height:64px !important; padding-bottom:26px !important; }
+  /* 顶部横条 .st 容器窄（375 屏一格只有 ~57px 宽），±14px 横向错开会横着出容器——
+     顶条这里改纵向落：第 i 枚出现的往下多让 22px（min-height 64px 已按 2 枚 + 余量给足） */
+  .hud .st.float-host .float{ top:calc(24px + var(--float-y,0px)); }
+  /* 与之配套：.float top 改用固定 24px（从 host padding-box 顶起算），
+     不再用 calc(100%+24) —— 100% 在 flex 容器里解析不稳，出过「飘字坠出容器」；
+     host padding-bottom 30px 就是给飘字留的白带，飘不上来也不会压字 */
+  .side .float-host .float, .hud .float-host .float{ top:24px; }
 
   /* 图幅：一局的进度，一格一站（6 列） */
   .side .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;padding:8px 10px;}
@@ -268,21 +282,36 @@ html{ zoom:1.25; }
   .deltas span.chip:nth-child(2){animation-delay:.62s;}
   .deltas span.chip:nth-child(3){animation-delay:.74s;}
 
-  /* 数值飘字：2026-09-13 放慢——原来 1.05s 一闪就没了，看不清。
-     现在 2.4s，前 1.8s 亮着、最后一个 0.6s 淡出；上升幅度也收小，留在原地也能读。
-     2026-09-13 用户：「特性变更弹窗 文字全挤在一起了」——字号从 15px 提到 17px 时
-     间距没跟着调。标签（作品/设计/头发）与数值拆成两段，中间给 8px，行高 1.6。 */
-  .float{position:fixed;pointer-events:none;z-index:1000;font-family:var(--mono);
-    font-size:17px;font-weight:700;line-height:1.6;
-    display:inline-flex;align-items:baseline;gap:8px;white-space:nowrap;
-    animation:floatUp 2.4s ease-out forwards;}
+  /* 数值飘字：挂进 HUD 数值自己的容器 .float-host 内绝对定位（2026-09-14 重写）。
+     为什么不再用 position:fixed + 全局坐标：坐标要手动除以 html 的 zoom=1.25，
+     夹边界时 window.innerWidth/z（带缩放）和 f.offsetWidth（不带）两套单位混算
+     → 夹边界等于没生效 → 出界 + 压在特性栏文字上；同屏多枚还落在同一个 x 叠成一坨。
+     现在飘字只是在 .float-host（= HUD 数值那格自己的 span，position:relative）里
+     absolute 摆放：坐标只在容器内算，与 zoom 无关（zoom 同倍数放大容器和飘字，
+     比例不变）；.float-host 自带 max-width:100%，容器外就是别的 HUD 格——
+     物理上不可能越界，不可能压到别的文字。同屏多枚由 JS 按序内联 --float-y/--float-x 错层：
+      纵向每枚让 22px，横向 ±14px 左右交替，多枚不再叠在同一个坐标。 */
+  .float-host{ position:relative; display:inline-block; max-width:100%; }
+  .float{ position:absolute; left:calc(50% + var(--float-x,0px)); top:24px;
+    transform:translateX(-50%);
+    pointer-events:none;z-index:1000;font-family:var(--mono);
+    font-size:12px;font-weight:700;line-height:1.3;white-space:nowrap;
+    background:var(--hud-bg); border:1px solid var(--line); border-radius:3px;
+    padding:3px 10px; box-shadow:0 2px 10px rgba(0,0,0,.55);
+    max-width:100%;
+    animation:floatUp 2.4s ease-out forwards; }
   .float .fl-k,.float .fl-v{white-space:nowrap;}
   .float .fl-v{margin-left:8px;}      /* 兜底：万一 gap 不生效，也不许贴在一起 */
-  @keyframes floatUp{
-    0%{opacity:0;transform:translateY(0) scale(.9);}
-    8%{opacity:1;transform:translateY(-6px) scale(1.06);}
-    75%{opacity:1;transform:translateY(-16px) scale(1);}
-    100%{opacity:0;transform:translateY(-22px) scale(1);}
+  @keyframes floatUp{                 /* 上浮 ≤16px；全程不会把飘字带回 HUD 条内 */
+    0%{opacity:0;transform:translate(-50%, 0) scale(.9);}
+    8%{opacity:1;transform:translate(-50%, -4px) scale(1.04);}
+    75%{opacity:1;transform:translate(-50%, -12px) scale(1);}
+    100%{opacity:0;transform:translate(-50%, -16px) scale(1);}
+  }
+  /* 全宽度统一「数值下方」落点：容器内起步 +24px（HUD 数值下沿外的浮动缝），
+     上浮最多 16px，仍在容器下方空白带里，不带回条内、不压行内文字 */
+  @media (min-width:820px){
+    .float{ top:calc(100% + 24px + var(--float-y,0px)); }
   }
   .opt .t{flex:1;line-height:1.5;}
   .opt .cf{font-size:11px;color:var(--dim2);white-space:nowrap;margin-top:2px;}
@@ -365,12 +394,30 @@ html{ zoom:1.25; }
   @media (max-width:819px){
     .main{grid-template-columns:1fr;}
     .side{display:none;}
-    /* 窄屏时 HUD 数值贴菜单栏下面：飘字收短（但时长跟宽屏一致，别一闪就没） */
-    @keyframes floatUp{
-      0%{opacity:0;transform:translateY(0) scale(.9);}
-      8%{opacity:1;transform:translateY(-2px) scale(1.04);}
-      75%{opacity:1;transform:translateY(-8px) scale(1);}
-      100%{opacity:0;transform:translateY(-12px) scale(1);}
+    /* 窄屏收短由主 .float 规则 + 840-859 的移动端块统一管（本块不再覆盖 floatUp） */
+
+    /* 窄屏飘字（2026-09-14 补）：JS 把飘字挂到整个 .hud 条（.float-host）。
+       根因：窄屏 .st 一格只有 ~57px，飘字挂进小格里居中放必然横着撑出小格
+       （375 帧 14 重叠 / 768 出容器）。改法：飘字落在条内**第一行右侧的空白带**
+       （三个数值格只占左侧 ~210px，右侧是空白）——右缘锚定（right:6px，
+       left:auto），第 i 枚纵向 --slot-y 下挪 28px（idx×28），专用动画
+       hudFloatRight 只淡入淡出、**零位移**，汽包全程在条内第一行空白处，
+       不压左侧数值字、不出条；带内没有任何文字可压。
+       .hud 在窄屏块 position:relative，为 absolute 落点提供参照。 */
+    .hud{ position:relative; overflow:visible; }
+    .hud.float-host .float{
+      top:auto; right:6px; left:auto;
+      transform:translateX(0);
+      top:calc(4px + var(--slot-y,30px));
+      animation:hudFloatRight 2.4s ease-out forwards;
+    }
+    .hud.float-host .float > .fl-k{ margin-left:5px; }
+    .hud.float-host .float .fl-v{ margin-right:5px; }
+    @keyframes hudFloatRight{
+      0%{opacity:0;}
+      8%{opacity:1;}
+      75%{opacity:1;}
+      100%{opacity:0;}
     }
   }
   /* 宽屏：顶部横条不再重复数值，交给右侧面板 */
@@ -838,13 +885,12 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
           background:var(--hud-bg); border:1px solid var(--line); border-radius:3px;
           padding:3px 10px; box-shadow:0 2px 10px rgba(0,0,0,.55); }
 
-  /* 移动端 floatUp：曲线/时长（0.24s→2.4s）与宽屏相同，只收位移幅度。
-     （0%/8% 的 opacity 与 scale 不变——淡入节奏别变。） */
+  /* 移动端只收上飘幅度（ ≤16px 里更深收）；容器内落点/错层由主 .float 规则管。 */
   @keyframes floatUp{
-    0%{opacity:0;transform:translateY(0) scale(.9);}
-    8%{opacity:1;transform:translateY(-2px) scale(1.04);}
-    75%{opacity:1;transform:translateY(-4px) scale(1);}
-    100%{opacity:0;transform:translateY(-7px) scale(1);}
+    0%{opacity:0;transform:translate(-50%, 0) scale(.9);}
+    8%{opacity:1;transform:translate(-50%, -2px) scale(1.04);}
+    75%{opacity:1;transform:translate(-50%, -4px) scale(1);}
+    100%{opacity:0;transform:translate(-50%, -7px) scale(1);}
   }
 }
 
@@ -3899,44 +3945,62 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       const node = el(wide ? (MAPW[x[0]] || MAP[x[0]]) : (MAP[x[0]] || MAPW[x[0]]));
       if (!node) return;
       node.classList.remove('pulse'); void node.offsetWidth; node.classList.add('pulse');
-      const r = node.getBoundingClientRect();
-      const f = document.createElement('div');
-      f.className = 'float';
-      // 2026-09-13 用户：「特性变更弹窗 文字全挤在一起了」--字号提到 17px 后标签与数值贴成一团。
-      // 拆成两段（字符一字不改：标签 + 数值），中间的间隔交给 .float 的 8px gap（见 style.css）。
+      // ===== 飘字改为「容器内绝对定位」（2026-09-14 重写，不再 fixed+全局坐标） =====
+      // 旧写法（为什么原来一直出界/挤在一起）：
+      //   f 是 position:fixed append 到 body，坐标用 getBoundingClientRect 的全局
+      //   值，却手动除以 html 的 zoom=1.25。夹边界时 window.innerWidth/z（带缩放）
+      //   和 f.offsetWidth（不带）两套单位混着算 → 夹边界等于没生效 → 仍出界、
+      //   仍压在特性栏文字上；同屏多枚还几乎落在同一个 x 上叠成一坨。
+      // 新写法：把飘字挂进该 HUD 数值自己的容器 .float-host（JS 在这里懒建一次、
+      //   并包好 node），容器本身就是 HUD 的正常布局单元 →
+      //   · position:absolute + left:50% + translateX(-50%)：坐标只在容器内算，
+      //     与 html 的 zoom 无关（zoom 按同倍数放大容器和飘字，比例不变）；
+      //   · top 从容器内一个固定值起步（窄屏 = 条下方浮动带的缝里，宽屏 = 面板
+      //     数值上沿），CSS floatUp 动画幅度 ≤ 16px，不会带回条内；
+      //   .float-host 有 max-width:100%，容器本身就贴着 HUD 格，飘字不可能
+      //   越出容器，容器外就是别的 HUD 格/标题——物理上不可能重叠。
+      // 同屏多枚错开（用户看到的 3 枚叠成一坨）：每次 apply 里新出现的枚数
+      //   = d.length，第 i 枚纵向让它 行高×i（21px），横向左右交替 ±14px，
+      //   加在「同一容器」的多枚上其实就是错行错列，不会叠在同一坐标。
       const fk = document.createElement('span'); fk.className = 'fl-k'; fk.textContent = x[0];
       const fv = document.createElement('span'); fv.className = 'fl-v';
       fv.textContent = (x[1] > 0 ? '+' : '') + x[1] + (x[0] === '头发' ? '%' : '');
+      // .float-host 懒建：每个 HUD 数值一枚，包住 node，自身 position:relative
+      // （右侧面板特性行 / 顶部横条 .st 在 CSS 里已自带 float-host 样式规则——直接用；
+      // 窄屏特例（<820px，375/768 两块覆盖）：飘字不再挂进 .st 那一小格——窄屏一格
+      //   ~57px 宽，居中 + 12px 胶囊 + ±12px 横向错开会撑出小格、压进相邻 HUD 格
+      //   （375/768 出容器与重叠的根因）。改为挂在整个 .hud 条上（.hud 本身
+      //   position:relative），落点 = 条下方预留空带，第 i 枚左/中/右 --slot-x 错开，
+      //   带内没有任何文字可压，胶囊左缘 ≥0、右缘 ≤ 条宽 → 不出容器。
+      let host = node.closest('.hud .st') || node.closest('.float-host');
+      if (host && node.closest('.hud') && !window.matchMedia('(min-width:820px)').matches){
+        host = node.closest('.hud'); host.classList.add('float-host');
+      }
+      else if (host && host.classList.contains('hud') === false && !host.classList.contains('float-host')){
+        host.classList.add('float-host');
+      }
+      if (!host){
+        host = document.createElement('span');
+        host.className = 'float-host';
+        node.parentNode.insertBefore(host, node);   // 占住 node 原位置
+        host.appendChild(node);
+      }
+      const f = document.createElement('div');
+      f.className = 'float';
       f.appendChild(fk); f.appendChild(fv);
       f.style.color = x[1] > 0 ? 'var(--green)' : 'var(--red)';
-      // fixed 定位的坐标会被 html 上的 zoom 再乘一次（默认 1.25）：
-      // 1440 宽的屏上飘字会落到 x≈1723，整块飘出视口。先除掉 zoom 还原。
-      const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
-      f.style.left = ((r.left + r.width / 2) / z) + 'px';
-      f.style.top = ((r.top - 2) / z) + 'px';
-      f.style.transform = 'translateX(-50%)';
-      // 2026-09-14 移动端：「特性变更提示 文字挤在一起」。窄屏（数值在顶部横条）
-      // 17px 飘字整个泡在 12px 的 HUD 条里，还盖住左右相邻格（实测 375：飘字
-      // box 169→252 同时压住 头发93%/进度1/8）。窄屏改落点：放到 HUD 条下边缘
-      // 之下，从条底往下 14px；上飘幅度收窄（CSS 侧配套改 floatUp）。
-      // 宽屏（数值在右侧面板）保持原落点不动。
-      const mobileSpot = window.matchMedia('(max-width:819px), (max-width:960px) and (max-height:520px)').matches;
-      if (mobileSpot){
-        const hud = document.querySelector('.hud');
-        if (hud) f.style.top = (hud.getBoundingClientRect().bottom + 51 / z) + 'px';   // 窄屏落点：条底下 51px 的空带（两档断言全绿；空带随屏内容会变，胶囊兜底保对比）
+      // 同一次 apply 里多枚飘字错开：宽屏沿用横向 ±14px；窄屏（整条 HUD 托管）
+      //   用 --slot-x 左/中/右三档错开——窄屏还用 ±14px 会把胶囊推出条外，
+      //   三档都吃在条宽之内（条 375 宽：left 10 / center / right 10）。
+      const idx = d.indexOf(x);
+      if (host.classList.contains('hud')){
+        // 窄屏（整条 HUD 托管）：条内第一行右侧空白带（三个 .st 只占左侧 ~210px），
+        //   右缘锚定（贴条右 6px），第 i 枚纵向 --slot-y 下挪 28px，上浮为 0（hudFloatRight）
+        f.style.setProperty('--slot-y', (30 + idx * 28) + 'px');
+      } else {
+        f.style.setProperty('--float-x', ((idx % 2 ? 14 : -14)) + 'px');
       }
-      f.style.visibility = 'hidden';            // 先藏起来，量完宽度再决定落点
-      document.body.appendChild(f);
-      // 2026-09-14 用户：「特性 变更的文字还是挤在一起」「出边界了」。
-      // 只除 zoom 不够：宽屏时数值挂在右侧面板，靠边的飘字被 translateX(-50%)
-      // 顶出右边界（左边同理）。改成「先量宽度、再夹进视口」，左右各留 8px。
-      const half = f.offsetWidth / 2;
-      const cx = (r.left + r.width / 2) / z;
-      const maxX = (window.innerWidth / z) - half - 8;
-      const minX = half + 8;
-      if (cx > maxX) f.style.left = maxX + 'px';
-      else if (cx < minX) f.style.left = minX + 'px';
-      f.style.visibility = '';
+      host.appendChild(f);
       setTimeout(function(){ f.remove(); }, 3000);   // 与 floatUp 的 2.4s 对齐：别提前删，让人读得完
     });
     if (d.length){
@@ -4094,7 +4158,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     });
 
     const row = function(k, v, tri){
-      return '<div class="row"><span class="k">' + k + '</span><span class="n"' +
+      return '<div class="row float-host"><span class="k">' + k + '</span><span class="n"' +
              (tri ? ' data-tri="' + tri + '" role="button" tabindex="0" style="cursor:pointer"' : '') +
              '>' + v + '</span></div>';
     };

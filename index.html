@@ -3325,12 +3325,9 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       apply({ hair:-3 });
       log('你把志愿表又排了一遍，还是去了第二志愿那所学校。');
       S.memories.push({ tile:'入学', text:'你的大学在另一个省，一所你当时随便填的学校。' });
-      el('stage').innerHTML =
-        '<div class="ttl">开 学</div>' +
-        '<div class="txt">' + (again ? '复读也没用。' : '') +
-          '你去了那所学校。\n建筑学，五年制。\n\n开学第一周，你发现全班 41 个人里，只有三个是第一志愿。</div>' +
-        '<div class="big"><button class="act" id="go">开 学</button></div>';
-      el('go').onclick = function(){ showOpeningGuide(); };
+      // 2026-09-14 用户：「这个开学按钮要点两次」——原来第一下只是把同一屏重画一遍
+      // （标题/文案/按钮一字不差），玩家看不出反应，得再点一次。改成一步到位。
+      showOpeningGuide();
     };
   }
 
@@ -4840,7 +4837,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       // low＝头发见底（S.hair≤30）时那套。eff 不动：慢，但养头发。
       notes:[
         { g:[0,1], left:'本折了角的案例集',
-          text:'你在检索机前查了书号才上三楼。案例架只剩最后一本被折了角的集子，你占下靠暖气片的位，把两个平面抄进本子。',
+          text:'你在检索机前查了书号才上三楼。案例架只剩最后一本被折了角的集子，你占下靠窗的位，把两个平面抄进本子。',
           low:'头发掉了一半才想起图书馆。查到的书只剩最后一本还被折了角，你把本子摊开，坐到闭馆音乐响。' },
         { g:[0,1], again:1, left:'张排线排到手沉的图',
           text:'上回那{last}还摊在你的老位上没人动。这回你背着本子直接上三楼，检索机那步免了，图接着往下排。',

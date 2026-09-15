@@ -983,6 +983,16 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   /* ④ 可点字段抬到 44（这一段 CSS 自己在注释里写的规矩，之前 HUD 实际只有 39） */
   .hud .st.tap{ min-height:44px; display:inline-flex; align-items:center; }
 }
+
+/* 五类技能明细（2026-09-15）：宽屏在右侧特性栏，手机在可展开面板。
+   每行＝名称 + 点数 + 5 格条；等级口径与门槛一致（6 点 = 1 级），未满格空心。 */
+.skill-bars{display:block;padding:2px 0 2px 12px;border-left:1px solid var(--edge2);margin-left:2px;}
+.skill-bars .sk{display:flex;align-items:center;gap:7px;padding:2px 0;font-size:11px;line-height:1.5;}
+.skill-bars .sk .k{color:var(--dim);white-space:nowrap;}
+.skill-bars .sk .n{margin-left:auto;color:var(--ink);font-variant-numeric:tabular-nums;}
+.skill-bars .pips{display:inline-flex;gap:2px;flex:0 0 auto;}
+.skill-bars .pip{display:inline-block;width:8px;height:8px;background:var(--cyan);border:1px solid rgba(0,0,0,.55);}
+.skill-bars .pip.off{background:transparent;border-color:var(--edge2);}
 </style>
 </head>
 <body>
@@ -1330,11 +1340,11 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "走廊",
-   "text": "走廊里有人对着课表比进度。你那一栏排到晚上九点，中间空着一格。\n有人指着那格问：这儿怎么空着。\n你说那节是设计课，老师不写进课表。\n他说：那你们怎么算。你说：按交图算。",
+   "text": "走廊里有人对着课表比进度。你那一栏排到晚上九点，中间空着一格。\n有人指着那格问：这儿怎么空着。\n你说那格是设计课，课表上排的教室在教一，我们从来不去。\n他说：那教室不就空着。你说：空着。我们人在专教。",
    "keys": [
     "排到晚上九点的课表",
     "空着的那一格",
-    "按交图算"
+    "人在专教"
    ]
   },
   {
@@ -2382,10 +2392,10 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       ]},
 
     sketch: { name:'素 描', grade:[0,1], form:'choice',
-      text: '第一次上素描课，画石膏球。\n橡皮灰落在画板上，你用手背一抹，手背比画还黑。\n老师从你背后走过，停了两秒，没说话。',
+      text: '第一次上素描课，画石膏球。\n橡皮灰落在画板上，你用手背一抹，手背比画还黑。\n老师从你背后走过，停下来看了两眼：「明暗交界线没找到。你把反光那块画得比亮面还亮了。」',
       opts:[
-        {t:'回去重画十张', eff:{skill:1,hair:-3}, r:'你重画了十张。第四张开始顺手了。'},
-        {t:'就交这张', eff:{hair:1}, r:'你交了。老师在你的名字后面画了个圈，没说是好是坏。'},
+        {t:'回去把这张重画三遍', eff:{skill:1,hair:-3}, r:'第三遍的时候，球底下那圈投影你自己就找对了。'},
+        {t:'就交这张', eff:{hair:1}, r:'你交了。老师在你名字后面画了个圈：「球是圆的，你画成方的了。」'},
         {t:'追上去问哪里不对', eff:{skill:2,hair:-4}, r:'他讲了二十分钟。前五分钟有用。'}
       ]},
 
@@ -2480,12 +2490,12 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         {t:'对不上的地方留着，加个问号', eff:{skill:-1,hair:3}, r:'图上留了三个问号。老师看见了，没让你改。'}
       ]},
 
-    su_book: { name:'速 写 · 本 子', grade:[0,1], form:'choice',
-      text: '速写本你买了，第一页画完是开学第一周。\n第二次翻开它，是六天以后。前六天的作业，一天都没补。\n第一张画得还行；第二张，线全在抖。',
+    su_book: { name:'速 写 · 十 张', grade:[0,1], form:'choice',
+      text: '速写课第一次交作业，你交了十张。\n老师把你叫到前面，用红笔在其中一张上画了个框。\n「这张留着，别的你拿回去。」',
       opts:[
-        {t:'按日期补齐，一天一张补回去', eff:{skill:2,hair:-3}, r:'你补到凌晨。六张画的是同一把椅子的六个角。'},
-        {t:'只画今天这一张，翻页继续', eff:{skill:1,hair:-1}, r:'第一张画的是走廊尽头那盏灯。'},
-        {t:'把第一张的日期划掉，重写成今天', eff:{hair:2}, r:'你在日期上描了一笔。老师翻到那页，停了一下。'}
+        {t:'问他这张好在哪', eff:{skill:2}, r:'他说：「别的地方你都在描，这张你是在看。」'},
+        {t:'回去把其它九张重画一遍', eff:{skill:1,hair:-2}, r:'你重画到第四张就停了——越画越像在描。'},
+        {t:'把框里那张拆下来贴在桌上', eff:{skill:1,hair:1}, r:'贴了半学期，边角翘起来。你照着它又画了十几张。'}
       ]},
 
     su_pile: { name:'速 写 · 二 十 张', grade:[3,4], form:'choice',
@@ -3052,7 +3062,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     name:'设 计 课 · 还 要 大 改', form:'choice',
     talk: ['设计做到第五周。评图那天老师问：「这个设计，还要不要大改。」','桌上摆的是你熬了四版才定下来的那个。你把它转了个方向，又转回来。'],
     opts:[
-      {t:'改，重来一遍', eff:{skill:2, hair:-5, work:1}, r:'你推倒重画。第八版交上去，老师什么都没说，只点了点头。'},
+      {t:'改，重来一遍', eff:{skill:2, hair:-5, work:1}, r:'你推倒重画。第八版交上去，他把图转了个方向：\n「梁的搭接这次对了。左边那道多余的线，擦掉。」'},
       {t:'不改，就它了', eff:{work:1}, r:'他说「行」。后来那版送去专教，放样的师傅问「这入口是不是缺道门」。你没改，但把这句话记下了。'},
       {t:'改一半，保个底', eff:{skill:1, hair:-2}, r:'你把两处硬伤修了，骨架没动。下次评图他又提那两处，这一回你没能答上来。'}
     ]
@@ -3493,7 +3503,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   //  这一屏不占行动点、不进回合计数、不动任何数值。
   // ============================================================
   const TRI = {
-    skill: { k:'技 能', tag:'SKILL', color:'var(--cyan)',   hud:'hSkill',
+    skill: { k:'技 能', tag:'SKILL', title:'技能明细 · SKILL', color:'var(--cyan)',   hud:'hSkill',
              what:'你的硬功夫：画得出来、改得动、说得清。',
              does:'越硬的地方越只认这个--有的门只开给设计够厚的人。' },
     hair:  { k:'头 发', tag:'HAIR',  color:'var(--green)',  hud:'hHair',
@@ -3536,14 +3546,23 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     if (box.getAttribute('data-open') === id){       // 再点同一个＝收起
       box.innerHTML = ''; box.removeAttribute('data-open'); return;
     }
+    paintTriNote(id);
+  }
+  // 只画不切（2026-09-15）：面板里现在带着「五类技能明细」的活数据（点数会变），
+  // 所以渲染时要能重画一次，而不是只能靠玩家再点一下才知道自己涨了几分。
+  function paintTriNote(id){
+    const box = el('hudNotes');
+    if (!box || !TRI[id]) return;
     const t = TRI[id];
     box.setAttribute('data-open', id);
     box.innerHTML =
       '<div class="badge-note on" style="border-left-color:' + t.color + '">' +
-        '<div class="bn-t" style="color:' + t.color + '">' + t.k + ' · ' + t.tag + '</div>' +
+        '<div class="bn-t" style="color:' + t.color + '">' + (t.title || (t.k + ' · ' + t.tag)) + '</div>' +
         '<div class="bn-b">' + t.what + '</div>' +
         '<div class="bn-v">' + t.does + '</div>' +
-      '</div>';
+      '</div>' +
+      // 五类技能明细（2026-09-15 接入）：窄屏右侧栏被藏起来，五行靠这块展开面板露出来。
+      skillBarsHTML();
   }
 
   // 不打扰的插话（首次掉头发 / 首次拿到作品）：fixed 浮层，几秒后自己走。
@@ -4095,12 +4114,33 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     if (n.talAny && !n.talAny.some(talGroup)) return false;
     return true;
   }
+  // 五类技能明细（2026-09-15）：名称用学生话，每行「名称 + 点数 + 5 格条」。
+  // 等级 = min(5, floor(点数/6)+1)（与门槛 6点=1级 同口径）；未满格空心。
+  // 2026-09-15 接入两处（宽屏右侧「特性」栏 / 手机可展开面板）：
+  //   以前它挂在 window 上、定义在 needText 里 —— 时机不确定，首屏可能还没有，所以提到顶层，
+  //   做成「直接可调用的普通函数」，开局第一屏就已经存在。
+  const SKILL_TAG_CN = { draw:'手绘', model:'建模', cad:'CAD', craft:'做模型', theory:'理论' };
+  function skillBarsHTML(){
+    const tags = (S && S.skillTags) || { draw:0, model:0, cad:0, craft:0, theory:0 };
+    let out = '<div class="skill-bars">';
+    Object.keys(SKILL_TAG_CN).forEach(function(tag){
+      const pts = tags[tag] || 0;
+      const lv = Math.min(5, Math.floor(pts / 6));
+      let pips = '';
+      for (let i = 0; i < 5; i++) pips += '<i class="pip' + (i < lv ? '' : ' off') + '"></i>';
+      out += '<div class="sk"><span class="k">' + SKILL_TAG_CN[tag] + '</span>' +
+             '<span class="n">' + pts + '</span><span class="pips">' + pips + '</span></div>';
+    });
+    return out + '</div>';
+  }
+  window.__skillBarsHTML = skillBarsHTML;   // 兼容旧探针（此处已确定存在，不再是「时机不确定」）
+
   function needText(n){
     const out = [];
     if (n.skill) out.push('设计 ' + n.skill);
     if (n.work)  out.push('作品 ' + n.work);
     if (n.hair)  out.push('头发 ' + n.hair + '%');
-    const T = { draw:'手绘', model:'建模', cad:'CAD', craft:'做模型', theory:'理论' };
+    const T = SKILL_TAG_CN;      // 与五行同一份名称表（2026-09-15），避免两处漂移
     if (n.tal) for (const tag in n.tal) out.push(T[tag] + ' Lv' + n.tal[tag]);
     if (n.talAny) {
       n.talAny.forEach(function(g, i){
@@ -4405,7 +4445,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   }
   const SKIN_NAME = { '':'CAD', su:'SU', sketch:'手绘', rhino:'Rhino' };
     // 外壳（标题文件名 + 菜单栏）跟着皮肤走，避免 SU 界面露 .dwg 的破绽（M8c）
-  const SHELL_FILE = { '':'JY-01.dwg', 'su':'庭院小筑.skp', 'rhino':'方案_第三轮.3dm', 'sketch':'1:100 · A1 硫酸纸' };
+  const SHELL_FILE = { '':'YZ-01.dwg', 'su':'庭院小筑.skp', 'rhino':'方案_第三轮.3dm', 'sketch':'1:100 · A1 硫酸纸' };
   const SHELL_MENU = {
     '':       ['文件','编辑','视图','插入','格式','工具','绘图','标注'],
     'su':     ['文件','编辑','视图','相机','绘图','工具','窗口','帮助'],
@@ -4416,7 +4456,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     document.body.classList.remove('skin-su','skin-sketch','skin-rhino');
     if (name) document.body.classList.add('skin-' + name);
     const fn = document.querySelector('.titlebar .fn');
-    if (fn) fn.textContent = '\u2014 [ ' + (SHELL_FILE[name] || 'JY-01.dwg') + ' ]';
+    if (fn) fn.textContent = '\u2014 [ ' + (SHELL_FILE[name] || 'YZ-01.dwg') + ' ]';
     const mb = document.querySelector('.menubar');
     if (mb) mb.innerHTML = (SHELL_MENU[name] || SHELL_MENU['']).map(function(m){ return '<b>' + m + '</b>'; }).join('');
     const dbox = el('deco');
@@ -4471,6 +4511,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       '<h3>特性</h3><div class="grp">' +
         row('技能', '<b id="sSkill">' + S.skill + '</b>', 'skill') +
         row('头发', '<b id="sHair">' + S.hair + '%</b>', 'hair') +
+        // 五类技能明细（2026-09-15 接入）：接在「技能 / 头发」两行下方，宽屏第一屏就看得见。
+        skillBarsHTML() +
       '</div>' +
       '<h3>作品集</h3><div class="grp">' +
         (S.works && S.works.length
@@ -4486,6 +4528,10 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         row('版次', 'REV.A') +
         row('比例', '1:100') +
       '</div>';
+
+    // 展开着的说明面板（窄屏看五行的那块）带着活数据：这一屏重渲染时顺手重画，值不会停在旧点数上。
+    const nb = el('hudNotes');
+    if (nb && nb.getAttribute('data-open')) paintTriNote(nb.getAttribute('data-open'));
   }
 
   // ========== 命令行回显：进度也写进命令行，像 CAD 在等一个命令 ==========

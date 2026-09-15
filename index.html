@@ -405,20 +405,18 @@ html{ zoom:1.25; }
        不压左侧数值字、不出条；带内没有任何文字可压。
        .hud 在窄屏块 position:relative，为 absolute 落点提供参照。 */
     .hud{ position:relative; overflow:visible; }
+    /* 2026-09-15 修：HUD 改成单行四字段后，条内右侧不再是空白带（身份字段
+       「建筑学在读」就落在那里），飘字留在条内必然压住身份字。改回与桌面同一
+       落点：条下方 6px 起、横向居中，多枚用 --slot-y 纵向错开 26px；
+       胶囊底本身不透明（主 .float 规则里给过背景+边+投影），压过正文时对比度够。 */
     .hud.float-host .float{
-      top:auto; right:6px; left:auto;
-      transform:translateX(0);
-      top:calc(4px + var(--slot-y,30px));
-      animation:hudFloatRight 2.4s ease-out forwards;
+      top:calc(100% + 12px + var(--slot-y,0px));
+      left:50%; right:auto;
+      transform:translateX(-50%);
+      animation:floatUp 2.4s ease-out forwards;
     }
     .hud.float-host .float > .fl-k{ margin-left:5px; }
     .hud.float-host .float .fl-v{ margin-right:5px; }
-    @keyframes hudFloatRight{
-      0%{opacity:0;}
-      8%{opacity:1;}
-      75%{opacity:1;}
-      100%{opacity:0;}
-    }
   }
   /* 宽屏：顶部横条不再重复数值，交给右侧面板 */
   @media (min-width:820px){
@@ -776,15 +774,33 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   .titlebar{ height:auto; min-height:42px; padding:0 8px; gap:6px; font-size:12px; }
   .titlebar .fn{ display:none; }                 /* 文件名在手机上纯噪声 */
   .titlebar .w{ gap:8px; font-size:12px; align-items:center; }
-  .titlebar .gal{ display:inline-flex; align-items:center; min-height:40px;
+  .titlebar .gal{ display:inline-flex; align-items:center; min-height:44px;
                   padding:0 10px; font-size:12px; }
   .menubar{ height:30px; font-size:12px; overflow-x:auto; overflow-y:hidden;
             -webkit-overflow-scrolling:touch; scrollbar-width:none; }
   .menubar b{ display:inline-flex; align-items:center; height:100%; padding:0 10px; }
-  .hud{ flex-wrap:wrap; height:auto; min-height:40px; overflow:visible; }
-  .hud .st{ padding:0 9px; font-size:12px; min-height:22px; flex:0 0 auto; }
-  .hud .st.num{ display:flex; }                  /* 手机横屏也保留五个字段（盖掉 min-width:820 那组） */
-  .hud .st.sp{ flex:1; justify-content:flex-end; min-width:84px; }
+  /* 2026-09-15 修：手机上 HUD 曾排成 3 行，第 2、3 行（进度 / 身份「建筑学在读」）
+     被舞台整块盖住——玩家在手机上根本看不到进度和身份。
+     根因两条叠加：
+       ① 非 .tap 的 .st 是块级 flex 容器（display:flex），在 wrap 里被撑成整行宽（365px），
+          于是每个字段各占一行；
+       ② .st 继承主表的 height:100%，父容器高度又是 auto → 行高被解析成 89px，
+          而容器自身高度仍按第一行 89px 算，多出来的行漏到舞台底下（hit test 命中舞台）。
+     改法：四个字段排一行、高度写死 44px（不再有 100% 的循环）、一律 inline-flex 按内容宽；
+     字段间留 6px 缝（相邻可点字段贴死，手指容易点到隔壁）。
+     宽度账：技能 57 + 头发 72 + 进度 86 + 身份 84 + 3×6 = 317 < 365（375 屏），
+     320 屏上 .st.sp 可缩到 min-width:84 后仍需 ≤310 → 见下方 ≤359px 那档。 */
+  .hud{ flex-wrap:nowrap; height:auto; min-height:44px; overflow:visible; gap:6px; }
+  .hud .st{ display:inline-flex; align-items:center; height:44px; min-height:44px;
+            padding:0 9px; font-size:12px; flex:0 0 auto; }
+  .hud .st.num{ display:inline-flex; }           /* 手机横屏也保留数值字段（盖掉 min-width:820 那组） */
+  .hud .st.sp{ flex:1 1 auto; justify-content:flex-end; min-width:84px; }
+  /* 320 档（iPhone SE 1 代 / 5s）：四个字段收窄才装得下，行数仍是 1 */
+  @media (max-width:359px){
+    .hud{ gap:3px; }
+    .hud .st{ padding:0 6px; font-size:11px; }
+    .hud .st.sp{ min-width:70px; }
+  }
   .status{ height:auto; min-height:24px; font-size:12px; overflow-x:auto; overflow-y:hidden; }
   .status span{ padding:0 8px; flex:0 0 auto; }
   .status .co{ font-size:12px; }
@@ -3596,8 +3612,17 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     w.style.top = Math.round(Math.max(bottom, 0) + 12) + 'px';   // +12：入场动画还带 6px 上移，别贴着状态条底边
     return w;
   }
+  // 提示条要出现时，先把还挂着的数值飘字收掉（2026-09-15）。
+  //   两条通道的落点都在状态条下方的同一条带里：飘字先出（活 3s）、提示条后出，
+  //   后出的就会压在还活着的飘字上（实测截图：红胶囊与蓝框提示条叠成一坨）。
+  //   提示条带的信息更全（数值 + 出处），所以让它独占这条带。
+  function dropFloats(){
+    const fs = document.querySelectorAll('.float');
+    Array.prototype.forEach.call(fs, function(f){ if (f.parentNode) f.parentNode.removeChild(f); });
+  }
   function tipFlash(text){
     if (!text || !document.body) return;
+    dropFloats();
     const d = document.createElement('div');
     d.className = 'gtoast';
     d.textContent = text;
@@ -3609,6 +3634,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   // 只喂自己拼的 HTML，别拿它来放玩家输入。
   function tipFlashHTML(html){
     if (!html || !document.body) return;
+    dropFloats();
     const d = document.createElement('div');
     d.className = 'gtoast gtoast-vals';   // 带数值的那一种：横向 flex + 8px gap（挤在一起已修，见 style.css）
     d.innerHTML = html;
@@ -4333,11 +4359,12 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       fv.textContent = (x[1] > 0 ? '+' : '') + x[1] + (x[0] === '头发' ? '%' : '');
       // .float-host 懒建：每个 HUD 数值一枚，包住 node，自身 position:relative
       // （右侧面板特性行 / 顶部横条 .st 在 CSS 里已自带 float-host 样式规则——直接用；
-      // 窄屏特例（<820px，375/768 两块覆盖）：飘字不再挂进 .st 那一小格——窄屏一格
-      //   ~57px 宽，居中 + 12px 胶囊 + ±12px 横向错开会撑出小格、压进相邻 HUD 格
+      // 窄屏特例（<820px）：飘字不挂进 .st 那一小格——窄屏一格 ~57px 宽，
+      //   居中 + 12px 胶囊 + ±12px 横向错开会撑出小格、压进相邻 HUD 格
       //   （375/768 出容器与重叠的根因）。改为挂在整个 .hud 条上（.hud 本身
-      //   position:relative），落点 = 条下方预留空带，第 i 枚左/中/右 --slot-x 错开，
-      //   带内没有任何文字可压，胶囊左缘 ≥0、右缘 ≤ 条宽 → 不出容器。
+      //   position:relative），落点 = 条下方 6px 起、横向居中，第 i 枚再下挪
+      //   26px 错开。2026-09-15 起条内已无空白带（四个字段排满），所以不再放在
+      //   条内右侧：那里现在是身份字段「建筑学在读」。
       let host = node.closest('.hud .st') || node.closest('.float-host');
       if (host && node.closest('.hud') && !window.matchMedia('(min-width:820px)').matches){
         host = node.closest('.hud'); host.classList.add('float-host');
@@ -4360,9 +4387,12 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       //   三档都吃在条宽之内（条 375 宽：left 10 / center / right 10）。
       const idx = d.indexOf(x);
       if (host.classList.contains('hud')){
-        // 窄屏（整条 HUD 托管）：条内第一行右侧空白带（三个 .st 只占左侧 ~210px），
-        //   右缘锚定（贴条右 6px），第 i 枚纵向 --slot-y 下挪 28px，上浮为 0（hudFloatRight）
-        f.style.setProperty('--slot-y', (30 + idx * 28) + 'px');
+        // 窄屏（整条 HUD 托管）：条已排满四个字段，条内没有空白带 →
+        //   落点改到条下方（CSS 里 top:100% + 6px），横向居中。
+        //   槽位按「当前还挂着的枚数」算（不是本批的 idx）——上一批的飘字还活着的
+        //   时候，新一批不能落进同一个槽，否则两枚叠在一起（实测叠成一坨）。
+        const live = host.querySelectorAll(':scope > .float').length;
+        f.style.setProperty('--slot-y', (live * 26) + 'px');
       } else {
         f.style.setProperty('--float-x', ((idx % 2 ? 14 : -14)) + 'px');
       }

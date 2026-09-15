@@ -3244,6 +3244,10 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   function reset(){
     resetPlaceCounts();
     S = { work:0, skill:0, hair:96, score:rollMyScore(),
+          // 四类技能计数（2026-09-15）：手绘 draw / 建模 model / CAD cad / 手工模型 craft。
+          //   S.skill 是四类之和（apply() 里每次加点都归类，见 tagOfSkill）；
+          //   _skillLog 记每一笔的来源与归类，自检脚本与文档用它列卡清单。
+          skillTags:{ draw:0, model:0, cad:0, craft:0, theory:0 }, _skillLog:[],
           round:0, actionsLeft:0, picked:[], works:[], pendingCard:null,
           line:null, title:'', school:'', memories:[],
           over:false, gateFails:0, _earlyEnd:null,
@@ -3374,7 +3378,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
           ' 分，多了 ' + (S.score - line) + ' 分。\n\n你被录取了。</div>' +
         '<div class="big"><button class="act" id="go">开 学</button></div>';
       el('go').onclick = function(){
-        apply({ skill:2, hair:-8 });
+        S._skillSrc = '录取入学'; apply({ skill:2, hair:-8 });
         log('你去了' + esc(name) + '。建筑学，五年制。');
         S.memories.push({ tile:'入学', text:'开学第一周，你发现自己不是班里画得最好的那个。' });
         S.school = name;
@@ -3828,7 +3832,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         // 而 apply() 一次只认一件，所以按件数拆开调--别把 +2 读成 +1。
         const nWork = Math.abs(o.eff.work || 0);
         for (let k = 0; k < nWork; k++) apply({ work: o.eff.work > 0 ? 1 : -1 });
-        apply({ skill: o.eff.skill, hair: o.eff.hair });
+        S._skillSrc = o.text || '入学'; apply({ skill: o.eff.skill, hair: o.eff.hair });
         S.memories.push({ tile:'入学', text:'开学第一周，老师问为什么读建筑。你说：「' + o.text + '」' });
         tipFlashHTML(openingEffToast(o.eff));   // 暗牌：选完才告诉你代价
         showOpeningReply(o);
@@ -3953,35 +3957,89 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   }
   // 空效果的统一标记：选项按钮／排程去处／结果页三处共用同一个词（2026-09-13 文案统一）
   const NO_EFF = '没什么动静';
-  // 作品统一入口：竞赛/毕设/事件卡做了东西，就命名、进作品集（单一真源）
+  // 作品统一入口：竞赛/毕设/事件卡做了东西，就进作品集（单一真源）
   function makeWork(){
-    const nm = workName();
-    S.works.push({ name: nm, from: S._cardName || '做过的一个方案', round: S.round });
+    // 「作品名」已停用（2026-09-15，用户拍板）：S.works 只记件数语义（from/round），不再生成/存 name。
+    S.works.push({ from: S._cardName || '做过的一个方案', round: S.round });
     S.work = S.works.length;
     // 作品集弹窗（2026-09-13）：拿到作品就出声，别让作品悄悄从 0 变 1。
-    // 作品本来就有名字--念出来，玩家才知道刚才那一下进了作品集。
     // 开场阶段（报志愿/录取/开学/指引/追问）不算--那时提示还没轮到出场。
     if (S._begun){
       if (!S._tipWorkFirst){
         S._tipWorkFirst = true;
-        tipFlash('《' + nm + '》进了你的作品集。这是你的第一件作品，它能换成去处。');
+        tipFlash('做好的东西进了你的作品集。这是你的第一件作品，它能换成去处。');
       } else {
-        tipFlash('《' + nm + '》进了你的作品集。');
+        tipFlash('又一件进了你的作品集。');
       }
     }
-    return nm;
+    return true;
   }
 
-  // 作品被点名（2026-09-13）：从作品集里挑一件的名字，一局内稳定（别每屏换一件）；
-  // 那件被交出去/用掉了就重挑一件。作品 0 件 → 返回 ''，调用处一律走原兜底文案。
-  function namedWork(exclude){
-    if (!S.works || !S.works.length) return '';
-    const pick = S.works.filter(function(x){ return !exclude || x.name !== exclude; });
-    if (!pick.length) return '';
-    if (S._namedWork && S._namedWork !== exclude &&
-        S.works.some(function(x){ return x.name === S._namedWork; })) return S._namedWork;
-    S._namedWork = pick[Math.floor(Math.random() * pick.length)].name;
-    return S._namedWork;
+  // 作品被点名（2026-09-13 → 2026-09-15 停用随名字一起退场）：作品不再有名字，
+  // 保留壳是为了不牵动调用处──现在按「有没有做出来的东西」给真值（作品 0 件 → null）。
+  function namedWork(){
+    return (S.works && S.works.length) ? true : null;
+  }
+
+  // ---- 五类技能归类（2026-09-15，v3：新增 theory）----------------------------------
+  // 每一笔 skill 加点都要落到 draw（手绘）/ model（建模）/ cad（CAD）/ craft（手工模型）/ theory（理论）之一，
+  // 保证 S.skill === 五类之和。规则按「来源卡名/场景/去处」逐步判中即归，都不命中走兜底。
+  // 归类口径见 design/落地-技能五类-20260915.md。
+  // v4（2026-09-15 二次修）：三条硬规则收口——
+  //   ① 改图/审图/变更单/出一版（图）/描图/施工图/建施/平立剖/天正/CAD → cad
+  //   ② 粘/切/刻/胶水/实体模型/线割机/切板机/台锯/激光机/切割台/泡沫/等高线/粘土/底板 → craft
+  //      （「机床」不入词表：系馆模型房是线割机，不是金工房的机床——2026-09-15 用户口径修正）
+  //   ③ 拉体块/建模/Rhino/SU/电池/参数化/渲染/效果图/Lumion/材质/灯光 → model
+  //   理论（结构/构造/物理/历史/规范/抄背默）→ theory；手绘（素描/速写/写生/快题/水彩）→ draw。
+  // 命中顺序：draw → theory → cad → craft → model；都不中走二级去处/兜底。
+  // 归类口径见 design/落地-技能五类-20260915.md（v4 一节）。
+  function __tagRules(){
+    return [
+      ['draw',  /写生|速写|素描|手绘|水彩|墨线|排线|默图|草图|评图|评审|crit|小人|踩图|答辩|面试|复试|汇报|讲述|演讲|重画|一草|底图|剖透视|铅笔|柱式|拷贝纸|画图|画画|画法|画上|重描|描完/],
+      ['theory',/结构|构造|建筑物理|物理|建筑史|规范|力学|防水|场地测绘|测绘|选型|考研|盲审|中期|论文|查重|文献|导师|助教|柱式|等高线|抄|背|默|跨度|图书馆|进度墙|翻书|细看|闭馆|借书|占座|铁架|复印|评委|推翻|大改|按文献|照着书|往后翻|借同学的|请他吃顿饭|下一个活|概念阶段|真去数|记数据/],
+      ['cad',   /改图|变更单|审图|出一版|出一版改图|出图|描图|施工图|平立剖|建施|天正|CAD|催图|校对|署名|图签|成图|红笔|图幅|比例尺|排版|重排|图纸|交底|批注|发回去|各写一份|带施工方|判给施工方|走流程|报维修|验收|交付|现场会|入职|甲方|工位|职场|公司|实习|写材料|简历|旧同事|老同事|交底|汇报会/],
+      ['craft', /模型|切|刻|粘|胶|泡沫|板材|底板|粘土|等高线|泡沫切割机|泡沫切割|切泡沫|热丝|电热丝|切板机|台锯|激光机|切割台|磨|锯|锉|工坊|机器|板屑|焊|绷|宿舍|通宵|灯灭|接水|胶味|老板娘|搬纸|薄纸|桌子|闹钟|油泥|手工|削板|挑灯|关门|油毡|擦干净|照交|补好再走|削|师傅/],
+      ['model', /渲染|Lumion|Enscape|Rhino|SU|SketchUp|建模|拉体块|体块|参数化|电池|效果图|材质|灯光|竞赛|投标|作品|排版|申报|重新学|工坊通宵/],
+    ];
+  }
+  function __tagMatch(src, placeName){
+    const s = ((src || '')).replace(/\s/g, '');
+    const p = ((placeName || '')).replace(/\s/g, '');
+    const t = s + '|' + p;
+    // 二级：去处兜底（图面/工坊/图纸三类场景）
+    if (/泡图书馆/.test(p)) return ['draw', /$/];
+    if (/专教|studio|模型房/.test(p + s)) return ['craft', /$/];
+    if (/帮老师|teacher|教研室/.test(p + s)) return ['cad', /$/];
+    if (/site|desk|allnight/.test(p + s)) return ['cad', /$/];   // 职业期场景＝对图
+    const rule = __tagRules().find(r => r[1].test(t));
+    return rule || null;
+  }
+  function tagOfSkill(src, placeName){
+    const hit = __tagMatch(src, placeName);
+    if (hit) return hit[0];
+    // 三级：真无线索的，按「综合设计能力」记 model（兜底，占比要求 ≤30%）
+    window.__tagStats = window.__tagStats || { total:0, fallback:0 };
+    window.__tagStats.total++;
+    window.__tagStats.fallback++;
+    return 'model';
+  }
+  // 一级~二级命中统计（供 check-skill-tags 打兜底率）：ruleTagOfSkill 不含三级兜底，
+  // 供自检脚本对照——tagOfSkill 命中一级/二级的，ruleTagOfSkill 返回同一值。
+  function ruleTagOfSkill(src, placeName){
+    const hit = __tagMatch(src, placeName);
+    return hit ? hit[0] : null;
+  }
+
+  // 在一次 apply() 里把「这一笔 skill 变化」记入四类。只在加点(+>0)时归类--
+  // 扣点不像学东西（改图/被否定不缺哪一类），只回 S.skill 总值，四类不动；
+  // 这样四类之和在扣点后可能大于 S.skill，断言按「和 >= skill 且加的时候逐笔守恒」收口。
+  function applySkillTag(delta, src, placeName){
+    if (delta > 0){
+      const tag = tagOfSkill(src, placeName);
+      if (!S.skillTags) S.skillTags = { draw:0, model:0, cad:0, craft:0, theory:0 };
+      S.skillTags[tag] += delta;
+      S._skillLog.push({ delta:delta, tag:tag, src:(src || ''), place:(placeName || '') });
+    }
   }
 
   function apply(eff){
@@ -3991,7 +4049,11 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       if (eff.work > 0){ makeWork(); d.push(['作品', 1]); }                       // 做出作品→进作品集
       else if (S.works.length){ S.works.pop(); S.work = S.works.length; d.push(['作品', eff.work]); }
     }
-    if (eff.skill){ S.skill += eff.skill; d.push(['设计', eff.skill]); }
+    if (eff.skill){
+      S.skill += eff.skill;
+      d.push(['设计', eff.skill]);
+      applySkillTag(eff.skill, S._skillSrc, S._skillPlace);   // 归类（_skillSrc/_skillPlace 由调用方先挂）
+    }
     if (eff.hair){  S.hair  += eff.hair;  d.push(['头发', eff.hair]); }
     if (S.hair > 100) S.hair = 100;
     if (S.hair < 0) S.hair = 0;
@@ -4251,8 +4313,9 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       '</div>' +
       '<h3>作品集</h3><div class="grp">' +
         (S.works && S.works.length
-          ? S.works.map(function(w){
-              return '<div class="row"><span class="k wk">' + esc(w.name) + '</span></div>';
+          ? S.works.map(function(w, i){
+              const tag = (w.from && w.from !== '毕设') ? '　·　' + esc(w.from) : '';
+              return '<div class="row"><span class="k wk">第 ' + (i + 1) + ' 件' + tag + '</span></div>';
             }).join('')
           : '<div class="row"><span class="k" style="color:var(--dim2)">还没有</span></div>') +
       '</div>' +
@@ -4329,8 +4392,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       } else {
         body = '评委翻到你的图。\n问：「你这个题，『' + w + '』体现在哪？」';
       }
-      const nw = namedWork(S.title || '');       // 作品 0 件 → ''，这句不出现；别把屏上那个题名再念一遍
-      if (nw) body += '\n你作品集里那件《' + nw + '》--也讲讲。';
+      const nw = namedWork(S.title || '');       // 作品 0 件 → 不出现
+      if (nw) body += '\n你作品集里之前做的那件--也讲讲。';
     } else if (body.indexOf('@@THESIS_INTERVIEW@@') >= 0){
       const dir = S.titleDir || '';
       const ipool = (ENDING_TEXT.ui && ENDING_TEXT.ui.interviewDir && ENDING_TEXT.ui.interviewDir[dir]) || null;
@@ -4341,8 +4404,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
           ? '面试官翻到你简历最后一行：\n「《' + S.title + '》--这个讲讲？」'
           : '面试官翻到你简历最后一行：\n「这个--你讲讲？」';
       }
-      const nw = namedWork(S.title || '');        // 别把简历上那句的毕设名再念一遍
-      if (nw) body += '\n「《' + nw + '》--这件也讲讲？」';
+      const nw = namedWork(S.title || '');        // 作品 0 件 → 不出现
+      if (nw) body += '\n「之前作品集里那件--这件也讲讲？」';
     }
     // 图签行（纯文字）：把这一屏的坐标交代清楚，撑住版式，不再画线稿
     const stamp = 'Y Z - 0 1　　　' + roundName(S.round) +
@@ -4455,7 +4518,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         const res = c.pick(+b.dataset.r, +b.dataset.c);
         log('· 你坐了' + res.t);
         if (res.r){ log('　' + res.r); S.memories.push({ tile: c.name, text: res.r }); }
-        apply(res.eff || {});
+        S._skillSrc = c.name; S._skillPlace = c.scene || ''; apply(res.eff || {});
         showResult('你坐了' + res.t, res.r, res.eff || {});
       };
     });
@@ -4565,6 +4628,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     if (v.talk && v.talk.length){
       if (v.noChoice){        // 纯演出：看完自动结算(v.eff)，没得选
         startTalk(v, function(){
+          S._skillSrc = c.name; S._skillPlace = c.scene || '';
           apply(v.eff || {});
           // 纯演出卡也能记一笔状态（同 commitChoice 的 o.set）：k1_title 的起名回响靠它
           if (v.set) Object.keys(v.set).forEach(function(k){ S[k] = v.set[k]; });
@@ -4587,7 +4651,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
           if (S._optLocked) return false;       // 这一屏已结算过
           S._optLocked = true;
           S._cardName = c.name;
-          apply(o.eff || {});
+          S._skillSrc = c.name; S._skillPlace = c.scene || ''; apply(o.eff || {});
           if (o.set) Object.keys(o.set).forEach(function(k){ S[k] = o.set[k]; });   // 卡上带的状态标记（如先锋线的署名 _vCredit）
           log('· ' + o.t);
           // 暗牌：选完才揭晓代价--与开场追问同一条弹窗（tipFlashHTML + openingEffToast：
@@ -4633,7 +4697,9 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   }
 
   // ============================================================
-  //  作品名：按真实竞赛获奖作品的路子写
+  //  作品名（已停用 2026-09-15，用户拍板「效果一般，不用记录」）：
+  //  下面的 WN 词池 / workNameOnce / workName 原样保留但**不再被任何调用点引用**；
+  //  S.works 项不再带 name，作品件数机制（S.work = S.works.length）不受影响。
   //  参考霍普杯 2025 实际获奖名--《老摊日记》《长亭外，铁道边》
   //  《呼吸的祭仪：光与烟雾的当代净化仪式》《边角新生，暮年新趣》
   //  《楼道里也会吹来想你的风》《涌现--后疫情时代大学生宿舍重塑》
@@ -4957,6 +5023,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     return false;
   }
   const _wnUsed = [];
+  // 标注“已停用”（2026-09-15）：workName() 不再被调用（保留定义以免残留引用报错）
   function workName(){
     for (let i = 0; i < 60; i++){
       const n = workNameOnce();
@@ -5324,21 +5391,22 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     PROGRESS.spend();
     termRecord(pl);
     log('· ' + pl.name);
-    apply(pl.eff);
+    S._skillSrc = pl.name; S._skillPlace = pl.name; apply(pl.eff);
     if (fb){ log('　' + fb.text); pl._last = fb.left; }   // 这次留下的实物，下次熟了文案指回它
     if (pl.work){
       // 作品不是"点一下就+1"--竞赛可能白做
       if (pl.chance && Math.random() > pl.chance){
         log('　结果出来了：没进。方案是你的，但没人看见。');
+        S._skillSrc = pl.name; S._skillPlace = pl.name;
         apply({ skill: 1 });          // 失败不白：图是练下来的，回一点技能
         S.memories.push({ tile: pl.name, text: '你做完了那个方案，它没进。但手艺是练下了。' });
       } else {
-        const nm = workName();
-        S.works.push({ name: nm, from: pl.name, round: S.round });
+        // 作品名已停用（2026-09-15）：只记件数语义，不再生成/存名字。
+        S.works.push({ from: pl.name, round: S.round });
         S.work = S.works.length;            // 真源：作品 = 作品集里的件数
-        log('　你做完了《<span class="hl">' + nm + '</span>》。');
-        tipFlash('《' + nm + '》进了你的作品集。');
-        S.memories.push({ tile: pl.name, text: '你做完了《' + nm + '》。' });
+        log('　做完了一件，进了<span class="hl">作品集</span>。');
+        tipFlash('又一件进了你的作品集。');
+        S.memories.push({ tile: pl.name, text: '你在「' + pl.name + '」做完了一件东西。' });
       }
     }
     // ---- 选完去处、进卡面之前：先插一屏「行业背景」轻薄屏（一学期一次）----
@@ -5611,7 +5679,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         //   松紧靠数值更狠 + 台词更短更冷来传（tilt 照旧加在判定分上）。
         (lens ? '<br>「《' + gp.name + '》这一题，' + lens.head + '。」<br>' +
                 lens.says[0] : '') +
-        (gw ? '<br>你作品集里那件《' + gw + '》--也讲讲。' : '') + '</div>' +
+        (gw ? '<br>你作品集里之前做的那件--也讲讲。' : '') + '</div>' +
       (resultText ? '<div class="warn">结果：' + resultText + '</div>' : '') +
       '<div class="opts" id="opts"></div>';
     const GN = (ENDING_TEXT.ui && ENDING_TEXT.ui.gate) || {};
@@ -5648,10 +5716,11 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
           resLine = gateName + '过了。那学期你拿头发换的。';
           // 毕设过 = 唯一确定的作品，从此进作品集
           if (S.currentGate === 'thesis'){
-            S.works.push({ name: S.title || '毕业设计', from:'毕设', round:S.round });
+            // 作品名已停用（2026-09-15）：毕设同样只记件数。《题名》的提示语不再报书名号。
+            S.works.push({ from:'毕设', round:S.round });
             S.work = S.works.length;
-            tipFlash('《' + (S.title || '毕业设计') + '》进了你的作品集。');
-            S.memories.push({ tile: gateName, text: '你的毕设《' + (S.title||'') + '》做完了。' });
+            tipFlash('毕设做完，进了你的作品集。');
+            S.memories.push({ tile: gateName, text: '你的毕设做完了。' });
           }
         } else {
           S.gateFail = true;               // 下回合只做得动一件事
@@ -6609,7 +6678,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     // 清单第 35 项（2026-09-13）：删掉原来夹在这中间的「你抽了 N 次题。最后一次，你还是用了第一个。」
     //   同一个关键数字＋同一个概念一局里只出现一次--「抽到第 N 张」那句在结局的重抽行里（ENDING_TEXT.ui.redraw）。
     //   这里改成独立 if：留出「开场那句话 + 一件东西/几本速写本」两行的位置。
-    if (S._namedWork)                    retro.push('你手上那件《' + S._namedWork + '》，是很早做的，一直没再换过。');
+    if ((S.works || []).length)          retro.push('你手上那件东西，是很早做的，一直没再换过。');
     else if ((S._sideSeen || []).length) retro.push('你那几本速写本，最后压在出租屋的床底下。');
     const retroText = retro.slice(0, 2).map(function(l){ return '<div class="retro">' + l + '</div>'; }).join('');
     const atlasKey = (pick.kind === 'line')
@@ -6626,10 +6695,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     } else {
       claim = '你没留下什么。你交过的图都在柜子里。';
     }
-    if (works.length){                          // 念出其中一件的名字（作品 0 件 → 不出现）
-      const nw = namedWork();
-      if (nw) claim += (works.length >= 2 ? ' 其中一件叫《' + nw + '》。' : ' 它叫《' + nw + '》。');
-    }
+    // 作品名已停用（2026-09-15）：不再念出名字，claim 句子本身已按件数写全。
 
     // ── 头发：不报数，报它意味着什么 ──────────────────────
     let hairLine;
@@ -6682,8 +6748,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         '<div class="body">' +
           '<div class="claim">' + claim + '</div>' +
           (works.length
-            ? '<div class="wlist">' + works.map(function(w){
-                return '<div class="wl">《' + esc(w.name) + '》</div>';
+            ? '<div class="wlist">' + works.map(function(w, i){
+                return '<div class="wl">第 ' + (i + 1) + ' 件</div>';
               }).join('') + '</div>'
             : '') +
           '<div class="hair">' + hairLine + '</div>' +
@@ -6893,14 +6959,16 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       applySkin(m[1] === 'cad' ? '' : m[1]);
     }
   })();
-  // 调试入口：?dev 时把生成器挂出来，方便批量看
+  // 调试入口：?dev 时挂出状态快照（workName 生成器已停用，不再挂出）
   if (location.search.indexOf('dev') >= 0){
-    window.workName = workName;
+    // window.workName 已随作品名退场移除（2026-09-15）
     // 自动试玩（tools/playtest/harvest.js）要读到内部状态：只读快照，不改任何流程
     window.__GAME = {
       S: function(){ return S; },
       cardIds: function(){ return Object.keys(CARDS); },
       card: function(id){ return CARDS[id] || null; },
+      ruleTagOfSkill: ruleTagOfSkill,             // 自检用：不含三级兜底的规则表，数兜底率
+      tagOfSkill: tagOfSkill,
       lines: function(){ return Object.keys(LINES); },
       lineCards: function(k){ return LINES[k] ? LINES[k].cards : []; },
       roundCount: function(){ return ROUNDS.length; },
@@ -6910,7 +6978,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         S.round = round;
         if (line) S.line = line;
         if (S.hair < 30) S.hair = 60;
-        if ((S.works || []).length < 2) S.works = [{ name: '《测试一》', from: '测试', round: 0 }, { name: '《测试二》', from: '测试', round: 1 }];
+        if ((S.works || []).length < 2) S.works = [{ from: '测试', round: 0 }, { from: '测试', round: 1 }];
+        S.work = (S.works || []).length;      // 件数真源同步（2026-09-15 作品名退场）
         S.over = false;
         beginRound();
         return { round: S.round, line: S.line, works: S.works.length };

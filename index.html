@@ -410,11 +410,16 @@ html{ zoom:1.25; }
        落点：条下方 6px 起、横向居中，多枚用 --slot-y 纵向错开 26px；
        胶囊底本身不透明（主 .float 规则里给过背景+边+投影），压过正文时对比度够。 */
     .hud.float-host .float{
-      top:calc(100% + 12px + var(--slot-y,0px));
+      top:calc(100% + 12px + var(--notes-h, 0px) + var(--slot-y,0px));
       left:50%; right:auto;
       transform:translateX(-50%);
       animation:floatUp 2.4s ease-out forwards;
     }
+    /* 2026-09-16 修：明细面板（#hudNotes）就落在 .hud 正下方那条带上。
+       面板一开，条下方 12px 处已经不是空白带而是面板本身 → 还在飞的数值胶囊
+       会正好压在五类明细上（手机实测：手绘/建模/CAD 三行的点数被三枚胶囊盖住，
+       玩家以为明细没出来）。--notes-h 由 JS 在面板开合时写入 .hud（关＝0px），
+       飘字落点跟着面板高度往下让，胶囊始终停在面板下沿之外。 */
     .hud.float-host .float > .fl-k{ margin-left:5px; }
     .hud.float-host .float .fl-v{ margin-right:5px; }
   }
@@ -1323,10 +1328,10 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "食堂·周末",
-   "text": "隔壁桌在算：「设计院一个月一万。咱这地方房租多少？」\n「三千。」\n「那还剩七千。」\n「你还得买正装。」\n「为什么？」\n「汇报要穿。」\n算到这里，那桌人笑了起来。",
+   "text": "隔壁桌在算：「设计院一个月一万。咱这地方房租多少？」\n「三千。」\n「那还剩七千。」\n「你还得买正装。」\n「为什么？」\n「汇报的时候得穿。」\n算到这里，那桌人笑了起来。",
    "keys": [
     "算房租",
-    "「汇报要穿」"
+    "「汇报的时候得穿」"
    ]
   },
   {
@@ -1347,7 +1352,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "宿舍",
-   "text": "室友刷到一条地产校招的帖子，念出来：「甲方招建筑背景的，钱多，不画图。」\n另一个人说：「那还画什么图，直接去甲方啊。」\n第一个说：「先把手图画完再说。」",
+   "text": "室友刷到一条地产校招的帖子，念出来：「甲方招建筑背景的，钱多，不画图。」\n另一个人说：「那还画什么图，直接去甲方啊。」\n室友又说：「先把手图画完再说。」",
    "keys": [
     "宿舍夜谈",
     "「甲方」"
@@ -1698,9 +1703,9 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "实习·办公室",
-   "text": "带你的老同事是结构组的，干了十年，四十出头，一整天没说几句话。\n下午他忽然问你：「你们这届就业怎么样？」\n你说不太清楚。\n他说：「还行吧，说不清算不算好。」\n然后他继续画他的图。他今天出了三张草，手上那张明天要交。",
+   "text": "带你的老同事是结构组的，干了十年，四十出头，一整天没说几句话。\n下午他忽然问你：「你们这届就业怎么样？」\n你说不太清楚。\n他把笔搁下：「我们组还行。你们这届，不好说。」\n然后他继续画他的图。他今天出了三张草，手上那张明天要交。",
    "keys": [
-    "说不清算不算好",
+    "「我们组还行」",
     "一天三张草"
    ]
   },
@@ -1721,7 +1726,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "走廊",
-   "text": "「听说招生计划又降了，今年建筑类少招了不少人。」\n「那不是好事吗，人少点。」\n「对谁好？」\n这个问题没人答。有人抱着一卷图纸贴墙让过去。",
+   "text": "走廊里，两个低一届的在说：「听说今年建筑类又少招了。」\n「那不是好事吗，人少点。」\n「对谁好？」\n这句没人接。有人抱着一卷图纸贴墙让过去。",
    "keys": [
     "卷图纸的声音"
    ]
@@ -1746,7 +1751,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "保研季",
-   "text": "保研名额下来了。你问老师：「读研还是工作？」\n老师反问：「你觉得行业什么时候好起来？」\n没人答得上来。老师说：「那就读研，再看看。」\n再看看--这三个字这一年出现的频率很高。",
+   "text": "保研名额下来了。你问老师：「读研还是工作？」\n老师反问：「你觉得行业什么时候好起来？」\n你没答上来。老师也没等你答，说：「那就读研，再看看。」\n再看看--这三个字这一年出现的频率很高。",
    "keys": [
     "保研季",
     "「再看看」"
@@ -1754,7 +1759,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "刷手机",
-   "text": "手机推送：某房企主席被采取强制措施。过了一阵，又是同一家公司被法院颁令清盘。\n室友说：「以前过年时他们家发红包都上新闻的。」\n大一那年，家族群里转过一条「又拿地了」。同一家人，同一部手机。",
+   "text": "手机推送：某房企主席被采取强制措施。过了一阵，又是同一家公司被法院颁令清盘。\n室友说：「以前过年时他们家发红包都上新闻的。」\n你想起大一那年，你妈的家族群里转过一条「又拿地了」。同一家人，同一部手机。",
    "keys": [
     "手机推送",
     "清盘",
@@ -1791,10 +1796,10 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
  "大四下": [
   {
    "trigger": "专教·深夜",
-   "text": "跟你一组评过图的同学在看别的东西，屏幕上是一个笔试题库。\n你问他要转吗，他说：「先试试。」\n「跟老师说吗？」\n「说什么，说了他就问我毕设怎么办。」\n他低头继续做题，题目开头的英文你一个都不认识。",
+   "text": "跟你一组评过图的同学在看别的东西，屏幕上是一个笔试题库。\n你问他是不是要转行，他说：「先试试。」\n你问：「跟老师说吗？」\n他头也没抬：「说什么，说了老师就问我毕设怎么办。」\n他低头继续做题，题目开头的英文你一个都不认识。",
    "keys": [
     "笔试题库",
-    "「说了他就问我毕设怎么办」"
+    "「说了老师就问我毕设怎么办」"
    ]
   },
   {
@@ -1832,7 +1837,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "走廊·听到",
-   "text": "「我们家那边有个院，进去要考试，考过了还要排队。」\n「排什么队？」\n「排有没有位置。」\n「就是说你没进去之前，它不知道要不要你？」\n「差不多。」\n他们笑着说这太离谱了，笑完就各自去赶毕设。",
+   "text": "走廊上，两个同学在聊一个院：\n「我们家那边有个院，进去要考试，考过了还要排队。」\n「排什么队？」\n「排有没有位置。」\n「就是说你没进去之前，它不知道要不要你？」\n「差不多。」\n两个人笑着说这太离谱了，笑完各自去赶毕设。",
    "keys": [
     "「排有没有位置」"
    ]
@@ -2619,7 +2624,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         //   每条对应现实里这条路的硬功夫，七条条件互不相同（tools/check-fork-gates.py 自检断言）。
         //   过线率与旧总分离散门槛对齐（差距 ≤5pp，见 design/落地-门槛改级数-20260915.md）：
         //     考研 64.9→64.4  留学 83.6→83.6  设计院 97.3→95.9  甲方 59.2→60.3
-        //     先锋 60.5→58.9  体制 64.9→68.5  转行不变 100。
+        //     先锋 60.5→58.9  体制 64.9→68.5  转行 100→21.1（2026-09-16 二次修，见下）。
         //   级数用「点数阈值」表述（draw:5 = 5 点，级 = floor(点/6)，文档里同时给级数口径）。
         {t:'考研', line:'kaoyan', need:{talAny:[{theory:2},{theory:1,draw:1}]}},
         // 2026-09-15 三改（用户口径）：考研=政治+英语+理论课+快题（手绘），理论是主门槛
@@ -2629,7 +2634,12 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         {t:'进甲方', line:'client', need:{tal:{cad:1, craft:1}, work:2}},                // 看协调与经验，不靠单一项堆高
         {t:'设计师工作室', line:'avant', need:{tal:{craft:1}, talAny:[{draw:1},{cad:1}]}}, // 手上功夫优先
         {t:'进体制', line:'tizhi', need:{talAny:[{theory:1}, {craft:1, work:3}]}},      // 考编看理论积累，与手艺无关
-        {t:'转行', line:'leave', need:{work:2}}                                          // 转行无技能门槛，但手里必须有两件做出来的东西
+        // 转行（2026-09-16 修）：原来写 work:2 —— 71 局 100% 通过，等于没门槛（用户：「转行很难的」）。
+        //   依据 design/建筑转行真实信息-20260915.md：转行卡的不是建筑技能（五类技能全是建筑技能，
+        //   一项都盖不住「非建筑作品集 / 对口实习 / 报班的开销与时间」），跨来源反复提的硬门槛是
+        //   「手里得有从零到一、拿得出手的东西」——所以这条线只按作品件数卡，不加任何技能要求。
+        //   门槛值见 design/口径-当前生效-20260915.md：作品 ≥6 件（实测过线 21.1%，除考研外最紧）。
+        {t:'转行', line:'leave', need:{work:6}}                                          // 转行卡「做出来的东西」，6 件；不卡建筑技能
       ]},
 
     // ---- 支线 · 设计院 ----
@@ -2722,7 +2732,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       talk: ['你的稿子装在文件袋里，是打印店刚装订的，封面还有点胶味。','他问：你自己画过图，你怎么看乙方。'],
       opts:[
         {t:'说乙方也不容易', eff:{skill:2,hair:-3}, r:'他记了一笔，说：「这话以后别在会上讲。」'},
-        {t:'问他项目现在到哪一步', eff:{skill:-1,work:1}, r:'他点点头，问你会不会做测算表。'},
+        {t:'问他项目现在到哪一步', eff:{skill:-1,work:1}, r:'他点点头：「项目还在报建。」然后问你会不会做测算表。'},
         {t:'「学校里不讲这些」', eff:{skill:-1,hair:-1,work:1}, r:'他说：「对，学校的东西。那你做过什么？」'}
       ]},
     c_desk: { name:'入职 · 甲方', form:'choice', line:'client',
@@ -2936,7 +2946,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       text: '老师的汇报 PPT，你排版。他最后只改了标题的字号。\n投影仪的遥控器一直在你手里，电池盖是松的。',
       opts:[
         {t:'接一句：那张是我画的', eff:{skill:1,hair:-2}, r:'他「嗯」了一声：「我看出来了。」'},
-        {t:'不接话，套个模板排完', eff:{work:-1,skill:1}, r:'模板他挺满意。你没说那不是你排的，也没说那张图是你画的。'}
+        {t:'不接话，套个模板排完', eff:{work:-1,skill:1}, r:'模板他挺满意，一页没删。你没说这是套的，也没说底下压着的那张是你画的。'}
       ]},
     t_measure: { name:'场 地 测 绘', grade:[2,3], form:'choice',
       text: '跟着去测一个路口。太阳很晒。仪器只有一台，谁扛都行，但大家都客气地推。\n钢卷尺最后是捏在你手里的，拉尺那一头没人接。',
@@ -2956,14 +2966,14 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       text: '二轮改稿。老师说他上周大意了，方向要重来。\n上周印的那卷图还在桌边立着。',
       talk: ['你把它拿下来，靠在墙角，没拆外面的皮筋。','重画到第三版的时候，你把那卷图打开看了一眼，又卷回去。'],
       opts:[
-        {t:'重来一半', eff:{skill:2,hair:-4,work:1}, r:'你把一周的图作废了。'},
+        {t:'重来一半', eff:{skill:2,hair:-4,work:1}, r:'前一半留着，后一半重画。作废那几张你没扔，还立在桌边。'},
         {t:'只改表面', eff:{skill:1}, r:'贴了几张新分析图。他没看细节。'}
       ]},
     lib_night: { name:'图 书 馆 关 门', grade:[0,1,2], form:'choice',
       text: '图书馆十点播关门音乐。你把图板往桌边挪的时候，针管笔滚了下去，笔尖先着地。\n0.3 的那支，你只有一支。\n你在废纸上画了两道--线变粗了，还带毛边。\n你把它放回笔袋最里面，一直没扔。',
       opts:[
         {t:'就着这支把今晚的画完', eff:{skill:1}, r:'线比平时粗一号。交图那天，没人看得出来哪几笔是摔过之后画的。'},
-        {t:'收好，明天去文具店买一支', eff:{work:1,skill:1,hair:-1}, r:'你回宿舍接着画，画到两点。第二天柜台上只剩 0.5 的。'}
+        {t:'收好，明天去文具店买一支', eff:{work:1,skill:1,hair:-1}, r:'你把笔袋拉链拉上，笔尖垫了张纸。第二天去文具店，柜台上只剩 0.5 的。'}
       ]},
     st_flow: { name:'画 图', grade:[0,1], form:'choice', noChoice:true, eff:{skill:1, hair:-1},
       talk: ['你占了靠窗的位置。窗外有人在打羽毛球，球撞在拍面上，线绷紧又松开。','图铺开，四角拿纸胶带贴死，画到线稿，铅笔断了两回。你换了一支。','画完你起身，一条条撕下胶带团进掌心。窗外的球早就停了，你没关灯--明早反正有人比你先到。']},
@@ -3355,6 +3365,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     renderStatus();
     const _hn = el('hudNotes');    // 状态栏说明（点开的那块）也跟着重开局收起
     if (_hn){ _hn.innerHTML = ''; _hn.removeAttribute('data-open'); }
+    syncFloatBand();               // 面板收起了，飘字带回到条下方默认位置
     document.getElementById('cmd').innerHTML = '';
     cmdEcho('');
     log('新的一局。', 'p');
@@ -3568,9 +3579,21 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     const box = el('hudNotes');
     if (!box || !TRI[id]) return;
     if (box.getAttribute('data-open') === id){       // 再点同一个＝收起
-      box.innerHTML = ''; box.removeAttribute('data-open'); return;
+      box.innerHTML = ''; box.removeAttribute('data-open'); syncFloatBand(); return;
     }
     paintTriNote(id);
+  }
+  // 明细面板一开，.hud 下方那条带就被顶下去两百多 px：飘字 / 提示条的落点得跟着挪，
+  //   否则面板开着时还在飞的数值胶囊正好压在五类明细上（2026-09-16 手机实测：
+  //   面板里「手绘 / 建模 / CAD」三行的点数被三枚胶囊盖住，玩家以为明细没出来）。
+  //   做法：把面板高度写进 .hud 的 --notes-h（关＝0px），窄屏飘字的 top 里带着它。
+  function syncFloatBand(){
+    const hud = document.querySelector('.hud');
+    const notes = el('hudNotes');
+    const h = (notes && notes.offsetHeight) ? notes.offsetHeight : 0;
+    if (hud) hud.style.setProperty('--notes-h', h + 'px');
+    const w = document.getElementById('gtoasts');   // 提示条另有一套落点：容器在才重锚（不在就不必凭空造）
+    if (w) toastHost();
   }
   // 只画不切（2026-09-15）：面板里现在带着「五类技能明细」的活数据（点数会变），
   // 所以渲染时要能重画一次，而不是只能靠玩家再点一下才知道自己涨了几分。
@@ -3587,6 +3610,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       '</div>' +
       // 五类技能明细（2026-09-15 接入）：窄屏右侧栏被藏起来，五行靠这块展开面板露出来。
       skillBarsHTML();
+    syncFloatBand();      // 面板一开一合，条下方的飘字/提示条落点跟着让
   }
 
   // 不打扰的插话（首次掉头发 / 首次拿到作品）：fixed 浮层，几秒后自己走。
@@ -3965,9 +3989,18 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   // 延迟到下一拍再上屏：长文本是被「点去处 / 点继续」那一次点击带起来的，
   // 那一击的点击事件还会冒泡到 #stage 的 talk 监听上--不延后，第一句会被自己
   // 那一下点击吃掉（首屏只剩第二句）。setTimeout 0 让冒泡先走完。
+  // 长文本每屏几句（2026-09-16 用户口径：别一句一屏连打三十多下，节奏要交替）。
+  //   三篇长文本原本一句一屏 = 24 / 32 / 33 次空格连打，实测是全局最长的「纯空格段」。
+  //   现在按句分组上屏（同一屏内用换行分开，见 renderTalk/talkBR），屏数降到原来的 1/3。
+  //   注意：只作用在长文本上；卡片的对话（通常 2~4 句）保持一句一屏的演出节奏不变。
+  const LONGFORM_PER_SCREEN = 3;
   function showLongform(title, talk, done){
-    const list = (talk || []).filter(function(s){ return s && String(s).length; });
-    if (!list.length){ done(); return; }
+    const raw = (talk || []).filter(function(s){ return s && String(s).length; });
+    if (!raw.length){ done(); return; }
+    const list = [];
+    for (let i = 0; i < raw.length; i += LONGFORM_PER_SCREEN){
+      list.push(raw.slice(i, i + LONGFORM_PER_SCREEN).join('\n'));
+    }
     setTimeout(function(){ startTalk({ name: title, talk: list }, done); }, 0);
   }
 
@@ -4160,6 +4193,11 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     //   只在分岔屏用，卡面/白天选项的 need 不受影响。选点依据见 design/落地-门槛改级数-20260915.md。
     function talGroup(g){
       for (const tag in g) {
+        // 2026-09-16 修：组里写 work 时按「作品件数」比，不再当技能标签查。
+        //   原来 {craft:1, work:3} 里的 work 会去 S.skillTags['work'] 取值（恒 0）→
+        //   这一组永远不成立 = 进体制那条「做模型 1 级 + 作品 3 件」的路是死代码；
+        //   屏上还会印出「undefined 3 级（18 点）」。设计意图见 design/落地-门槛改级数-20260915.md。
+        if (tag === 'work') { if (S.works.length < (g[tag]>>>0)) return false; continue; }
         const lv = Math.floor((S.skillTags[tag] || 0) / 6);   // 6 点 = 1 级
         if (lv < (g[tag]>>>0)) return false;
       }
@@ -4193,17 +4231,26 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   function needText(n){
     const out = [];
     if (n.skill) out.push('技能 ' + n.skill);
-    if (n.work)  out.push('作品 ' + n.work);
+    if (n.work)  out.push('作品 ' + n.work + ' 件');
     if (n.hair)  out.push('头发 ' + n.hair + '%');
     const T = SKILL_TAG_CN;      // 与五行同一份名称表（2026-09-15），避免两处漂移
-    if (n.tal) for (const tag in n.tal) out.push(T[tag] + ' ' + n.tal[tag] + ' 级（' + (n.tal[tag] * 6) + ' 点）');
+    // 一条判据的写法（2026-09-16）：组里写 work 时是「作品件数」，不是技能级——
+    //   以前照技能名去查表，屏上会印出「undefined 3 级（18 点）」（进体制那条）。
+    const talItem = function(k, v){
+      return (k === 'work') ? ('作品 ' + v + ' 件') : (T[k] + ' ' + v + ' 级（' + (v * 6) + ' 点）');
+    };
+    // 组内是 AND、组间是 OR——两者以前共用同一个 ' · ' 分隔，屏上就成了
+    //   「做模型 1 级 · 手绘 1 级 · 或 · CAD 1 级」（2026-09-16 复核发现）：
+    //   玩家读成「做模型 和 手绘 或 CAD」，CAD 1 级但做模型 0 级的人会以为够线去点。
+    //   现在：必达项用 ' + ' 连，备选块整体加括号、组间用 ' 或 '、组内多条用 '，且 '。
+    if (n.tal) for (const tag in n.tal) out.push(talItem(tag, n.tal[tag]));
     if (n.talAny) {
-      n.talAny.forEach(function(g, i){
-        const s = Object.keys(g).map(k => T[k] + ' ' + g[k] + ' 级（' + (g[k] * 6) + ' 点）').join(' + ');
-        if (i) out.push('或'); out.push(s);
+      const groups = n.talAny.map(function(g){
+        return Object.keys(g).map(function(k){ return talItem(k, g[k]); }).join('，且 ');
       });
+      out.push(groups.length > 1 ? ('（' + groups.join(' 或 ') + '）') : groups[0]);
     }
-    return out.join(' · ');
+    return out.join(' + ');
   }
 
   function delta(eff){    const parts = [];
@@ -4287,12 +4334,12 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     return hit ? hit[0] : null;
   }
 
-  // 在一次 apply() 里把「这一笔 skill 变化」记入四类。只在加点(+>0)时归类--
-  // 扣点不像学东西（改图/被否定不缺哪一类），只回 S.skill 总值，四类不动；
-  // 这样四类之和在扣点后可能大于 S.skill，断言按「和 >= skill 且加的时候逐笔守恒」收口。
-  function applySkillTag(delta, src, placeName){
+  // 在一次 apply() 里把「这一笔 skill 变化」记入五类。只在加点(+>0)时归类--
+  // 扣点不像学东西（改图/被否定不缺哪一类），只回 S.skill 总值，五类不动；
+  // 这样五类之和在扣点后可能大于 S.skill，断言按「和 >= skill 且加的时候逐笔守恒」收口。
+  function applySkillTag(delta, src, placeName, tagOverride){
     if (delta > 0){
-      const tag = tagOfSkill(src, placeName);
+      const tag = tagOverride || tagOfSkill(src, placeName);
       if (!S.skillTags) S.skillTags = { draw:0, model:0, cad:0, craft:0, theory:0 };
       S.skillTags[tag] += delta;
       S._skillLog.push({ delta:delta, tag:tag, src:(src || ''), place:(placeName || '') });
@@ -4309,7 +4356,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     if (eff.skill){
       S.skill += eff.skill;
       d.push(['技能', eff.skill]);
-      applySkillTag(eff.skill, S._skillSrc, S._skillPlace);   // 归类（_skillSrc/_skillPlace 由调用方先挂）
+      applySkillTag(eff.skill, S._skillSrc, S._skillPlace, S._skillTag);   // 归类（_skillSrc/_skillPlace/_skillTag 由调用方先挂）
+      S._skillTag = null;                                                  // 显式定类只对这一次 apply 有效，用完即清
     }
     if (eff.hair){  S.hair  += eff.hair;  d.push(['头发', eff.hair]); }
     if (S.hair > 100) S.hair = 100;
@@ -4501,10 +4549,12 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   // ========== 皮肤：结局揭晓，它是"你这辈子怎么过的"视觉总结 ==========
   // 不是攒够技能解锁的奖品--是走到哪、留下什么，界面就长成什么样
   function skinOf(s){
-    if (s.line === 'leave')            return 'rhino';   // 转行＝换了软件
-    if (s.work >= 4)                   return 'su';      // 做出来的东西多＝建模的人
-    if (s.skill >= 18 && s.work <= 1)  return 'sketch';  // 一直在画、没留下东西＝手绘的人
-    return '';                                            // 默认：CAD 施工图
+    // 2026-09-16 用户裁定：结局屏那几套浅色皮肤（Rhino 中灰 / SU 蓝天灰地 / 手绘米色）
+    //   实际观感发灰、正文发虚，先统一用 CAD 这套深色外壳。
+    //   皮肤本身没删——SKIN_NAME / SHELL_FILE / SHELL_MENU / body.skin-* 的 CSS 全在，
+    //   将来要恢复「界面跟着你这辈子变」，把下面这行 return 去掉即可。
+    //   （原规则：转行→rhino / 作品≥4→su / 技能≥18 且作品≤1→sketch / 其余 cad）
+    return '';
   }
   const SKIN_NAME = { '':'CAD', su:'SU', sketch:'手绘', rhino:'Rhino' };
     // 外壳（标题文件名 + 菜单栏）跟着皮肤走，避免 SU 界面露 .dwg 的破绽（M8c）
@@ -5603,6 +5653,9 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   //  排程：v2 的核心界面。一学期给你 2 个行动点，挑 2 个去处。
   //  答题不再是推进器--它是你花时间的方式，主线是时间。
   // ============================================================
+  // 中文数词（2026-09-16）：排程屏的件数只有 1~2，写「一件事／两件事」才像人说的话；
+  //   别写「1 件事」（阿拉伯数字留给 HUD 的数值字段）。
+  const CN_NUM = { 0: '零', 1: '一', 2: '两', 3: '三', 4: '四', 5: '五' };
   function showSchedule(){
     S._optLocked = false;
     S._lastPick = 0;
@@ -5643,13 +5696,17 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     });
 
     el('stage').innerHTML =
-      '<div class="ttl">' + UI('schedule.title', {round: roundName(S.round)}, roundName(S.round) + ' · 这学期的时间花在哪') + '</div>' +
+      '<div class="ttl">' + UI('schedule.title', {round: roundName(S.round)}, roundName(S.round) + ' · 这学期的事') + '</div>' +
         (S.exhausted ? '<div class="warn" style="margin-top:-4px">' +
           (S.exhaustedBy === 'fail' ? UI('schedule.afterFail', {}, '（上学期没过。这学期，你只做得动一件事。）')
                                     : UI('schedule.exhausted', {}, '（头发见底。这学期，你只做得动一件事。）')) + '</div>' : '') +
-      '<div class="txt">' + UI('schedule.points', {n: S.actionsLeft}, '还剩 ' + S.actionsLeft + ' 个行动点。') +
-        (S.picked.length ? '\n' + UI('schedule.picked', {n: S.picked.length}, '已经选了 ' + S.picked.length + ' 个。') : '') +
-        '\n<span class="dim">' + UI('schedule.once', {}, '（同一个去处可以再去）') + '</span></div>' +
+      // 排程屏的文案（2026-09-16，用户定口吻＝清单）：把「行动点」这类机器词换成学生自己的说法。
+      //   这一屏每学期要看 8 遍，工程腔最刺眼。逐字：还有两件事没办。/ 记上一件。
+      '<div class="txt">' + UI('schedule.points', {n: S.actionsLeft, nw: CN_NUM[S.actionsLeft] || S.actionsLeft},
+          S.actionsLeft >= 2 ? '还有两件事没办。' : (S.actionsLeft === 1 ? '还有一件事没办。' : '没剩的了。')) +
+        (S.picked.length ? '\n' + UI('schedule.picked', {n: S.picked.length, nw: CN_NUM[S.picked.length] || S.picked.length},
+          S.picked.length >= 2 ? '两件都记上了。' : '记上一件。') : '') +
+        '\n<span class="dim">' + UI('schedule.once', {}, '（同一个地方，能再去）') + '</span></div>' +
       '<div class="places">' + rows + '</div>';
 
     Array.prototype.forEach.call(el('stage').querySelectorAll('.place'), function(b){
@@ -5964,8 +6021,21 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   //  认真做 pass 概率高但掉 12 发；差不多 5 发；随便交不掉发但基本功不保险。
   //  这正好让「头发是资源」--你用头发买过关。
   // ============================================================
-  const GATE_T = { crit:9, detail:14, sketch2:17, thesis:21 };   // B 方案：认真做基本稳过，随便交仍然赌
+  // 门槛（2026-09-16 调整）：过关开始发技能（见 GATE_GAIN），技能会喂回后面的关卡判定，
+  //   所以后面三关的门槛要跟着抬，不然「认真做」滚雪球、另外两档更没有理由。
+  //   抬法＝这一关之前累计能拿到的技能（每关过 +2）× 中档系数 1.0 → detail +2 / sketch2 +4 / thesis +6。
+  //   实测过线率（319 局试玩记录重放，骰子取中位、题面松紧取 0，命令 python3 tools/measure-gate-attitude.py）：
+  //     改前 care/slack 98.1/72.9 · 96.2/64.2 · 81.5/57.7 · 82.2/71.2
+  //     改后 care/slack 98.1/72.9 · 95.5/57.7 · 82.2/49.6 · 82.2/52.9
+  //   —— 认真做基本稳过不变；随便交从「七成本来也能过」收紧成真赌一把。
+  const GATE_T = { crit:9, detail:16, sketch2:21, thesis:27 };
   const GATE_NEED = { crit:0, detail:0, sketch2:1, thesis:1 };   // 作品硬要求：不够不是判死，是扣分
+  // 过关的产出（2026-09-16 用户拍板 A 方案）：过关按态度发技能——认真 +2 / 差不多 +1 / 随便交 +0；
+  //   没过也发 1 点（熬夜学到的东西），否则失败是「挨罚 + 零收获」双重损失，最贵那档就成了净负选项。
+  const GATE_GAIN = { care:2, ok:1, slack:0 };
+  const GATE_GAIN_FAIL = 1;
+  // 这笔技能算哪一类：按这一关考什么定（评图/一草/毕设＝图面功夫，构造课＝理论）。
+  const GATE_TAG = { crit:'draw', detail:'theory', sketch2:'draw', thesis:'draw' };
   function gatePass(mode){
     const coef = (mode==='care' ? 1.5 : mode==='ok' ? 1.0 : 0.7);
     const rnd = Math.floor(Math.random() * 5);
@@ -6027,13 +6097,23 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         const pass = gatePass(o.mode);
         log('　判定：' + (S._gateLog || '') + (pass ? ' · 过了' : ' · 不够'), 'gate');
         const cost = (o.mode==='care' ? 12 : o.mode==='ok' ? 5 : 0) + (pass ? 0 : 6);
-        S.hair -= cost;
-        if (S.hair < 0) S.hair = 0;
+        // 过关的产出（2026-09-16）：技能与头发一起走 apply()——五类归类才守恒、HUD 才飘字。
+        const gain = pass ? (GATE_GAIN[o.mode] || 0) : GATE_GAIN_FAIL;
+        S._skillSrc = gateName; S._skillPlace = ''; S._skillTag = GATE_TAG[S.currentGate] || null;
+        apply({ skill: gain, hair: -cost });
+        // 结果文案跟着「你刚才选的那个态度」走（2026-09-16 修）：以前三个态度共用同一句
+        //   「XX过了。那学期你拿头发换的。」——选了「随便交」（不掉头发）也报「拿头发换的」，
+        //   选项和后面出来的东西对不上。现在 care/ok/slack × 过/没过 各有一句，句句对得上代价。
+        const GR = {                       // {g} = 关卡名
+          care:  { pass: '过了。那学期你拿头发换的。',            fail: '没过。熬了几个通宵，方向还是没对。' },
+          ok:    { pass: '过了。交得不算漂亮，也没出岔子。',        fail: '没过。改了两处，没改到他要的地方。' },
+          slack: { pass: '过了。交完两分钟就后悔，但没人提。',      fail: '没过。交上去那会儿，你自己也知道。' }
+        };
         let resLine;
         if (pass){
-          S.memories.push({ tile: gateName, text: gateName + '过了。那学期你拿头发换的。' });
+          S.memories.push({ tile: gateName, text: gateName + '过了。' + GR[o.mode].pass });
           log('「' + gateName + '」过了。', 'p');
-          resLine = gateName + '过了。那学期你拿头发换的。';
+          resLine = gateName + GR[o.mode].pass;
           // 毕设过 = 唯一确定的作品，从此进作品集
           if (S.currentGate === 'thesis'){
             // 作品名已停用（2026-09-15）：毕设同样只记件数。《题名》的提示语不再报书名号。
@@ -6053,12 +6133,12 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
           log('「' + gateName + '」没过。', 'w');
           resLine = S._earlyEnd === 'yanbi' ? (gateName + '没过。这一届，你毕不了业。')
                   : S._earlyEnd === 'yiye' ? (gateName + '没过。这是第三关了。')
-                  : (gateName + '没过。那学期白搭了。');
+                  : (gateName + GR[o.mode].fail);
         }
-        renderHUD();
         // 关卡是全游戏情绪最高的一屏，以前选完只剩一行判定公式就跳走，
         // 还留着全项目唯一那个 420ms 定时器（后台标签页会被节流）。现在补一屏结果页，点「继续」再走。
-        showResult(o.label, resLine, { hair: -cost });
+        // 结果页的数值标签把「过关的产出」一起亮出来（技能 +N），别让它悄悄进账。
+        showResult(o.label, resLine, { skill: gain, hair: -cost });
         el('nextBtn').onclick = finishGate;
       };
       box.appendChild(b);
@@ -6746,20 +6826,20 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
    "那张表你刷了 {n} 遍。剩下的题目，名字格一个没空。"
   ],
   "schedule": {
-   "title": "{round} · 这一学期，怎么过",
+   "title": "{round} · 这学期的事",
    "points": [
-    "还剩 {n} 个行动点。",
-    "这一学期，行动点还剩 {n} 个。",
-    "还剩 {n} 个，别都留到最后。",
-    "还剩 {n} 个。用完了，这学期就过去了。",
-    "手上还剩 {n} 个行动点。",
-    "还剩 {n} 个。挑吧，别挑太久。"
+    "还有{nw}件事没办。",
+    "这学期的{nw}件事，还空着。",
+    "还剩{nw}件，挑吧。",
+    "{nw}件事，还没动手。",
+    "手上还有{nw}件。",
+    "还有{nw}件。办完，这学期就过去了。"
    ],
    "picked": [
-    "已经选了 {n} 个。",
-    "{n} 个定了。"
+    "记上一件。",
+    "{nw}件记上了。"
    ],
-   "once": "（同一个去处可以再去）",
+   "once": "（同一个地方，能再去）",
    "exhausted": "（头发见底。这学期，你只做得动一件事。）",
    "afterFail": "（上学期没过。这学期，你只做得动一件事。）",
    "used": "这学期来过 {n} 次",
@@ -7002,6 +7082,13 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       e: '你当年说家里让报的。这句话你替他们背了五年。',
       f: '你当年随手填的。后来你偶尔会想，那天要是多想三分钟呢。'
     };
+    const TOPO_SUBJECTS = ['拓扑', '声学', '建筑物理', '量子力学', '计量经济', '水文地质', '口腔解剖'];
+    const TOPO_NAMES    = ['张伟', '李明', '王强', '刘洋', '陈晨', '赵磊', '孙倩'];
+    function leaveGagLine(){
+      const a = TOPO_SUBJECTS[Math.floor(Math.random() * TOPO_SUBJECTS.length)];
+      const b = TOPO_NAMES[Math.floor(Math.random() * TOPO_NAMES.length)];
+      return '建筑学失去你，就像' + a + '失去' + b + '。';
+    }
     const retro = [];
     if (S.openWhy && WHY_RETRO[S.openWhy]) retro.push(WHY_RETRO[S.openWhy]);
     // 清单第 35 项（2026-09-13）：删掉原来夹在这中间的「你抽了 N 次题。最后一次，你还是用了第一个。」
@@ -7009,6 +7096,13 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     //   这里改成独立 if：留出「开场那句话 + 一件东西/几本速写本」两行的位置。
     if ((S.works || []).length)          retro.push('你手上那件东西，是很早做的，一直没再换过。');
     else if ((S._sideSeen || []).length) retro.push('你那几本速写本，最后压在出租屋的床底下。');
+    // 转行梗（2026-09-16 落地，口径见 design/游戏设计总纲.md「转行梗」+ design/待并入口径-本会话讨论.md §2）：
+    //   「建筑学失去你，就像拓扑学失去张伟」——庄重的「领域痛失英才」× 此人对该领域零影响。
+    //   落点是转行线结局屏、落点句之后的**第二句闲笔**；每局随机换学科 + 换人名（不写死一句）。
+    //   学科要冷门、人名要是无关紧要的普通人名；禁填「才华」「英才」这类真词。
+    if (S.line === 'leave'){
+      retro.splice(Math.min(1, retro.length), 0, leaveGagLine());
+    }
     const retroText = retro.slice(0, 2).map(function(l){ return '<div class="retro">' + l + '</div>'; }).join('');
     const atlasKey = (pick.kind === 'line')
       ? (pick.key + (pick.key === 'liuxue' && S.sub ? '.' + S.sub : '') + '·' + (pick.mood || ''))

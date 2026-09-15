@@ -2582,12 +2582,18 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     fork: { name:'毕 业', form:'fork',
       text: '毕业。你投了 47 份简历，收到 3 个回复。\n其中两个是同一个岗位。\n宿舍搬空那天，五年攒的图捆着麻绳，一直没拆。',
       opts:[
-        {t:'考研', line:'kaoyan', need:{skill:14}},
-        {t:'留学', line:'liuxue', need:{work:3}},
-        {t:'进设计院', line:'firm', need:{work:2, skill:12}},
-        {t:'进甲方', line:'client', need:{work:2, skill:14}},
-        {t:'先锋工作室', line:'avant', need:{skill:16}},
-        {t:'进体制', line:'tizhi', need:{skill:14}},
+        // 2026-09-15：七条去向门槛改看具体技能级数（tal / talAny，6 点 = 1 级）+ 作品件数。
+        //   每条对应现实里这条路的硬功夫，七条条件互不相同（tools/check-fork-gates.py 自检断言）。
+        //   过线率与旧总分离散门槛对齐（差距 ≤5pp，见 design/落地-门槛改级数-20260915.md）：
+        //     考研 64.9→64.4  留学 83.6→83.6  设计院 97.3→95.9  甲方 59.2→60.3
+        //     先锋 60.5→58.9  体制 64.9→68.5  转行不变 100。
+        //   级数用「点数阈值」表述（draw:5 = 5 点，级 = floor(点/6)，文档里同时给级数口径）。
+        {t:'考研', line:'kaoyan', need:{tal:{draw:1}}},                                  // 快题：看手绘级数
+        {t:'留学', line:'liuxue', need:{talAny:[{draw:1},{model:1}], work:2}},            // 作品集=手绘或建模任一到位+交得出东西
+        {t:'进设计院', line:'firm', need:{talAny:[{draw:1},{cad:1},{model:1}]}},          // 施工图上手：任一硬技能到位
+        {t:'进甲方', line:'client', need:{tal:{cad:1, craft:1}, work:2}},                // 看协调与经验，不靠单一项堆高
+        {t:'先锋工作室', line:'avant', need:{tal:{craft:1}, talAny:[{draw:1},{cad:1}]}}, // 手上功夫优先
+        {t:'进体制', line:'tizhi', need:{talAny:[{theory:1}, {craft:1, work:3}]}},      // 考编看理论积累，与手艺无关
         {t:'转行', line:'leave'}
       ]},
 
@@ -3939,6 +3945,18 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     if (n.skill && S.skill < n.skill) return false;
     if (n.work && S.works.length < n.work)  return false;   // 作品只有一个真源：作品集里的件数
     if (n.hair  && S.hair  < n.hair)  return false;
+    // 2026-09-15：毕业分岔的七条去向改看具体技能级数（tal / talAny）。
+    //   1 级 = 6 点，tagOfSkill 归五类；tal=全部达到，talAny=任一组达标（组内是 AND）。
+    //   只在分岔屏用，卡面/白天选项的 need 不受影响。选点依据见 design/落地-门槛改级数-20260915.md。
+    function talGroup(g){
+      for (const tag in g) {
+        const lv = Math.floor((S.skillTags[tag] || 0) / 6);   // 6 点 = 1 级
+        if (lv < (g[tag]>>>0)) return false;
+      }
+      return true;
+    }
+    if (n.tal && !talGroup(n.tal)) return false;
+    if (n.talAny && !n.talAny.some(talGroup)) return false;
     return true;
   }
   function needText(n){
@@ -3946,6 +3964,14 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     if (n.skill) out.push('设计 ' + n.skill);
     if (n.work)  out.push('作品 ' + n.work);
     if (n.hair)  out.push('头发 ' + n.hair + '%');
+    const T = { draw:'手绘', model:'建模', cad:'CAD', craft:'做模型', theory:'理论' };
+    if (n.tal) for (const tag in n.tal) out.push(T[tag] + ' Lv' + n.tal[tag]);
+    if (n.talAny) {
+      n.talAny.forEach(function(g, i){
+        const s = Object.keys(g).map(k => T[k] + ' Lv' + g[k]).join('+');
+        if (i) out.push('或'); out.push(s);
+      });
+    }
     return out.join(' · ');
   }
 

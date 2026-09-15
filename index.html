@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>营造大亨 v0.1</title>
+<title>建院模拟器 v0.1</title>
 <style>
 html{ zoom:1.25; }
   :root{
@@ -993,7 +993,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
 
 <div class="app">
   <div class="titlebar">
-    <span>营造大亨 &nbsp;<span class="fn">— [ YZ-01.dwg ]</span></span>
+    <span>建院模拟器 &nbsp;<span class="fn">— [ JY-01.dwg ]</span></span>
     <span class="w"><span class="gal" id="galBtn">图鉴 <b>0</b> / 45</span><span>v0.1</span><span>— &nbsp;□&nbsp; ✕</span></span>
   </div>
 
@@ -4405,7 +4405,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   }
   const SKIN_NAME = { '':'CAD', su:'SU', sketch:'手绘', rhino:'Rhino' };
     // 外壳（标题文件名 + 菜单栏）跟着皮肤走，避免 SU 界面露 .dwg 的破绽（M8c）
-  const SHELL_FILE = { '':'YZ-01.dwg', 'su':'庭院小筑.skp', 'rhino':'方案_第三轮.3dm', 'sketch':'1:100 · A1 硫酸纸' };
+  const SHELL_FILE = { '':'JY-01.dwg', 'su':'庭院小筑.skp', 'rhino':'方案_第三轮.3dm', 'sketch':'1:100 · A1 硫酸纸' };
   const SHELL_MENU = {
     '':       ['文件','编辑','视图','插入','格式','工具','绘图','标注'],
     'su':     ['文件','编辑','视图','相机','绘图','工具','窗口','帮助'],
@@ -4416,7 +4416,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     document.body.classList.remove('skin-su','skin-sketch','skin-rhino');
     if (name) document.body.classList.add('skin-' + name);
     const fn = document.querySelector('.titlebar .fn');
-    if (fn) fn.textContent = '\u2014 [ ' + (SHELL_FILE[name] || 'YZ-01.dwg') + ' ]';
+    if (fn) fn.textContent = '\u2014 [ ' + (SHELL_FILE[name] || 'JY-01.dwg') + ' ]';
     const mb = document.querySelector('.menubar');
     if (mb) mb.innerHTML = (SHELL_MENU[name] || SHELL_MENU['']).map(function(m){ return '<b>' + m + '</b>'; }).join('');
     const dbox = el('deco');

@@ -2588,14 +2588,15 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         //     考研 64.9→64.4  留学 83.6→83.6  设计院 97.3→95.9  甲方 59.2→60.3
         //     先锋 60.5→58.9  体制 64.9→68.5  转行不变 100。
         //   级数用「点数阈值」表述（draw:5 = 5 点，级 = floor(点/6)，文档里同时给级数口径）。
-        {t:'考研', line:'kaoyan', need:{tal:{theory:2}}},                                 // 考研初试考理论（建筑史/构造/物理）：看理论级数，比体制高
-        // 2026-09-15 用户裁定：「考研 必须理论啊」——原来误设成手绘（快题），已改
+        {t:'考研', line:'kaoyan', need:{talAny:[{theory:2},{theory:1,draw:1}]}},
+        // 2026-09-15 三改（用户口径）：考研=政治+英语+理论课+快题（手绘），理论是主门槛
+        // 但快题在手——理论 2 级单够也算过；理论 1 级必须手绘 1 级补上。
         {t:'留学', line:'liuxue', need:{talAny:[{draw:1},{model:1}], work:2}},            // 作品集=手绘或建模任一到位+交得出东西
-        {t:'进设计院', line:'firm', need:{talAny:[{draw:1},{cad:1},{model:1}]}},          // 施工图上手：任一硬技能到位
+        {t:'进设计院', line:'firm', need:{talAny:[{draw:1},{cad:1},{model:1}]}},          // 入职考快题/交材料；快题在手或CAD或建模任一到位
         {t:'进甲方', line:'client', need:{tal:{cad:1, craft:1}, work:2}},                // 看协调与经验，不靠单一项堆高
         {t:'先锋工作室', line:'avant', need:{tal:{craft:1}, talAny:[{draw:1},{cad:1}]}}, // 手上功夫优先
         {t:'进体制', line:'tizhi', need:{talAny:[{theory:1}, {craft:1, work:3}]}},      // 考编看理论积累，与手艺无关
-        {t:'转行', line:'leave'}
+        {t:'转行', line:'leave', need:{work:2}}                                          // 转行无技能门槛，但手里必须有两件做出来的东西
       ]},
 
     // ---- 支线 · 设计院 ----
@@ -3772,6 +3773,106 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     client:  { name:'第一次开会', talk: CLIENT_TALK },
     avant:   { name:'挂牌',    talk: AVANT_TALK },
     tizhi:   { name:'报到',    talk: TIZHI_TALK }
+  };
+  // ============================================================
+  //  碰壁机制（2026-09-15）：分岔七条去向，门槛不过的【照样能点】——
+  //  点了播一段 3~5 句「没进去」（具体、带信息、不抒情、无心理活动），
+  //  播完回分岔屏，这次选择不消耗（数值/作品/技能全不动，可以接着选别的）；
+  //  同一条线第二次点，换更短的一版（2 句左右）。
+  //  文案带信息：让玩家自己看出差在哪（考研卡理论→「图书馆三年没借过几本」）。
+  // ============================================================
+  const BUMP_TALK = {
+    kaoyan: {
+      name: '初 试',
+      first: [
+        '十二月上午八点半，你坐进考场，前桌在拆信封。',
+        '你已经考完了政治，卷子写满了。',
+        '理论课发卷，第三道问佛光寺东大殿的构架做法，前面的名词解释你停在了第二题。',
+        '考场里翻纸的声音一直有，你提前交了卷。',
+        '三月出分，理论课比复试线低了十一分，名单里没有你的名字。'
+      ],
+      second: [
+        '你又坐在同一间考场里，卷面还是停在名词解释。',
+        '这一遍你数了，理论课还是差着十分。'
+      ]
+    },
+    liuxue: {
+      name: '递 材 料',
+      first: [
+        '打印店扫出三本作品集，你传进了申请系统。',
+        '二月回信，两封是拒信，一封写着：作品集中个人完成项目数量不足。',
+        '另一封建议先修一年预科，学费一栏标着三万镑。',
+        '你把回信转进收藏夹，关掉了邮箱。'
+      ],
+      second: [
+        '你知道这份作品集还是原来那本。',
+        '回信也还是原来那两封。'
+      ]
+    },
+    firm: {
+      name: '笔 试',
+      first: [
+        '设计院的入职考试在周六上午，九点开考，A2 草稿纸和一支针管笔。',
+        '一块五十米进深的沿街地，六小时快题。',
+        '第三个小时你的平面还没有收口，主要立面画了一半。',
+        '收卷的时候，你旁边那位等人把最后一张剖面上完色。',
+        '两周后名单贴在院里内网，二十进四，没有你。人事回邮件：本次不录。'
+      ],
+      second: [
+        '你换了招聘季再考一次，快题交卷的时间还是不够。',
+        '名单还是没有你。'
+      ]
+    },
+    client: {
+      name: '面 试',
+      first: [
+        '甲方人力翻你的作品集，翻完问你实习做的是方案还是施工图。',
+        '你说了竞赛那张图，他问后来的深化和报建是谁跟进的。',
+        '他合上册子念了一句：这个岗要五年以上设计管理经验，乙方背景优先。',
+        '面试第十分钟到了，前台把下一个候选人领进来。'
+      ],
+      second: [
+        '你换了那家公司另一个岗位投递，简历关没有过。',
+        '回信只有模板问候。'
+      ]
+    },
+    avant: {
+      name: '投 作 品',
+      first: [
+        '你把三张和同学合作的竞赛图发进了那间工作室的公开邮箱。',
+        '两天后回了一小段：他们只看落地作品，落款要写你一个人担的部分。',
+        '他们的主页上挂了十一件作品，每一件都有建成照片和项目编号。',
+        '你没有回信。'
+      ],
+      second: [
+        '你换了个邮箱再投，这次没有人回。'
+      ]
+    },
+    tizhi: {
+      name: '资 格 审',
+      first: [
+        '你在事业编招考页面上看到专业栏写着「城乡规划学、土木类」。',
+        '报名走到资格审查，系统弹出提示：所学专业与岗位要求不符。',
+        '你翻专业目录对照表，建筑学在另一串编号里，这条岗位没列。',
+        '报名截止前一天，你取消了报名。'
+      ],
+      second: [
+        '你调出下一个区的招考公告，专业栏第一行写着「不含建筑学」。',
+        '你关了页面。'
+      ]
+    },
+    leave: {
+      name: '递 简 历',
+      first: [
+        '你把作品集传进招聘网站，里面只有一件东西。',
+        '一周收到三封格式回信，其中一封写着：作品量偏少。',
+        '另一封的岗位要求那栏写着：完整跟过两个以上项目。',
+        '你把投递记录截图存进了文件夹。'
+      ],
+      second: [
+        '你又试了一次，作品还是一件，回信还是那类格式。'
+      ]
+    }
   };
   // ============================================================
   //  三篇长文本（2026-09-13）：食堂那顿饭 / 通宵那一次 / 转行面试
@@ -5626,6 +5727,79 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     S.termEff = { work:0, skill:0, hair:0 };
   }
 
+  // 分岔屏（2026-09-15 碰壁机制版）：七条去向全部可点。门槛不过的条目点了播
+  // BUMP_TALK[line].first（3~5 句「没进去」），播完回分岔屏；同一条线第二次点播
+  // second（1~2 句；再点同一句回应，不产生新回路）。过线的条目按原流程落
+  // S.line → 过渡 → 结局/排程。
+  // 保底出口（2026-09-15 兜底）：第 8 条「先找份活干着」无门槛——七条全被卡住时
+  // 仍必有一步可走（tools/playtest/assert-no-deadlock.js 断这一条），走向早结局 early·ganhuo。
+  // 状态不消耗（碰壁期间不落 S.line、不动 work/skill/hair/skillTags）。
+  function renderForkScreen(){
+    el('stage').innerHTML =
+      '<div class="ttl">毕 业</div>' +
+      '<div class="txt">毕业。\n你投了 47 份简历，收到 3 个回复。\n其中两个是同一个岗位。</div>' +
+      '<div class="opts" id="opts"></div>';
+    const opts = CARDS.fork.opts.concat([{ t:'先找份活干着', line:'' }]);
+    showPrompt('毕 业', opts);
+    const box = el('opts');
+    opts.forEach(function(o, i){
+      const isBackstop = (o.line === '') && !CARDS.fork.opts[i];       // 第 8 条：保底
+      const ok = isBackstop || !o.need || meetNeed(o.need);            // 门槛过了没（过了才落线，没过也照常能点）
+      const bt = BUMP_TALK[o.line];
+      const bumped = !isBackstop && !ok && bt && bt.first && bt.first.length;
+      const b = document.createElement('button');
+      b.className = 'opt' + ((o.need && !bumped) ? ' unlocked' : '');   // 不加 locked：这一版允许碰壁
+      b.innerHTML = '<span class="k">' + String.fromCharCode(65+i) + '</span>' +
+                    '<span class="t">' + o.t + '</span>' +
+                    (o.need && !isBackstop ? '<span class="cf">需要 ' + needText(o.need) + '</span>' : '');
+      b.onclick = function(){
+        // ---- 碰壁：没过线且备了碰壁文案 → 播「没进去」→ 回分岔屏（不消耗）----
+        if (bumped){
+          const seen = (S._bumped && S._bumped[o.line]) || 0;
+          const talkList = seen >= 1 ? (bt.second && bt.second.length ? bt.second : bt.first) : bt.first;
+          if (!S._bumped) S._bumped = {};
+          S._bumped[o.line] = seen + 1;
+          log('你试着走了「' + o.t + '」，没进去。', 'p');
+          startTalk({ name: bt.name || '没进去', talk: talkList.slice() }, function(){
+            renderForkScreen();               // 亏没吃、线没落：回到分岔，接着选
+          });
+          return;
+        }
+        // ---- 正常过线：落线 → 过渡 → 结局/排程 ----
+        Array.prototype.forEach.call(box.querySelectorAll('.opt'), function(x){
+          x.classList.add(x === b ? 'chosen' : 'faded'); x.disabled = true;
+        });
+        if (isBackstop){                       // 保底出口：不落七线，直达「先这样」早结局
+          S.line = '';
+          log('你选了「先找份活干着」。', 'p');
+          S.memories.push({ tile:'毕业', text:'毕业那年七条路都没进去，你先找了份活干着。' });
+          earlyEnding('ganhuo');
+          return;
+        }
+        S.line = o.line;
+        log('你选择了「' + o.t + '」。', 'p');
+        S.memories.push({ tile:'毕业', text:'毕业那年你选了' + o.t + '。' });
+        // 转行线（2026-09-15）：毕业选「转行」→ 逐句播面试过渡 → 直接进转行画像结局。
+        // 其余六线（2026-09-15 批）：LINE_TRANSITION 查表，命中即播该线短过渡（逐句 2~6 句）
+        // → 直达该线结局；未命中走毕业后 3 回合（那套代码/卡池全部保留，DLC 用）。
+        // 文案走 talk 引擎（与卡牌屏同一套手感：逐句一屏，点击/空格推进）。
+        if (o.line === 'leave' && LEAVE_TALK.length){
+          renderSide();
+          startTalk({ name: '转行面试', talk: LEAVE_TALK.slice() }, function(){ ending(); });
+          return;
+        }
+        const tr = LINE_TRANSITION[o.line];
+        if (tr && tr.talk && tr.talk.length){
+          renderSide();
+          startTalk({ name: tr.name, talk: tr.talk.slice() }, function(){ ending(); });
+          return;
+        }
+        renderSide(); showSchedule();   // 直接同步渲染，停顿交给 CSS 过渡（避免后台标签页被节流）
+      };
+      box.appendChild(b);
+    });
+  }
+
   // 开始一个回合
   function beginRound(){
     S._begun = true;      // 从这一屏起才算「真的开始了」：两个「首次」提示从这里才开始记账
@@ -5636,48 +5810,12 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     PLACES.forEach(function(pl){ pl._used = false; pl._term = 0; });
     resetPlaces();       // 毕业后各条线的去处也要清（只清 PLACES 会让毕业后第二学期全处「去过」→ 死屏）
     renderTrack(); renderHUD();
-    // 毕业那一回合：先分岔（选一条线），再排程
+    // 毕业那一回合：先分岔（选一条线），再排程。
+    // 碰壁机制（2026-09-15）：门槛不过的条目照样能点——点了播一段「没进去」（BUMP_TALK，
+    // 3~5 句；同一条线第二次点播更短的 second），播完回分岔屏，这次不消耗（不落 S.line、
+    // 不动数值/技能/作品）。门槛继续显示在按钮上（「需要 X」），只是不再灰掉。
     if (R.fork && !S.line){
-      el('stage').innerHTML =
-        '<div class="ttl">毕 业</div>' +
-        '<div class="txt">毕业。\n你投了 47 份简历，收到 3 个回复。\n其中两个是同一个岗位。</div>' +
-        '<div class="opts" id="opts"></div>';
-      showPrompt('毕 业', CARDS.fork.opts);
-      const box = el('opts');
-      CARDS.fork.opts.forEach(function(o, i){
-        const locked = o.need ? !meetNeed(o.need) : false;      // 作品不够，有些门进不去（看得见、点不了）
-        const b = document.createElement('button');
-        b.className = 'opt' + (locked ? ' locked' : '');
-        b.innerHTML = '<span class="k">' + String.fromCharCode(65+i) + '</span>' +
-                      '<span class="t">' + o.t + '</span>' +
-                      (locked ? '<span class="cf">需要 ' + needText(o.need) + '</span>' : '');
-        if (locked){ box.appendChild(b); return; }
-        b.onclick = function(){
-          Array.prototype.forEach.call(box.querySelectorAll('.opt'), function(x){
-            x.classList.add(x === b ? 'chosen' : 'faded'); x.disabled = true;
-          });
-          S.line = o.line;
-          log('你选择了「' + o.t + '」。', 'p');
-          S.memories.push({ tile:'毕业', text:'毕业那年你选了' + o.t + '。' });
-          // 转行线（2026-09-15）：毕业选「转行」→ 逐句播面试过渡 → 直接进转行画像结局。
-          // 其余六线（2026-09-15 批）：LINE_TRANSITION 查表，命中即播该线短过渡（逐句 2~6 句）
-          // → 直达该线结局；未命中走毕业后 3 回合（那套代码/卡池全部保留，DLC 用）。
-          // 文案走 talk 引擎（与卡牌屏同一套手感：逐句一屏，点击/空格推进）。
-          if (o.line === 'leave' && LEAVE_TALK.length){
-            renderSide();
-            startTalk({ name: '转行面试', talk: LEAVE_TALK.slice() }, function(){ ending(); });
-            return;
-          }
-          const tr = LINE_TRANSITION[o.line];
-          if (tr && tr.talk && tr.talk.length){
-            renderSide();
-            startTalk({ name: tr.name, talk: tr.talk.slice() }, function(){ ending(); });
-            return;
-          }
-          renderSide(); showSchedule();   // 直接同步渲染，停顿交给 CSS 过渡（避免后台标签页被节流）
-        };
-        box.appendChild(b);
-      });
+      renderForkScreen();
       return;
     }
     // 大一第一件事：抽这学期的课程设计题（茶室设计 / 上海里弄微更新 / 咖啡屋，都是入门题）
@@ -6075,7 +6213,10 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       verdict:'这一年你什么都没留下，除了两张转诊单。' },
     zhuan: { title:'换 专 业。',
       body:'大二评图没过。老师说得客气：可能方向不太对。\n你转去了建筑环境，课表一下轻了。\n你在宿舍楼下遇见原来班的同学，他们说要去通宵。\n你说了句加油，然后回宿舍睡觉。',
-      verdict:'你没输，你只是提前下车了。' }
+      verdict:'你没输，你只是提前下车了。' },
+    other: { title:'先 这 样。',
+      body:'你把那几条路都问了一遍，都没进去。\n校招末尾你进了一家家居公司的营销部，做陈列。第一个月你把商场一层的灯具店平面照着记忆画了一遍，店长贴在了柜台后面。\n室友问你还画不画，你说：周末画着玩。\n作品集文件夹留着，你在里面新开了一层，命名叫「干着的时候」。',
+      verdict:'路没走成，你先找了张桌子坐下。天没塌。' }
   };
   function earlyEnding(kind){
     const W = ((ENDING_TEXT.early || {})[kind]) || null;
@@ -6392,6 +6533,12 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
    "scene": "转专业表上「转出原因」只有四行格子，你划掉重填过一次，最后写了六个字：不太适合这个。",
    "body": "你转到了隔壁。新同学问你以前学什么的，你说建筑，他们说：哦，那你们是不是天天画图。\n你说是。\n你再没进过那栋楼，有一次路过，看见楼道里晾着刚喷过漆的灰卡楼。",
    "verdict": "你走的时候没人拦你。这行不缺人，从来不缺。"
+  },
+  "ganhuo": {
+   "title": "先 这 样。",
+   "scene": "面试你的主管把一页简历折了个角，放进案头那个抽屉，说下周一来入职。你走到电梯口，回头看了一眼那面墙上的排班表。",
+   "body": "七条路你都问过了，都没走成。\n你进了一家卖定制家具的公司做设计助理，量房、画柜子拆单图、核对五金件型号，一个月休四天。\n楼下打印店老板认识你了，因为每周三你都要打两版货架排布图。\n你把作品集文件夹改了个名，叫「先干着」。\n里面还是那两件东西，没删。",
+   "verdict": "没进去的门都关上了。这一扇开着，你先坐下了。"
   }
  },
  "special": {
@@ -6919,7 +7066,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     ['yanbi',  '延毕',   '毕设没过，或手上作品不够'],
     ['yiye',   '肄业',   '连着三关没过'],
     ['xiuxue', '休学',   '在校期间就把头发熬到底'],
-    ['zhuan',  '换专业', '大二评图没过']
+    ['zhuan',  '换专业', '大二评图没过'],
+    ['ganhuo', '先这样', '毕业分岔七条线都没进去，选了「先找份活干着」']
   ];
   // 徽章（原"特殊结局"）：降级成结局页并列展示的标记，不再占图鉴格。
   // 为什么不占格：一局只能有一个结局标题，谁占了格、其余同条件的分支就永远轮不到 = 死格。

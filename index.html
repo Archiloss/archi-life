@@ -993,6 +993,14 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
 .skill-bars .pips{display:inline-flex;gap:2px;flex:0 0 auto;}
 .skill-bars .pip{display:inline-block;width:8px;height:8px;background:var(--cyan);border:1px solid rgba(0,0,0,.55);}
 .skill-bars .pip.off{background:transparent;border-color:var(--edge2);}
+
+
+/* 顶部提示条容器（2026-09-15）：多条提示纵向排列、互不叠字；
+   落点 top 由 JS 按顶部状态条（.hud / .hud-notes）的底边算，不再压住任何文字。
+   容器 pointer-events:none，不挡任何点击；里层 .gtoast 交给容器排版（position:static）。 */
+.gtoasts{position:fixed;top:16px;left:0;right:0;z-index:1300;
+  display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;}
+.gtoasts .gtoast{position:static;top:auto;left:auto;right:auto;margin:0;}
 </style>
 </head>
 <body>
@@ -1060,7 +1068,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "宿舍·晚上，手机",
-   "text": "家长群里有人把你被录取的截图发上去了，后面跟了三十几个表情。\n一个你叫不太出称呼的亲戚私聊你：「这个专业好啊，以后是人才。」\n你回了个「谢谢」，然后把手机扣在桌上，翻开了第一本教材。",
+   "text": "家长群里有人把你被录取的截图发上去了，后面跟了三十几个表情。\n二姨私聊你：「这个专业好啊，以后是人才。」\n你回了个「谢谢」，然后把手机扣在桌上，翻开了第一本教材。",
    "keys": [
     "家长群截图",
     "三十几个表情",
@@ -1078,10 +1086,10 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "走廊·课间",
-   "text": "老师路过时停下，看了一眼你们摊了一走廊的图。\n「你们是全校分数最高的一批人。」他说，「建筑学培养的是精英，是空间的诗人。」\n他走远了，你们几个对着还在滴水的墨线图互相看了一眼。\n你把「空间的诗人」记在笔记本第一页，那页后来画满了楼梯详图。",
+   "text": "老师路过时停下，看了一眼你们摊了一走廊的图。\n「你们是全校分数最高的一批人。」他说，「建筑学培养的是精英，是空间的诗人。」\n他走远了，你们几个对着还没干透的墨线图互相看了一眼。\n你把「空间的诗人」记在笔记本第一页，那页后来画满了楼梯详图。",
    "keys": [
     "「空间的诗人」",
-    "还在滴水的墨线",
+    "还没干透的墨线",
     "画满楼梯详图的第一页"
    ]
   },
@@ -1105,9 +1113,9 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "周末·同学相约出行",
-   "text": "隔壁城市有座大师的新馆开了，你们专程坐车去看。\n建筑摄影爱好者们举着相机排队找角度，你们排队找角度。\n回程车上你把照片发到家族群，配文：「以后我也要做这样的东西。」\n二姨回了三个大拇指。",
+   "text": "隔壁城市有座坂茂的新馆开了，你们专程坐车去看。\n建筑摄影爱好者们举着相机排队找角度，你们排队找角度。\n回程车上你把照片发到家族群，配文：「以后我也要做这样的东西。」\n二姨回了三个大拇指。",
    "keys": [
-    "大师新馆",
+    "坂茂的新馆",
     "排队找角度",
     "家族群里的三个大拇指"
    ]
@@ -1273,7 +1281,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
    ]
   },
   {
-   "trigger": "图书馆·期末",
+   "trigger": "宿舍·期末",
    "text": "你开始用软件建模了，快捷键背到做梦都在按。\n半夜你梦见自己在拉伸一面墙，醒来发现手指还保持着按键盘的姿势。\n昨天那份图还有一层楼没画。",
    "keys": [
     "快捷键背到做梦",
@@ -1314,7 +1322,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
    ]
   },
   {
-   "trigger": "课后",
+   "trigger": "课上",
    "text": "老师课上放了张设计院平面图，随口说：「你们以后进了院，加班是常事，心里先有个数。」\n底下有人笑。老师说：「我说真的。」\n笑声停了一下，又响起来，比刚才小一点。",
    "keys": [
     "课堂随口",
@@ -1349,10 +1357,10 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "课间·走廊",
-   "text": "大二又有人问你。\n你说想考个研，看看。\n对方「哦」了一声，你也没再往下想。",
+   "text": "老师又问了一遍：「毕业想去哪儿？」\n你说想考个研，看看。\n老师「哦」了一声，你也没再往下想。",
    "keys": [
     "「想考个研，看看」",
-    "对方那声「哦」",
+    "老师那声「哦」",
     "没再往下想"
    ]
   }
@@ -1399,7 +1407,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
    ]
   },
   {
-   "trigger": "午间·手机推送",
+   "trigger": "食堂·午间",
    "text": "手机弹出新闻：某大开发商被曝商业承兑汇票逾期，供应商讨款。\n你不知道商票是什么，顺手划走了。食堂电视里在放别的新闻。",
    "keys": [
     "手机推送",
@@ -1416,7 +1424,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "教学楼下·公告",
-   "text": "教务处贴出转专业通知。有人在公告栏前站了很久，拍了张照，走了。\n后来那个人的座位换到了另一个专教。\n没人问为什么。建筑学这边，没人这么问。",
+   "text": "教务处贴出转专业通知。隔壁组那个同学在公告栏前站了很久，拍了张照，走了。\n后来他的座位换到了另一个专教。\n没人问为什么。建筑学这边，没人这么问。",
    "keys": [
     "公告栏",
     "转专业",
@@ -1512,7 +1520,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "专教",
-   "text": "你发现隔壁同学的屏幕上开着行测题，见你过来，飞快切回 CAD。\n你也装作没看见。\n后来你发现，专教里至少有三个人的浏览器收藏夹里存着「跨专业考研」。\n大家互相都知道，大家都不说。",
+   "text": "你发现隔壁同学的屏幕上开着行测题，见你过来，飞快切回 CAD。\n你也装作没看见。\n后来你发现，专教里有三四张桌子上摊着考研真题。\n大家互相都知道，大家都不说。",
    "keys": [
     "屏幕切换",
     "收藏夹",
@@ -1547,7 +1555,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "专教·被问到",
-   "text": "大三被问的时候你说：还没定，先把手上的做出来。\n这句话你后来又说给过三个人。",
+   "text": "开学第一节课，老师挨个问毕业去哪。你说：还没定，先把手上的做出来。\n这句话你后来又说给过三个人。",
    "keys": [
     "「先把手上的做出来」",
     "又被问了一次",
@@ -1574,7 +1582,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "宿舍·深夜",
-   "text": "你打开手机想查个规范，首页给你推了三条跟行业有关的内容。\n你一个个关掉。\n第二天早上你把这个 app 的推送权限关了，只留了作业通知。",
+   "text": "你打开手机想查个规范，首页给你推了三条跟行业有关的内容。\n你一个个关掉。\n第二天早上你把这个 app 的推送权限关了，只留着教务的通知。",
    "keys": [
     "关掉的推送权限"
    ]
@@ -1639,7 +1647,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "图书馆",
-   "text": "图书馆里，建筑系的人位置越来越固定--都在刷题。行测、申论。\n有人问你考不考，你说再看。\n你确实再看。看的意思是：还没敢跟家里说。",
+   "text": "图书馆里，建筑系的人位置越来越固定--都在刷题。行测、申论。\n同工作室的人问你考不考，你说再看。\n你确实再看。看的意思是：还没敢跟家里说。",
    "keys": [
     "图书馆刷题",
     "「再看」"
@@ -1649,7 +1657,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
  "大四上": [
   {
    "trigger": "食堂·电视",
-   "text": "食堂电视在放财经新闻：某大型房企债务危机持续，多家供应商受波及。\n旁边桌有人说：「衡大这次是真不行了。」另一个说：「早就不行了，商票去年就停兑了。」第三个说：「我们村有人给他们干过活，工资还没结清。」\n你扒了口饭。新闻里的「重大」两个字，落在具体的人身上，是工资没结清。\n然后有人说：「那跟咱们有什么关系。」",
+   "text": "食堂电视在放财经新闻：某大型房企债务危机持续，多家供应商受波及。\n隔壁桌两个大三的在聊：「衡大这次是真不行了。」「早就不行了，商票去年就停兑了。」靠窗那个接了一句：「我们村有人给他们干过活，工资还没结清。」\n你扒了口饭。新闻里的「重大」两个字，落在具体的人身上，是工资没结清。\n靠窗那个又说：「那跟咱们有什么关系。」",
    "keys": [
     "食堂电视",
     "财经新闻",
@@ -1666,7 +1674,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "宿舍·四个人都在",
-   "text": "今天晚上你们宿舍四个人第一次把话摊开说了。\n一个人要保研，一个人要考研，一个人想留学，一个人什么也不说。\n那个什么也不说的人后来说：「我投了三家，都没有回音。」\n他说：「我去洗个澡。」",
+   "text": "今天晚上你们宿舍四个人第一次把话摊开说了。\n睡你上铺的要保研，对床的要考研，斜对面那个想留学，剩下一个什么也不说。\n什么也不说的那个后来说：「我投了三家，都没有回音。」\n他说：「我去洗个澡。」",
    "keys": [
     "「都没有回音」",
     "去洗个澡"
@@ -1674,7 +1682,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "实习·办公室",
-   "text": "带你的那个老同事四十出头，一整天没说几句话。\n下午他忽然问你：「你们这届就业怎么样？」\n你说不太清楚。\n他说：「还行吧，说不清算不算好。」\n然后他继续画他的图，手上的速度比你快很多。",
+   "text": "带你的老同事是结构组的，干了十年，四十出头，一整天没说几句话。\n下午他忽然问你：「你们这届就业怎么样？」\n你说不太清楚。\n他说：「还行吧，说不清算不算好。」\n然后他继续画他的图，手上的速度比你快很多。",
    "keys": [
     "「不清楚好」",
     "比你快很多的手"
@@ -1682,7 +1690,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "实习·晚上加班",
-   "text": "晚上十点，办公室还有一半人在。\n有人打开了一个考公的资料页面，看到你注意到了，就切到了图纸。\n你装作没看见。\n过了一会儿，你也打开了一个别的网页。",
+   "text": "晚上十点，办公室还有一半人在。\n同一组的实习生打开了一个考公的资料页面，看到你注意到了，就切到了图纸。\n你装作没看见。\n过了一会儿，你也打开了一个别的网页。",
    "keys": [
     "切回图纸的窗口",
     "你也打开了一个"
@@ -1697,14 +1705,14 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "走廊",
-   "text": "「听说招生计划又降了，今年建筑类少招了不少人。」\n「那不是好事吗，人少点。」\n「对谁好？」\n这个问题没人答。走廊里响起了一阵卷图纸的声音。",
+   "text": "「听说招生计划又降了，今年建筑类少招了不少人。」\n「那不是好事吗，人少点。」\n「对谁好？」\n这个问题没人答。有人抱着一卷图纸贴墙让过去。",
    "keys": [
     "卷图纸的声音"
    ]
   },
   {
    "trigger": "宿舍",
-   "text": "室友刷到消息：某老牌房企大幅削减投资、暂停拿地。\n他说：「这家以前很稳的啊。」\n另一个人说：「稳的都这样了，不稳的呢？」\n没人回答。这条消息下面有人评论：「设计院的各位，下一波就是你们了。」\n那条评论有三百多个赞。",
+   "text": "室友刷到消息：某老牌房企大幅削减投资、暂停拿地。\n他说：「这家以前很稳的啊。」\n对床那个说：「稳的都这样了，不稳的呢？」\n谁也没接。消息下面跟了一条评论：「设计院的各位，下一波就是你们了。」\n那条评论有三百多个赞。",
    "keys": [
     "宿舍刷手机",
     "暂停拿地",
@@ -1713,7 +1721,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "实习",
-   "text": "这次实习，带你的老同事工位上摆着一摞证书，还有一本翻烂了的公务员教材。\n你问他考不考。他说：「备着。」\n他的咖啡杯上印着「奋斗」，杯身已经裂了一道缝。",
+   "text": "这次实习，结构组那位老同事的工位上摆着一摞证书，包侧兜里露出半本翻烂了的公务员教材。\n你问他考不考。他说：「备着。」\n他的咖啡杯上印着「奋斗」，杯身已经裂了一道缝。",
    "keys": [
     "实习工位",
     "证书",
@@ -1722,7 +1730,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "保研季",
-   "text": "保研名额下来了。有人问老师：「读研还是工作？」\n老师反问：「你觉得行业什么时候好起来？」\n没人答得上来。老师说：「那就读研，再看看。」\n再看看--这三个字这一年出现的频率很高。",
+   "text": "保研名额下来了。你问老师：「读研还是工作？」\n老师反问：「你觉得行业什么时候好起来？」\n没人答得上来。老师说：「那就读研，再看看。」\n再看看--这三个字这一年出现的频率很高。",
    "keys": [
     "保研季",
     "「再看看」"
@@ -1767,7 +1775,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
  "大四下": [
   {
    "trigger": "专教·深夜",
-   "text": "你旁边的同学在看别的东西，屏幕上是一个笔试题库。\n你问他要转吗，他说：「先试试。」\n「跟老师说吗？」\n「说什么，说了他就问我毕设怎么办。」\n他低头继续做题，题目开头的英文你一个都不认识。",
+   "text": "跟你一组评过图的同学在看别的东西，屏幕上是一个笔试题库。\n你问他要转吗，他说：「先试试。」\n「跟老师说吗？」\n「说什么，说了他就问我毕设怎么办。」\n他低头继续做题，题目开头的英文你一个都不认识。",
    "keys": [
     "笔试题库",
     "「说了他就问我毕设怎么办」"
@@ -1791,7 +1799,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "宿舍·收拾东西",
-   "text": "有人问你毕业想干嘛。你说先把毕设交了。\n四年前也有人问过你同一个问题。\n那时候你说的话，现在自己听着都陌生。",
+   "text": "收拾东西的室友问你毕业想干嘛。你说先把毕设交了。\n四年前大一班主任问过你同一个问题。\n那时候你说的话，现在自己听着都陌生。",
    "keys": [
     "「先把毕设交了」",
     "四年前的同一个问题",
@@ -1815,7 +1823,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "宿舍",
-   "text": "有人在群里转了条新闻：南方某上市设计院员工加班后出事，公司报警。\n群里安静了一会儿。\n有人说：「报警解决不了加班。」有人说：「先解决提出问题的人。」\n然后没人说话了。那条新闻后来没有了后续，至少你们没刷到过。",
+   "text": "室友在宿舍群里转了条新闻：南方某上市设计院员工加班后出事，公司报警。\n群里安静了一会儿。\n他说：「报警解决不了加班。」对床那个接了句：「先解决提出问题的人。」\n然后没人说话了。那条新闻后来没有了后续，至少你们没刷到过。",
    "keys": [
     "群聊",
     "报警",
@@ -1824,7 +1832,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "秋招季",
-   "text": "秋招季，设计院的展位冷清了，转行的同学拿着同一份简历去投别的行业。\n有人收到回复，有人没收到。\n没收到的人说：「早知道大一就转专业了。」\n收到的人没说话，他投了六十多家。",
+   "text": "秋招季，设计院的展位冷清了，转行的同学拿着同一份简历去投别的行业。\n同组投简历的人里，收到回复的和没收到的一半一半。\n没收到的那个说：「早知道大一就转专业了。」\n收到的那个没说话，他投了六十多家。",
    "keys": [
     "秋招",
     "六十多家",
@@ -1833,7 +1841,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "实习结束",
-   "text": "实习最后一天，带你的老同事请你喝了杯咖啡。\n他说：「能跑就跑。」\n你问跑哪去。他说：「哪都行，别回来就行。」\n他把那本公务员教材送给了你，说用不上了--他考上了，下个月走。",
+   "text": "实习最后一天，结构组那位老同事请你喝了杯咖啡。\n他说：「能跑就跑。」\n你问跑哪去。他说：「哪都行，别回来就行。」\n他把那本公务员教材送给了你，说用不上了--他考上了，下个月走。",
    "keys": [
     "实习结束",
     "「能跑就跑」",
@@ -1885,7 +1893,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "宿舍·群里",
-   "text": "班级群里有人发了毕业照的模板通知。\n下面紧接着有人发了一条招聘信息，跟建筑无关。\n两条消息挨在一起，一条说「大家记得穿深色」，一条说「急招，五险一金」。\n没人觉得不对。",
+   "text": "班长在班级群里转发了毕业照的拍摄通知。\n下面紧接着，已经签了别的行业的那个同学发了一条招聘信息，跟建筑无关。\n两条消息挨在一起，一条说「大家记得穿深色」，一条说「急招，五险一金」。\n没人觉得不对。",
    "keys": [
     "两条挨在一起的消息"
    ]
@@ -1907,7 +1915,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "班群",
-   "text": "班群里有人发了张照片：专教后墙拆了，就是那面贴过图的墙。\n有人在底下问：以后在哪儿贴。\n没人回。过了一会儿，有人发了一个句号。\n那个句号在群里挂了一整天。",
+   "text": "班长在班群里发了张照片：专教后墙拆了，就是那面贴过图的墙。\n睡你上铺的在底下问：以后在哪儿贴。\n没人回。过了一会儿，团支书发了一个句号。\n那个句号在群里挂了一整天。",
    "keys": [
     "拆掉的后墙",
     "以后在哪儿贴",
@@ -1974,7 +1982,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "手机·毕业当天",
-   "text": "你在同学群里看到有人发了一张招生简章的截图。\n群里有人说：「当年我们是全校最高分。」\n有人说：「别提了。」\n然后有人发了个表情，群就安静了。「别提了」那句你在屏幕上停了很久，最后只点了个赞。",
+   "text": "你在同学群里看到当年跟你一起报建筑的那个同学发了一张招生简章的截图。\n他说：「当年我们是全校最高分。」\n另一个同学回：「别提了。」\n然后有人发了个表情，群就安静了。「别提了」那句你在屏幕上停了很久，最后只点了个赞。",
    "keys": [
     "「别提了」",
     "只点了个赞"
@@ -1982,7 +1990,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "任何地点·末幕收尾",
-   "text": "大一第一节课，老师端着那杯没盖盖子的茶，说「你们是精英」。\n你当时信了。\n你合上电脑，屏幕上是明天要交的东西，这一次不是图。",
+   "text": "大一第一节课，老师端着那杯没盖盖子的茶，说「你们是精英」。\n你当时信了。\n你合上电脑，屏幕上是明天要交的毕设文本，这一次不是图。",
    "keys": [
     "「你们是精英」的回忆",
     "那杯没盖盖子的茶",
@@ -1999,7 +2007,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "毕业散伙饭",
-   "text": "散伙饭上，有人说「以后就是甲方乙方了」，没人笑。\n有人已经签了别的行业，有人还在等一个回复。\n班长说：「都别散，群里常联系。」\n三年后那个群最后一条消息是一张招聘截图。",
+   "text": "散伙饭上，班长敬酒说「以后就是甲方乙方了」，没人笑。你也没笑。\n有人已经签了别的行业，有人还在等一个回复。\n班长说：「都别散，群里常联系。」\n毕业一年后，那个群最后一条消息是一张招聘截图。",
    "keys": [
     "散伙饭",
     "群",
@@ -2008,7 +2016,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "离校手续",
-   "text": "办离校手续，档案袋攒了五年，提手磨白了。\n工作人员问：「这些都要带走？」\n你说带走。她把绳子重新系紧，递回来。",
+   "text": "办离校手续，学籍档案袋是学校封好的，牛皮纸，封条上盖了红章。\n工作人员问：「这些都要带走？」\n你说带走。她把绳子重新系紧，又贴了一张封条。",
    "keys": [
     "档案袋",
     "「这些都要带走？」"
@@ -2016,7 +2024,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "手机",
-   "text": "你被拉进一个群，群名叫「建筑转行互助」，三百多人。\n群公告只有一行字：「进去的人都不用解释为什么。」\n你看着这行字，看了很久。",
+   "text": "已经转行的前辈把你拉进一个群，群名叫「建筑转行互助」，三百多人。\n群公告只有一行字：「进去的人都不用解释为什么。」\n你看着这行字，看了很久。",
    "keys": [
     "群",
     "群公告",
@@ -2025,7 +2033,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "离校",
-   "text": "离校那天，你在火车站等车。\n广播念车次。五年前，你也是从这儿坐车去看大师新馆的。同一座车站，同一座城。\n你拖着行李箱进了站，没有回头。",
+   "text": "离校那天，你在火车站等车。\n广播念车次。五年前，你也是从这儿坐车去看坂茂的新馆的。同一座车站，同一座城。\n你拖着行李箱进了站，没有回头。",
    "keys": [
     "火车站",
     "行李箱",
@@ -2034,7 +2042,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "深夜",
-   "text": "深夜你刷到一条帖子：「进校那年都说缺人，毕业这年只招一个。」\n下面有人回：「一样。」\n你给这条回了个赞，退出去，继续改明天要交的最后一版图。",
+   "text": "深夜你刷到一条帖子：「进校那年都说缺人，毕业这年只招一个。」\n下面有人回：「一样。」\n你给这条回了个赞，退出去，继续改毕设的最后一版图。",
    "keys": [
     "深夜刷帖",
     "「只招一个」"
@@ -2042,7 +2050,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "深夜·睡前",
-   "text": "这次没人问你。\n你自己在心里答了一遍。\n答案跟前几次又不一样。",
+   "text": "老师没问，HR 没问，你妈也没问。\n你自己在心里答了一遍。\n答案跟前几次又不一样。",
    "keys": [
     "没人问",
     "自己在心里答",
@@ -2603,7 +2611,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         {t:'留学', line:'liuxue', need:{talAny:[{draw:1},{model:1}], work:2}},            // 作品集=手绘或建模任一到位+交得出东西
         {t:'进设计院', line:'firm', need:{talAny:[{draw:1},{cad:1},{model:1}]}},          // 入职考快题/交材料；快题在手或CAD或建模任一到位
         {t:'进甲方', line:'client', need:{tal:{cad:1, craft:1}, work:2}},                // 看协调与经验，不靠单一项堆高
-        {t:'先锋工作室', line:'avant', need:{tal:{craft:1}, talAny:[{draw:1},{cad:1}]}}, // 手上功夫优先
+        {t:'设计师工作室', line:'avant', need:{tal:{craft:1}, talAny:[{draw:1},{cad:1}]}}, // 手上功夫优先
         {t:'进体制', line:'tizhi', need:{talAny:[{theory:1}, {craft:1, work:3}]}},      // 考编看理论积累，与手艺无关
         {t:'转行', line:'leave', need:{work:2}}                                          // 转行无技能门槛，但手里必须有两件做出来的东西
       ]},
@@ -2774,7 +2782,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         {t:'把没跑完的带回家', eff:{skill:2,hair:-3}, r:'跑到后半夜。院里也是这么干的，只是这边不算加班。'}
       ]},
 
-    // ---- 支线 · 先锋工作室（明星事务所里的团队一员：门槛看手上功夫，不是头衔）----
+    // ---- 支线 · 设计师工作室（明星事务所里的团队一员：门槛看手上功夫，不是头衔）----
     // 数值性格：作品涨得快、设计涨得最快、头发掉得最狠；署名另记一个标记 _vCredit，结局回响里点出来。
     v_interview: { name:'面 试', form:'choice', line:'avant',
       text: '面试在一间旧厂房改的办公室里。没有前台，只有一条长桌，桌上摊着模型。\n老板没来，来的是比你大五岁的项目负责人。\n他翻你的作品集翻得很快，快到你怀疑他是不是在看你有没有夹东西。',
@@ -3122,12 +3130,12 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   k3_cite: {
     name:'设 计 课 · 评 图 引 案 例', grade:[3,4], form:'choice',
-    talk: ['评图你的塔楼方案。你的塔楼平面沿街一排全朝街。','老师翻开一页图片:「先锋会泽白雾书局，云南曲靖会泽县白雾村。」','「你学人家什么，学的是这个组团围合，不是那立面的样子。」','同组小陆小声说:「我上学期提过这话，你说是先立面。」'],
+    talk: ['评图你的塔楼方案。你的塔楼平面沿街一排全朝街。','老师翻开一页图片，手指压在一圈房子上。','「你学人家什么，学的是这个组团围合，不是那立面的样子。」','同组小陆小声说:「我上学期提过这话，你说是先立面。」'],
     opts:[
       {t:'回去把平面重新组织一遍', eff:{skill:2, hair:-4, work:1},
        r:'你把沿街那排单元退开，围出一个内院。老师拿铅笔在院心点了一下：「组团了」。'},
       {t:'报名字糊过去，手上不改', eff:{hair:1},
-       r:'下一轮评图，老师把册子翻回那页:「和上次同一处。」念的还是白雾书局。'},
+       r:'下一轮评图，老师把册子翻回那页:「和上次同一处。」念的还是那圈围合。'},
       {t:'找小陆把上次那页借来看', eff:{skill:1, hair:-1},
        r:'小陆把他大一那版扫描件发你。你把两个平面并排钉在图板上，量了各自的院宽。'}
     ]
@@ -3286,7 +3294,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     leave: { name:'转行线', now:'已转行', color:'var(--magenta)',
       cards:['l_interview','l_join','l_relearn','l_peer','l_ot'], end:'转行第二年',
       scene:'你偶尔还梦见在专教通宵。\n醒了有点庆幸，也有点说不清。' },
-    avant: { name:'先锋工作室', now:'在先锋工作室', color:'var(--cyan)',
+    avant: { name:'设计师工作室', now:'在设计师工作室', color:'var(--cyan)',
       cards:['v_interview','v_desk','v_credit','v_dry','v_craft'], end:'在一家明星事务所，第三年',
       scene:'汇报那天你坐在第三排。屏幕上是你在凌晨三点合的最后一遍。\n讲到「我们团队」的时候，你下意识坐直了一点。' }
   };
@@ -3567,12 +3575,33 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
 
   // 不打扰的插话（首次掉头发 / 首次拿到作品）：fixed 浮层，几秒后自己走。
   // 不占行动点、不进回合计数、不动数值；pointer-events:none，不挡任何点击。
+  // 顶部提示条容器（2026-09-15 用户截图：走马灯条 / 飘字 / 提示叠成一团）
+  //   旧写法：每条提示各自 position:fixed;top:16px -- 同屏两条就叠字，且压在顶部数值条上。
+  //   新写法：全挂进一个纵向容器 .gtoasts（gap 8px，不叠字），容器落点 = 顶部状态条
+  //   （.hud + 展开中的 .hud-notes）底边 + 6px -- 提示条不再盖在任何文字上。
+  //   飘字在此期间暂缓（见 apply 里飘字段），两条通道不会再互相压。
+  function toastHost(){
+    let w = document.getElementById('gtoasts');
+    if (!w){
+      w = document.createElement('div');
+      w.id = 'gtoasts'; w.className = 'gtoasts';
+      document.body.appendChild(w);
+    }
+    const hud = document.querySelector('.hud');
+    let bottom = hud ? hud.getBoundingClientRect().bottom : 0;
+    const notes = document.getElementById('hudNotes');
+    if (notes && notes.offsetHeight && notes.getBoundingClientRect().bottom > bottom){
+      bottom = notes.getBoundingClientRect().bottom;
+    }
+    w.style.top = Math.round(Math.max(bottom, 0) + 12) + 'px';   // +12：入场动画还带 6px 上移，别贴着状态条底边
+    return w;
+  }
   function tipFlash(text){
     if (!text || !document.body) return;
     const d = document.createElement('div');
     d.className = 'gtoast';
     d.textContent = text;
-    document.body.appendChild(d);
+    toastHost().appendChild(d);
     setTimeout(function(){ d.classList.add('out'); }, 4200);
     setTimeout(function(){ if (d.parentNode) d.parentNode.removeChild(d); }, 5000);
   }
@@ -3583,7 +3612,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     const d = document.createElement('div');
     d.className = 'gtoast gtoast-vals';   // 带数值的那一种：横向 flex + 8px gap（挤在一起已修，见 style.css）
     d.innerHTML = html;
-    document.body.appendChild(d);
+    toastHost().appendChild(d);
     setTimeout(function(){ d.classList.add('out'); }, 4200);
     setTimeout(function(){ if (d.parentNode) d.parentNode.removeChild(d); }, 5000);
   }
@@ -3938,7 +3967,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   function openingEffText(eff){
     const parts = [];
     if (eff.work)  parts.push('作品 ' + (eff.work > 0 ? '+' : '') + eff.work);
-    if (eff.skill) parts.push('设计 ' + (eff.skill > 0 ? '+' : '') + eff.skill);
+    if (eff.skill) parts.push('技能 ' + (eff.skill > 0 ? '+' : '') + eff.skill);
     if (eff.hair)  parts.push('头发 ' + (eff.hair > 0 ? '+' : '') + eff.hair + '%');
     return parts.join('　');
   }
@@ -3952,7 +3981,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       parts.push('<span class="' + (v > 0 ? 'tup' : 'tdn') + '">' + name + ' ' +
                  (v > 0 ? '+' : '−') + Math.abs(v) + '</span>');
     };
-    put('设计', eff.skill); put('头发', eff.hair);   // 作品数不再上屏（2026-09-15）
+    put('技能', eff.skill); put('头发', eff.hair);   // 作品数不再上屏（2026-09-15）
     return '这一下：' + parts.join('<span class="tsep">｜</span>');
   }
   function showOpeningAsk(){
@@ -4137,14 +4166,14 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
 
   function needText(n){
     const out = [];
-    if (n.skill) out.push('设计 ' + n.skill);
+    if (n.skill) out.push('技能 ' + n.skill);
     if (n.work)  out.push('作品 ' + n.work);
     if (n.hair)  out.push('头发 ' + n.hair + '%');
     const T = SKILL_TAG_CN;      // 与五行同一份名称表（2026-09-15），避免两处漂移
-    if (n.tal) for (const tag in n.tal) out.push(T[tag] + ' Lv' + n.tal[tag]);
+    if (n.tal) for (const tag in n.tal) out.push(T[tag] + ' ' + n.tal[tag] + ' 级（' + (n.tal[tag] * 6) + ' 点）');
     if (n.talAny) {
       n.talAny.forEach(function(g, i){
-        const s = Object.keys(g).map(k => T[k] + ' Lv' + g[k]).join('+');
+        const s = Object.keys(g).map(k => T[k] + ' ' + g[k] + ' 级（' + (g[k] * 6) + ' 点）').join(' + ');
         if (i) out.push('或'); out.push(s);
       });
     }
@@ -4153,7 +4182,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
 
   function delta(eff){    const parts = [];
     if (eff.work)  parts.push('作品 '  + (eff.work>0?'+':'')  + eff.work);
-    if (eff.skill) parts.push('设计 '  + (eff.skill>0?'+':'') + eff.skill);
+    if (eff.skill) parts.push('技能 '  + (eff.skill>0?'+':'') + eff.skill);
     if (eff.hair)  parts.push('头发 '  + (eff.hair>0?'+':'')  + eff.hair + '%');
     return parts.join('　');
   }
@@ -4253,7 +4282,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     }
     if (eff.skill){
       S.skill += eff.skill;
-      d.push(['设计', eff.skill]);
+      d.push(['技能', eff.skill]);
       applySkillTag(eff.skill, S._skillSrc, S._skillPlace);   // 归类（_skillSrc/_skillPlace 由调用方先挂）
     }
     if (eff.hair){  S.hair  += eff.hair;  d.push(['头发', eff.hair]); }
@@ -4275,6 +4304,10 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     const wide = window.matchMedia('(min-width:820px)').matches;
     d.forEach(function(x){
       if (x[0] === '作品') return;   // 作品格已从 HUD 移除（2026-09-15），不再飘作品
+      // 顶部提示条在场时飘字暂缓（2026-09-15 用户截图）：数值照旧闪一下、命令行照旧记一笔，
+      // 但不在提示条还挂着的时候把胶囊扔到它上面 -- 等提示条自己走掉（4.2s）再飘。
+      const _th = document.getElementById('gtoasts');
+      if (_th && _th.children.length) return;
       const node = el(wide ? (MAPW[x[0]] || MAP[x[0]]) : (MAP[x[0]] || MAPW[x[0]]));
       if (!node) return;
       node.classList.remove('pulse'); void node.offsetWidth; node.classList.add('pulse');
@@ -4517,8 +4550,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       '<h3>作品集</h3><div class="grp">' +
         (S.works && S.works.length
           ? S.works.map(function(w, i){
-              const tag = (w.from && w.from !== '毕设') ? '　·　' + esc(w.from) : '';
-              return '<div class="row"><span class="k wk">第 ' + (i + 1) + ' 件' + tag + '</span></div>';
+              return '<div class="row"><span class="k wk">' + workRowLabel(w, i) + '</span></div>';
             }).join('')
           : '<div class="row"><span class="k" style="color:var(--dim2)">还没有</span></div>') +
       '</div>' +
@@ -5402,7 +5434,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       { id:'l_resume',name:'投 简 历',    eff:{skill:1,hair:-2}, note:'投出去第十封，你开始看邮箱' },
       { id:'l_home',  name:'在 家 歇',    eff:{hair:5},           note:'歇着歇着就把自己歇展了' }
     ],
-    // 先锋工作室：手上功夫练得最快，代价是头发；回血手段少（只有一处准点走）
+    // 设计师工作室：手上功夫练得最快，代价是头发；回血手段少（只有一处准点走）
     avant: [
       { id:'v_studio', name:'模 型 房',     eff:{skill:2,hair:-4}, note:'板屑扫不完，切坏的板子还能再用' },
       { id:'v_draw',   name:'改 图 到 凌 晨', eff:{skill:2,hair:-5,work:1}, note:'第十八版和前三版看不出差别' },
@@ -5469,6 +5501,21 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     if (i < 5) return ROUNDS[i].name;
     const y = i - 4;                       // 6 → 毕业第一年
     return '毕业第' + (CN_YEAR[y - 1] || y) + '年';
+  }
+
+  // 作品列表的一行（2026-09-15 用户截图：结局页「第 1 件…第 5 件」五行走空）。
+  // 作品名退场后 S.works 只留 {from, round}，编号后面必须跟得上「什么时候 / 从哪儿来」。
+  // 换算优先级：round → roundName()（如 大二上 / 毕业第一年）；取不到则退回 from；
+  // 两样都没有时用 makeWork() 的既有默认说法，**绝不留下只有编号的空行**。
+  function workRowLabel(w, i){
+    let when = '';
+    const r = w ? w.round : undefined;
+    if (r !== undefined && r !== null && !isNaN(Number(r)) && Number(r) >= 0){
+      try { when = roundName(Number(r)); } catch (e) { when = ''; }
+    }
+    if (!when && w && w.from) when = String(w.from);
+    if (!when) when = '做过的一个方案';
+    return '第 ' + (i + 1) + ' 件　·　' + esc(when);
   }
 
   // ============================================================
@@ -5901,7 +5948,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     }
     const tilt = gateTilt();                  // 这题偏什么，±1 的松紧
     const score = (S.skill * coef) + (S.works.length * 3) + rnd + tilt;
-    S._gateLog = '设计 ' + S.skill + ' ×' + coef + ' + 作品 ' + S.works.length + ' ×3 + 运气 +' + rnd +
+    S._gateLog = '技能 ' + S.skill + ' ×' + coef + ' + 作品 ' + S.works.length + ' ×3 + 运气 +' + rnd +
                  (tilt ? ' + 这题 ' + (tilt > 0 ? '+' : '') + tilt : '') +
                  ' = ' + score + ' / 门槛 ' + req;
     return score >= req;
@@ -6091,7 +6138,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     const e = S.termEff || {};
     const parts = [];
     if (e.work)  parts.push('作品 ' + (e.work > 0 ? '+' : '') + e.work);
-    if (e.skill) parts.push('设计 ' + (e.skill > 0 ? '+' : '') + e.skill);
+    if (e.skill) parts.push('技能 ' + (e.skill > 0 ? '+' : '') + e.skill);
     if (e.hair)  parts.push('头发 ' + (e.hair > 0 ? '+' : '') + e.hair);
     if (!places && !parts.length) return UI('term.summaryNone', {}, '上学期：哪儿都没怎么去');
     return UI('term.summary', { places: places || '哪儿都没怎么去', eff: parts.join(' ') || NO_EFF },
@@ -6976,7 +7023,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       redrawLine = UI('redraw', { n: S.redraws }, '你抽了 ' + S.redraws + ' 次。');
     }
 
-    // ── 署名回响（先锋工作室）：你的名字在不在那张图上 ────────
+    // ── 署名回响（设计师工作室）：你的名字在不在那张图上 ────────
     // 由 v_credit 那张卡的选项写进 S._vCredit（'small' / 'none'），别的线不设，就不会多这一行。
     const creditLine = (S._vCredit && ENDING_TEXT.ui && ENDING_TEXT.ui.credit)
       ? (ENDING_TEXT.ui.credit[S._vCredit] || '') : '';
@@ -7001,7 +7048,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
           '<div class="claim">' + claim + '</div>' +
           (works.length
             ? '<div class="wlist">' + works.map(function(w, i){
-                return '<div class="wl">第 ' + (i + 1) + ' 件</div>';
+                return '<div class="wl">' + workRowLabel(w, i) + '</div>';
               }).join('') + '</div>'
             : '') +
           '<div class="hair">' + hairLine + '</div>' +

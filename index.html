@@ -1002,8 +1002,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   </div>
 
   <div class="hud">
-    <span class="st num tap" data-tri="work" role="button" tabindex="0" title="点开看它是什么、决定什么">作品 <b id="hWork">0</b></span>
-    <span class="st num tap" data-tri="skill" role="button" tabindex="0" title="点开看它是什么、决定什么">设计 <b id="hSkill">0</b></span>
+    <span class="st num tap" data-tri="skill" role="button" tabindex="0" title="点开看它是什么、决定什么">技能 <b id="hSkill">0</b></span>
     <span class="st num tap" data-tri="hair" role="button" tabindex="0" title="点开看它是什么、决定什么">头发 <b id="hHair">100%</b></span>
     <span class="st">进度 <b id="hStep">0 / 0</b></span>
     <span class="st sp" id="hLine">尚未分岔</span>
@@ -3494,17 +3493,14 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   //  这一屏不占行动点、不进回合计数、不动任何数值。
   // ============================================================
   const TRI = {
-    work:  { k:'作 品', tag:'WORK',  color:'var(--yellow)', hud:'hWork',
-             what:'你手上能拿出来给人看的东西：竞赛、实习、交出去的图，都算。',
-             does:'毕业时，它决定你能敲哪几扇门--有的去处要先看你手上有几件。' },
-    skill: { k:'设 计', tag:'SKILL', color:'var(--cyan)',   hud:'hSkill',
+    skill: { k:'技 能', tag:'SKILL', color:'var(--cyan)',   hud:'hSkill',
              what:'你的硬功夫：画得出来、改得动、说得清。',
              does:'越硬的地方越只认这个--有的门只开给设计够厚的人。' },
     hair:  { k:'头 发', tag:'HAIR',  color:'var(--green)',  hud:'hHair',
              what:'你的本钱。熬的每一个夜，都在花它。',
              does:'花光了，故事会在半路结束。' }
   };
-  const TRI_ORDER = ['work', 'skill', 'hair'];
+  const TRI_ORDER = ['skill', 'hair'];
 
   // 开场第一屏：标题 + 副标 + 三行（名称 + 小字 + 是什么 + 决定什么）+ 底部一句 + 一个按钮。
   // 按钮给 id=nextBtn：harvest 与各探针的通用推进 helper 都认它（点得动＝不会被判卡住）。
@@ -3937,7 +3933,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       parts.push('<span class="' + (v > 0 ? 'tup' : 'tdn') + '">' + name + ' ' +
                  (v > 0 ? '+' : '−') + Math.abs(v) + '</span>');
     };
-    put('作品', eff.work); put('设计', eff.skill); put('头发', eff.hair);
+    put('设计', eff.skill); put('头发', eff.hair);   // 作品数不再上屏（2026-09-15）
     return '这一下：' + parts.join('<span class="tsep">｜</span>');
   }
   function showOpeningAsk(){
@@ -3991,8 +3987,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     // 反馈样式与卡面结果页一致：标题 + 你选的那句 + 台词分页 + 数值 chips
     const eff = o.eff || {};
     const chips = [];
-    if (eff.work)  chips.push(['作品', eff.work]);
-    if (eff.skill) chips.push(['设计', eff.skill]);
+    if (eff.skill) chips.push(['技能', eff.skill]);
     if (eff.hair)  chips.push(['头发', eff.hair]);
     let chipHTML = '';
     if (chips.length){
@@ -4235,10 +4230,11 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     if (S.skill < 0) S.skill = 0;
     renderHUD();
     // 让 HUD 上变动的数字闪一下，并飘出来--别让它悄悄跳过去
-    const MAP = { '作品':'hWork', '设计':'hSkill', '头发':'hHair' };
-    const MAPW = { '作品':'sWork', '设计':'sSkill', '头发':'sHair' };   // 宽屏时数值在右侧面板
+    const MAP = { '技能':'hSkill', '设计':'hSkill', '头发':'hHair' };        // 「设计」为历史键兜底
+    const MAPW = { '技能':'sSkill', '设计':'sSkill', '头发':'sHair' };       // 宽屏时数值在右侧面板
     const wide = window.matchMedia('(min-width:820px)').matches;
     d.forEach(function(x){
+      if (x[0] === '作品') return;   // 作品格已从 HUD 移除（2026-09-15），不再飘作品
       const node = el(wide ? (MAPW[x[0]] || MAP[x[0]]) : (MAP[x[0]] || MAPW[x[0]]));
       if (!node) return;
       node.classList.remove('pulse'); void node.offsetWidth; node.classList.add('pulse');
@@ -4429,7 +4425,6 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   }
 
   function renderHUD(){
-    el('hWork').textContent  = S.work;
     el('hSkill').textContent = S.skill;
     el('hHair').textContent  = S.hair + '%';
     el('hStep').textContent  = S.school ? PROGRESS.label() : '—';
@@ -4474,8 +4469,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     side.innerHTML =
       '<h3>图层</h3><div class="grp">' + ly + '</div>' +
       '<h3>特性</h3><div class="grp">' +
-        row('作品', '<b id="sWork">' + S.work + '</b>', 'work') +
-        row('设计', '<b id="sSkill">' + S.skill + '</b>', 'skill') +
+        row('技能', '<b id="sSkill">' + S.skill + '</b>', 'skill') +
         row('头发', '<b id="sHair">' + S.hair + '%</b>', 'hair') +
       '</div>' +
       '<h3>作品集</h3><div class="grp">' +
@@ -4837,8 +4831,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   // ========== 结果页：选完先看清发生了什么，再走下一步 ==========
   function showResult(pick, res, eff){
     const chips = [];
-    if (eff.work)  chips.push(['作品', eff.work]);
-    if (eff.skill) chips.push(['设计', eff.skill]);
+    if (eff.skill) chips.push(['技能', eff.skill]);
     if (eff.hair)  chips.push(['头发', eff.hair]);
 
     let chipHTML = '';

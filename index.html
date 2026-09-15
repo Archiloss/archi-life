@@ -7173,6 +7173,58 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       applySkin(m[1] === 'cad' ? '' : m[1]);
     }
   })();
+
+  // ============================================================
+  //  调试跳转（2026-09-15）：给开发/审阅用，正式玩家看不见（不加任何按钮/UI）。
+  //  用法（控制台或 URL 都行）：
+  //    jumpTo('intern')                  直达任意一张卡（按 id，CARDS 里的都行）
+  //    jumpTo('fork')                    直达毕业分岔屏
+  //    jumpTo('ending')                  直达结局屏（按当前/默认状态）
+  //    jumpTo('ending', {line:'firm'})   结局屏 + 预设毕业线（firm/kaoyan/liuxue/…）
+  //    jumpTo('k3_case', null, {round:6})带状态：第三参摆好数值再渲染（round/skillTags/work/hair 都收）
+  //    dist.html?jump=k3_case            URL 参数版（便于截图 / 分享）
+  //  只动 S 的这几个字段，不碰卡的文案/数值/门槛，不污染正常流程。
+  //  ============================================================
+  window.jumpTo = function(target, opt, state){
+    opt = opt || {};
+    if (state){                                    // 跳哪都像「刚玩到这」：数值先摆在门口
+      if (state.round != null) S.round = Math.min(Math.max(state.round, 0), ROUNDS.length - 1);
+      if (state.hair != null)  S.hair = state.hair;
+      if (state.skill != null) S.skill = state.skill;
+      if (state.work != null)  S.work = state.work;
+      if (state.skillTags)     S.skillTags = Object.assign({}, S.skillTags, state.skillTags);
+    }
+    S._optLocked = false;
+    if (target === 'fork'){
+      S.line = null; S.over = false;
+      S.round = (state && state.round != null) ? Math.min(Math.max(state.round, 0), ROUNDS.length - 1) : (ROUNDS.length - 1);
+      beginRound();
+      return 'fork';
+    }
+    if (target === 'ending'){
+      if (opt.line) S.line = opt.line;
+      if (opt.sub)  S.sub = opt.sub;                 // 留学分回国/留下
+      S.over = false;
+      ending();
+      return 'ending';
+    }
+    if (!CARDS[target]){ console.warn('[jumpTo] 没有这张卡: ' + target); return null; }
+    S.over = false;
+    S.pendingCard = target;
+    startTile(target);
+    return target;
+  };
+  (function(){                                       // URL 参数：?jump=k3_case&jump_state={...}
+    const m = /[?&]jump=([\w]+)/.exec(location.search);
+    if (!m) return;
+    let opt = null, state = null;
+    const so = /[?&]jump_line=(\w+)/.exec(location.search);
+    if (so) opt = { line: so[1] };
+    const ss = /[?&]jump_state=([^&]+)/.exec(location.search);
+    if (ss){ try { state = JSON.parse(decodeURIComponent(ss[1])); } catch(e){ state = null; } }
+    // 等第一屏起完再跳（开场要先落 reset/school，覆盖它）
+    setTimeout(function(){ jumpTo(m[1], opt, state); }, 50);
+  })();
   // 调试入口：?dev 时挂出状态快照（workName 生成器已停用，不再挂出）
   if (location.search.indexOf('dev') >= 0){
     // window.workName 已随作品名退场移除（2026-09-15）

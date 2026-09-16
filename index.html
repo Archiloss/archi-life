@@ -248,7 +248,7 @@ html{ zoom:1.25; }
   .fill input::placeholder{color:#5f5f5f;}
   .warn{font-size:12px;color:var(--yellow);min-height:17px;margin-top:5px;}
 
-  .opts{display:flex;flex-direction:column;gap:7px;margin-top:2px;}
+  .opts{display:flex;flex-direction:column;gap:10px;max-width:640px;margin-top:2px;}
   .opt{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;min-height:44px;
        background:var(--box-bg);border:1px solid var(--edge);border-radius:2px;
        cursor:pointer;text-align:left;font-family:var(--mono);font-size:13px;
@@ -313,8 +313,10 @@ html{ zoom:1.25; }
   @media (min-width:820px){
     .float{ top:calc(100% + 24px + var(--float-y,0px)); }
   }
-  .opt .t{flex:1;line-height:1.5;}
-  .opt .cf{font-size:11px;color:var(--dim2);white-space:nowrap;margin-top:2px;}
+  .opt .t{flex:1;line-height:1.5;color:var(--white);}
+  .opt .cf{font-size:12px;color:var(--ink2);white-space:nowrap;margin-top:2px;font-variant-numeric:tabular-nums;}
+  .opt .cf .up,.place .cf .up{color:var(--green);}
+  .opt .cf .dn,.place .cf .dn{color:var(--red);}
   /* 暗牌选项（开场追问）：选之前不报数值，占位与 --dim 一族 */
   .opt .cf.hid{color:var(--dim);letter-spacing:1px;}
 
@@ -569,7 +571,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     color:var(--ink);font-variant-numeric:tabular-nums;}
 
   /* ---- v2 排程：一学期挑 2 个去处 ---- */
-  .places{display:flex;flex-direction:column;gap:8px;margin-top:2px;position:relative;z-index:1;}
+  .places{display:flex;flex-direction:column;gap:10px;max-width:640px;margin-top:2px;position:relative;z-index:1;}
   .place{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:10px;
          width:100%;text-align:left;font-family:var(--mono);font-size:14px;
          padding:14px 15px;background:var(--box-bg);color:var(--ink);
@@ -580,7 +582,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
             border:1px solid var(--edge2);font-size:10.5px;color:var(--dim);}
   .place .nm{color:var(--white);}
   .place .nt{grid-column:2;font-size:11px;color:var(--dim);margin-top:2px;}
-  .place .cf{font-size:11px;color:var(--dim2);white-space:nowrap;text-align:right;}
+  .place .cf{font-size:12px;color:var(--ink2);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums;}
   .place.used{opacity:.32;cursor:default;border-style:dashed;}
   .place.used:hover{border-color:var(--edge);}
   .place.locked{opacity:.42;cursor:not-allowed;}
@@ -641,8 +643,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
 .presets button.pre:hover{ border-color:var(--accent); color:var(--accent); opacity:1; }
 
 /* 排程学年/线路横幅 */
-.yr{ font-family:var(--mono); letter-spacing:4px; font-size:13px; text-align:center;
-     color:var(--accent); padding:7px 0 2px; margin-bottom:2px;
+.yr{ font-family:var(--mono); letter-spacing:2px; font-size:12px; text-align:center;
+     color:var(--dim); padding:7px 0 2px; margin-bottom:2px;
      border-top:1px solid var(--line-c); border-bottom:1px solid var(--line-c); }
 
   /* ============================================================
@@ -2626,20 +2628,21 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         //     考研 64.9→64.4  留学 83.6→83.6  设计院 97.3→95.9  甲方 59.2→60.3
         //     先锋 60.5→58.9  体制 64.9→68.5  转行 100→21.1（2026-09-16 二次修，见下）。
         //   级数用「点数阈值」表述（draw:5 = 5 点，级 = floor(点/6)，文档里同时给级数口径）。
-        {t:'考研', line:'kaoyan', need:{talAny:[{theory:2},{theory:1,draw:1}]}},
-        // 2026-09-15 三改（用户口径）：考研=政治+英语+理论课+快题（手绘），理论是主门槛
-        // 但快题在手——理论 2 级单够也算过；理论 1 级必须手绘 1 级补上。
-        {t:'留学', line:'liuxue', need:{talAny:[{draw:1},{model:1}], work:2}},            // 作品集=手绘或建模任一到位+交得出东西
-        {t:'进设计院', line:'firm', need:{talAny:[{draw:1},{cad:1},{model:1}]}},          // 入职考快题/交材料；快题在手或CAD或建模任一到位
+        {t:'考研', line:'kaoyan', need:{talAny:[{theory:1},{draw:2}]}},
+        // 2026-09-16 四改（门槛拉平口径）：考研=理论 1 级 或 手绘 2 级——理论供给太稀（70 局里只 18 局够 1 级、
+        //   0 局够 2 级），原来「理论 2 级」等于死路（过线 25.7%）；现在与其余六条一起落进 50%~69% 一条带。
+        {t:'留学', line:'liuxue', need:{talAny:[{draw:2},{model:1}], work:3}},            // 作品集：手绘 2 级 或 建模 1 级；交得出东西＝作品 ≥3 件（2026-09-16 拉平）
+        {t:'进设计院', line:'firm', need:{talAny:[{draw:2},{cad:2},{model:1}]}},          // 入职考快题/交材料；快题在手或CAD或建模任一到位
         {t:'进甲方', line:'client', need:{tal:{cad:1, craft:1}, work:2}},                // 看协调与经验，不靠单一项堆高
         {t:'设计师工作室', line:'avant', need:{tal:{craft:1}, talAny:[{draw:1},{cad:1}]}}, // 手上功夫优先
-        {t:'进体制', line:'tizhi', need:{talAny:[{theory:1}, {craft:1, work:3}]}},      // 考编看理论积累，与手艺无关
+        {t:'进体制', line:'tizhi', need:{talAny:[{theory:1}, {craft:1, work:4}]}},      // 考编看理论积累，与手艺无关
         // 转行（2026-09-16 修）：原来写 work:2 —— 71 局 100% 通过，等于没门槛（用户：「转行很难的」）。
         //   依据 design/建筑转行真实信息-20260915.md：转行卡的不是建筑技能（五类技能全是建筑技能，
         //   一项都盖不住「非建筑作品集 / 对口实习 / 报班的开销与时间」），跨来源反复提的硬门槛是
         //   「手里得有从零到一、拿得出手的东西」——所以这条线只按作品件数卡，不加任何技能要求。
-        //   门槛值见 design/口径-当前生效-20260915.md：作品 ≥6 件（实测过线 21.1%，除考研外最紧）。
-        {t:'转行', line:'leave', need:{work:6}}                                          // 转行卡「做出来的东西」，6 件；不卡建筑技能
+        //   门槛值 2026-09-16 拉到 作品 ≥5 件（实测 50.0%）：6 件时 21.4% 与设计院 100% 差 78.6pp，
+//   用户口径「每个分支的过线率不要差那么多」。
+        {t:'转行', line:'leave', need:{work:5}}                                          // 转行卡「做出来的东西」，5 件；不卡建筑技能
       ]},
 
     // ---- 支线 · 设计院 ----
@@ -3360,7 +3363,9 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       // 两个「首次」提示（2026-09-13）：一局各只出现一次，重开局重置
       // _begun：真正的开局（第一回合）才开始算「第一次」--报志愿/录取/开学/
       // 开场指引/开场追问这一路掉的头、拿的作品，不能把这两句提示提前用掉
-      _begun:false, _tipHairDown:false, _tipWorkFirst:false };
+      _begun:false, _tipHairDown:false, _tipWorkFirst:false,
+      // 关卡代价的提示（2026-09-16）：第一次没过／第二次没过／毕设那一关，各只出现一次
+      _tipFail1:false, _tipFail2:false, _tipThesis:false };
     applySkin('');                 // 新一局回到默认界面
     renderStatus();
     const _hn = el('hudNotes');    // 状态栏说明（点开的那块）也跟着重开局收起
@@ -4254,9 +4259,12 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   }
 
   function delta(eff){    const parts = [];
-    if (eff.work)  parts.push('作品 '  + (eff.work>0?'+':'')  + eff.work);
-    if (eff.skill) parts.push('技能 '  + (eff.skill>0?'+':'') + eff.skill);
-    if (eff.hair)  parts.push('头发 '  + (eff.hair>0?'+':'')  + eff.hair + '%');
+    // 涨跌配色（2026-09-16）：正数包 .up 走绿、负数包 .dn 走红；CSS 只对 .opt .cf 生效，
+    // 排程处用的 .place .cf 不匹配该选择器，因此那边只有 span 无颜色（无副作用）。
+    const mk = function(v, txt){ return '<span class="' + (v > 0 ? 'up' : 'dn') + '">' + txt + '</span>'; };
+    if (eff.work)  parts.push(mk(eff.work,  '作品 ' + (eff.work>0?'+':'')  + eff.work));
+    if (eff.skill) parts.push(mk(eff.skill, '技能 ' + (eff.skill>0?'+':'') + eff.skill));
+    if (eff.hair)  parts.push(mk(eff.hair,  '头发 ' + (eff.hair>0?'+':'')  + eff.hair + '%'));
     return parts.join('　');
   }
   // 空效果的统一标记：选项按钮／排程去处／结果页三处共用同一个词（2026-09-13 文案统一）
@@ -4558,7 +4566,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   }
   const SKIN_NAME = { '':'CAD', su:'SU', sketch:'手绘', rhino:'Rhino' };
     // 外壳（标题文件名 + 菜单栏）跟着皮肤走，避免 SU 界面露 .dwg 的破绽（M8c）
-  const SHELL_FILE = { '':'YZ-01.dwg', 'su':'庭院小筑.skp', 'rhino':'方案_第三轮.3dm', 'sketch':'1:100 · A1 硫酸纸' };
+  const SHELL_FILE = { '':'JY-01.dwg', 'su':'庭院小筑.skp', 'rhino':'方案_第三轮.3dm', 'sketch':'1:100 · A1 硫酸纸' };
   const SHELL_MENU = {
     '':       ['文件','编辑','视图','插入','格式','工具','绘图','标注'],
     'su':     ['文件','编辑','视图','相机','绘图','工具','窗口','帮助'],
@@ -4569,7 +4577,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     document.body.classList.remove('skin-su','skin-sketch','skin-rhino');
     if (name) document.body.classList.add('skin-' + name);
     const fn = document.querySelector('.titlebar .fn');
-    if (fn) fn.textContent = '\u2014 [ ' + (SHELL_FILE[name] || 'YZ-01.dwg') + ' ]';
+    if (fn) fn.textContent = '\u2014 [ ' + (SHELL_FILE[name] || 'JY-01.dwg') + ' ]';
     const mb = document.querySelector('.menubar');
     if (mb) mb.innerHTML = (SHELL_MENU[name] || SHELL_MENU['']).map(function(m){ return '<b>' + m + '</b>'; }).join('');
     const dbox = el('deco');
@@ -6078,6 +6086,12 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
                    : ['认真做--熬夜把它磨出来', '差不多就行', '随便交--不想再碰了']);
     const gShort = (GN.short && GN.short.length === 3) ? GN.short : ['认真做', '差不多', '随便交'];
     showPrompt(gateName + ' · 学期末', [{t:gShort[0]}, {t:gShort[1]}, {t:gShort[2]}]);
+    // 毕设这一关的代价先说清（2026-09-16 用户口径「延毕也要在毕设前说」）：没过就跟下一届再来一年。
+    //   一局只说一次；用口语说法，不上「延毕」这种书面词。
+    if (S.currentGate === 'thesis' && !S._tipThesis && S._begun){
+      S._tipThesis = true;
+      tipFlash('毕设这一关没过，就得跟下一届再来一年。');
+    }
     const A = [
       { t: gOpts[0], mode:'care',  label: gShort[0] },
       { t: gOpts[1], mode:'ok',    label: gShort[1] },
@@ -6125,9 +6139,16 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         } else {
           S.gateFail = true;               // 下回合只做得动一件事
           S.gateFails = (S.gateFails || 0) + 1;
-          // 关卡是可以「死」的：毕设没过＝延毕；连着三关没过＝肄业（分支不一定走完）
-          if (S.gateFails >= 3) S._earlyEnd = 'yiye';
-          else if (S.currentGate === 'thesis') S._earlyEnd = 'yanbi';
+          // 没过的代价要说清（2026-09-16 用户口径）：第一次没过就把规则亮出来，第二次报还差几次。
+          //   只说一次一档、不刷屏；用「退学」这个口语词，不上「肄业」那种书面词；
+          //   量词用「次」不用「关」（用户 2026-09-16 定）。
+          if (S.gateFails === 1 && !S._tipFail1){ S._tipFail1 = true; tipFlash('再挂两次，就得退学了。'); }
+          else if (S.gateFails === 2 && !S._tipFail2){ S._tipFail2 = true; tipFlash('再挂一次，就得退学了。'); }
+          // 关卡是可以「死」的（2026-09-16 调序）：毕设没过一定＝延毕，先判这一条；
+          //   再数累计——前三关全挂满 3 次才会在第三关当场散场，肄业那句「连着三关没过」因此成立
+          //   （原来先数累计，毕设没过、之前又挂过两关的局会被判成肄业，跟结局自己的文案打架）。
+          if (S.currentGate === 'thesis') S._earlyEnd = 'yanbi';
+          else if (S.gateFails >= 3) S._earlyEnd = 'yiye';
           else if (S.currentGate === 'crit' && S.skill <= 3) S._earlyEnd = 'zhuan';   // 大二评图没过、技能还没入门
           S.memories.push({ tile: gateName, text: gateName + '没过。那学期白搭了。' });
           log('「' + gateName + '」没过。', 'w');
@@ -7065,10 +7086,23 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     const word = endingWord(pick) || (ENDING_TEXT.special || {})[pick.key] || null;
     const endTitle = ((word && word.title) ? word.title : (S.line ? LINES[S.line].end : '毕业了')).replace(/[。．.]+$/, '');
     const end = endTitle;
+    // 留学两面（2026-09-16 用户口径）：碰过壁才落到这条线 = 「先出去混一两年」；没碰壁直接选 = 「奔着学去」。
+    //   注意：这两个常量必须在使用点之前声明——const 不提升，第一次落盘时写在使用点之后，
+    //   ending() 直接抛 TDZ 的 ReferenceError，留学结局卡在最后一屏推不动（跑局器报「talk 界面没变化」）。
+    const LF_LEARN = '你从大二就在准备这件事：语言考了两次，作品集改了六版。';
+    const LF_MIXED = '国内那几条你都试过了，都没进去。剩下这条你还走得动，就先走。';
     let sceneText = (line && line.scene) ? line.scene : '';
     if (S.line === 'liuxue' && S.sub === 'home')   sceneText = line.scene_home;
     if (S.line === 'liuxue' && S.sub === 'abroad') sceneText = line.scene_abroad;
     if (word && word.scene) sceneText = word.scene;
+    // 留学两面（2026-09-16 用户口径）：别人是「真的去学」，也有人是「国内都走不通，先出去混一两年」。
+    //   判据＝你在分岔屏碰过壁没有（S._bumped，碰壁机制自带的状态）——
+    //   碰过壁才落到这条线 = 混；没碰过壁直接选它 = 学。
+    //   实现只加一句开场，不动结局档位结构（图鉴仍按 落点 × 画像 记，分母不变）。
+    if (S.line === 'liuxue'){
+      const _mixed = !!(S._bumped && Object.keys(S._bumped).length);
+      sceneText = (_mixed ? LF_MIXED : LF_LEARN) + sceneText;
+    }
     // 结局正文（2026-09-13 用户拍板 A）：lines.* 里的 body 从死数据改成上屏--
     // 位置固定在 scene 之后、verdict 之前，多行按 \n 分段（早结局那条路径本来就是这么渲染的）。
     const bodyText = (word && word.body) ? String(word.body).replace(/\n/g, '<br>') : '';
@@ -7407,6 +7441,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     S._optLocked = false;
     if (target === 'fork'){
       S.line = null; S.over = false;
+      if (!S.school) S.school = '建筑学';   // 跳转直达时补上学历，否则 HUD 会显示「高中生」（2026-09-16）
       S.round = (state && state.round != null) ? Math.min(Math.max(state.round, 0), ROUNDS.length - 1) : (ROUNDS.length - 1);
       beginRound();
       return 'fork';

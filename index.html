@@ -4797,7 +4797,11 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     //   现在只上屏题名与题签两行（场地/要求）；「这关紧」由评图台词与数值传达。
     const paint = function(){
       el('tTitle').textContent = courseLabel(cur);
-      el('tSign').innerHTML = '题签：' + cur.sign[0] + '<br>　　　' + cur.sign[1];
+      // 2026-09-16 用户：题签那些「场地/要求」是无关信息，容易误导（玩家以为是要遵守的规则）。
+      //   改成这道题真正影响过关的透镜——head/tail 与评图台词同源（AREA_LENS），说清松紧不说数值。
+      //   只上「这题看的是什么」；松紧（tail）是内部判定，上屏会被当成生硬说明（用户 2026-09-13 已否）。
+      const lensD = AREA_LENS[cur.area] || null;
+      el('tSign').innerHTML = lensD ? ('期末评图，' + lensD.head.replace(/^(考|看)的是/, '看的是') + '。') : '';
     };
     paint();
     const b = document.createElement('button');
@@ -6185,8 +6189,9 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         S._lastTitle = t;
         el('tTitle').textContent = UI('draw.dirLabel', { dir: dirLabel, t: t }, dirLabel + ' · 《' + t + '》');
         // 题签两行：从方向自己的 sign 取（跟抽题屏同一版式，题名格式不动，重抽照旧）
-        const sd = (DIRS[S.titleDir] || {}).sign || [];
-        el('tSign').innerHTML = sd.length === 2 ? ('题签：' + sd[0] + '<br>　　　' + sd[1]) : '';
+        // 2026-09-16：同抽题屏——方向自带的「场地/要求」不显示，改显示方向性格（hint）。
+        const dd = DIRS[S.titleDir] || {};
+        el('tSign').innerHTML = dd.hint ? ('这组题看的是：' + dd.hint) : '';
       };
       draw();
       const b = document.createElement('button');
@@ -6299,7 +6304,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     const one = termOneLiner();
     // 这一学期抽到的课程设计题：开场就把题名与场地要求摆出来（题签进关卡的第一次露面）
     const gpc = (S.coursePick || {})[roundName(S.round)];
-    const courseLine = gpc ? ('这学期做《' + gpc.name + '》　' + ((gpc.sign || [])[0] || '')) : '';
+    const courseLine = gpc ? ('这学期做《' + gpc.name + '》') : '';   // 2026-09-16：不再带「场地：…」
     const sum = S.lastTerm ? termSummaryText() : '';
     el('stage').innerHTML =
       '<div class="ttl">　</div>' +

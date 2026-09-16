@@ -74,6 +74,8 @@ html{ zoom:1.25; }
   .menubar b{font-weight:400;padding:4px 9px;color:var(--ink);white-space:nowrap;}
 
   .hud{display:flex;align-items:center;gap:0;background:var(--hud-bg);
+  .hud .wk{color:var(--dim);font-weight:400;}
+  .hud .wk b{color:var(--dim);}
        border-bottom:1px solid var(--line);height:34px;overflow:hidden;}
   .hud .st{display:flex;align-items:center;gap:7px;padding:0 15px;height:100%;
            border-right:1px solid var(--line);font-size:11.5px;color:var(--dim);white-space:nowrap;}
@@ -1024,6 +1026,13 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
 .gtoasts{position:fixed;top:16px;left:0;right:0;z-index:1300;
   display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;}
 .gtoasts .gtoast{position:static;top:auto;left:auto;right:auto;margin:0;}
+
+/* 2026-09-16 窄屏（<420）顶栏收紧：375 上 4 格已满，靠「作品 3」→「3 件」+ 身份缩字腾位置 */
+@media (max-width:419px){
+  .hud .wk{font-size:11px;}
+  .hud .wk .wkl{display:none;}          /* 隐藏「作品」二字，只留「3 件」 */
+  .hud .st:last-child{letter-spacing:0;}
+}
 </style>
 </head>
 <body>
@@ -1043,7 +1052,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   </div>
 
   <div class="hud">
-    <span class="st num tap" data-tri="skill" role="button" tabindex="0" title="点开看它是什么、决定什么">技能 <b id="hSkill">0</b></span>
+    <span class="st num tap" data-tri="skill" role="button" tabindex="0" title="点开看它是什么、决定什么">技能 <b id="hSkill">0</b><span class="wk">· <span class="wkl">作品</span> <b id="hWork">0</b> 件</span></span>
     <span class="st num tap" data-tri="hair" role="button" tabindex="0" title="点开看它是什么、决定什么">头发 <b id="hHair">100%</b></span>
     <span class="st">进度 <b id="hStep">0 / 0</b></span>
     <span class="st sp" id="hLine">尚未分岔</span>
@@ -4587,6 +4596,9 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
 
   function renderHUD(){
     el('hSkill').textContent = S.skill;
+    // 2026-09-16 用户：作品是三处硬门槛的条件（分岔门槛 / 技能组门槛 / 关卡硬要求），
+    //   顶栏却没有它 → 玩家撞门槛时才知道自己几件。这里并进技能格：技能 N · 作品 M（不加格，375 已无余量）。
+    if (el('hWork')) el('hWork').textContent = (S.works ? S.works.length : 0);
     el('hHair').textContent  = S.hair + '%';
     el('hStep').textContent  = S.school ? PROGRESS.label() : '—';
     el('hLine').textContent  = !S.school ? '高中生'

@@ -3359,7 +3359,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       // 本局已经出过结局屏（防「留学回不回国」那种延时结局被连点出两次）
       _endShown:false,
       // 课程设计抽题（2026-09-13）：大一那一屏抽过没、每个学年抽到的是哪道题、重抽过几次
-      courseIntroDone:false, coursePick:{}, courseRedraws:0, courseTitle:'',
+      courseIntroDone:false, coursePick:{}, courseTitle:'',
       // 两个「首次」提示（2026-09-13）：一局各只出现一次，重开局重置
       // _begun：真正的开局（第一回合）才开始算「第一次」--报志愿/录取/开学/
       // 开场指引/开场追问这一路掉的头、拿的作品，不能把这两句提示提前用掉
@@ -4781,49 +4781,30 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   // ---- 课程设计抽题（大一设计课 / 大二评图 / 大三构造课 / 大四一草，各一屏）----
   //  跟毕设抽题同一套交互：#tBtn ＋「再抽一次」；题目随机、重抽必换一道（exclude 当前这道）。
   //  抽完把题名记在 S.coursePick[学年]，别的什么都不动。
-  function renderCourseDraw(grade, onDone){
-    el('stage').innerHTML =
-      '<div class="ttl">' + grade + (grade === '大一' ? ' · 设计课' : ' · 学期末') + '</div>' +
-      '<div class="txt">老师把一叠题目条倒在讲台中间，一人抽一份。<br>抽到哪个，这一学期就做哪个--期末评图也照这一题评。</div>' +
-      '<div class="big"><div class="lbl">你 抽 到 了</div>' +
-      '<div class="num" id="tTitle" style="font-size:19px;line-height:1.6">…</div></div>' +
-      '<div id="tBtn"></div>';
-    if (S.courseRedraws == null) S.courseRedraws = 0;
-    let cur = drawCourse(grade, null);
-    // 2026-09-13（清单第 22 项 · M 类）：考核点不经玩家可见处。
-    //   point 是内部设计字段（评图判定用），曾经连带上屏，被用户抓成
-    //   「（立不起来，说什么都白搭，这一关紧一点）这种括号说明是什么生硬手法」。
-    //   现在只上屏题名与题签两行（场地/要求）；「这关紧」由评图台词与数值传达。
-    const paint = function(){
-      el('tTitle').textContent = courseLabel(cur);
-      // 2026-09-16 用户定：抽题屏不放题签。这一屏玩家只决定「接受 / 再抽一次」，
-      //   而重抽不限次、免费——任何关于这题的评价都不作用于这个决定，只添噪音。
-      //   历史：先是「场地/要求」规格（被指无关、易被当成规则）；再试「看的是X」（仍与选项无关）。
-    };
-    paint();
-    const b = document.createElement('button');
-    b.className = 'act'; b.textContent = UI('draw.courseAccept', {}, '接 受 这 个 题');
-    b.onclick = function(){
-      if (!S.coursePick) S.coursePick = {};
-      // 2026-09-13：存整张题签（考核点 area / 场地 sign / 老师考核点 point / 题源 src），
-      // 不只存一个题名--这一学年的开场场景与期末评图都要回头读它。
-      S.coursePick[grade] = { name: cur.name, area: cur.area || '', sign: (cur.sign || []).slice(),
-                              point: cur.point || '', src: cur.src || '' };
-      S.courseTitle = cur.name;
-      log('这一学期做《<span class="hl">' + cur.name + '</span>》。');
-      onDone();
-    };
-    const rb = document.createElement('button');
-    rb.className = 'act'; rb.style.marginLeft = '12px';
-    rb.textContent = UI('draw.redraw', {}, '再 抽 一 次');
-    rb.onclick = function(){
-      S.courseRedraws++;
-      log(UI('draw.redrawLog', {}, '你把纸条放回去，又抽了一张。'));
-      cur = drawCourse(grade, cur.name);
-      paint();
-    };
-    el('tBtn').appendChild(b);
-    el('tBtn').appendChild(rb);
+  // 每学年一道固定题（2026-09-16 用户定：**完全去掉抽题**）。
+  //   为什么删：不管抽到什么，后面跟的选项、这一学年能干的事完全一样——抽题屏假装玩家在做选择。
+  //   保留：题名（学期开头「这学期做《X》」+ 评图台词按 area 评）、src 出处。
+  //   删掉：抽题屏、「再抽一次」、随机 drawCourse、±1 松紧（gateTilt）。
+  const COURSE_FIXED = {
+    '大一': '茶室设计',                 // 建筑系大一最经典的入门题
+    '大二': '幼儿园',                   // 大二最典型，规范最多
+    '大三': '老钢厂地块城市综合体',      // 大三做综合体 + 流线
+    '大四': '江边旧厂房工业博物馆更新'    // 大四做城市更新 / 旧改
+  };
+  function courseFixed(grade){
+    const want = COURSE_FIXED[grade];
+    const hit = COURSE_TITLES.filter(function(t){ return t.name === want; })[0];
+    return hit || COURSE_TITLES.filter(function(t){ return t.grade === grade; })[0] || COURSE_TITLES[0];
+  }
+  function assignCourse(grade){
+    if (!grade) return;
+    if (!S.coursePick) S.coursePick = {};
+    if (S.coursePick[grade]) return;                       // 幂等：一学年只分一次
+    const t = courseFixed(grade);
+    S.coursePick[grade] = { name: t.name, area: t.area || '', sign: (t.sign || []).slice(),
+                            point: t.point || '', src: t.src || '' };
+    S.courseTitle = t.name;
+    log('这一学期做《<span class="hl">' + t.name + '</span>》。');
   }
 
   // ---- 座位平面图：在图上挑位置 ----
@@ -5259,12 +5240,6 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   // 三个学期末关卡各抽哪个学年的池（毕设 thesis 不在此列：它有自己的方向制）
   const GATE_GRADE = { crit:'大二', detail:'大三', sketch2:'大四' };
   // 抽一道该学年的题；exclude = 当前这道（重抽一定换一道，不会抽回同一张）
-  function drawCourse(grade, exclude){
-    const pool = COURSE_TITLES.filter(function(t){ return t.grade === grade; });
-    const rest = pool.filter(function(t){ return t.name !== exclude; });
-    const arr = rest.length ? rest : (pool.length ? pool : COURSE_TITLES);
-    return arr[Math.floor(Math.random() * arr.length)];
-  }
   function courseLabel(t){ return t.grade + (t.term || '') + ' · 《' + t.name + '》'; }
 
   // ============================================================
@@ -5296,13 +5271,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     更新: { tilt: 0, head:'看的是更新', tail:'旧东西留住没有，一眼看得出来',
             says:['别扒了重来。留下的那一部分，才是这题的答案。'] }
   };
-  // 这一学年抽到的题给关卡判定带来的 ±1 松紧（没抽题 / 毕设方向制 → 0）
-  function gateTilt(){
-    const per = (S.coursePick || {})[roundName(S.round)] ||
-                (S.coursePick || {})[GATE_GRADE[S.currentGate] || ''];
-    const lens = per && AREA_LENS[per.area];
-    return lens ? lens.tilt : 0;
-  }
+  // （2026-09-16 删掉 gateTilt：抽题已去掉，题不再带来 ±1 松紧。）
+
 
   // 权重照真实获奖名单来：概念+破折号最多，大白话最少（少才惊艳）。
   // 2026-09-13：「概念：概念」从 ~25% 降到 12%--多了就腻，偶尔出现才好看；腾出的权重给下面 6 种新格式。
@@ -6001,19 +5971,13 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       return;
     }
     // 大一第一件事：抽这学期的课程设计题（茶室设计 / 上海里弄微更新 / 咖啡屋，都是入门题）
-    if (S.round === 0 && !S.courseIntroDone){
-      S.courseIntroDone = true;
-      renderCourseDraw('大一', termStart);
-      return;
-    }
+    if (S.round === 0 && !S.courseIntroDone) S.courseIntroDone = true;
+    assignCourse('大一');
     // 大二 / 大三 / 大四：这一学年开学第一屏就是抽题。题签定下这一学年的场地与要求，
     // 期末评图按考核点（area）评--题签才算进了关卡（2026-09-13）。
     const Rg = ROUNDS[S.round];
     const gGrade = (Rg && Rg.gate) ? (GATE_GRADE[Rg.gate] || '') : '';
-    if (gGrade && !(S.coursePick && S.coursePick[gGrade])){
-      renderCourseDraw(gGrade, termStart);
-      return;
-    }
+    if (gGrade) assignCourse(gGrade);
     termStart();
   }
   // 学期转场：横幅等玩家按「继续」再走（round 0 也走--大一上也是一学期的开始）
@@ -6055,10 +6019,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       S._gateLog = '作品 ' + S.works.length + ' 件 < 要求 ' + need + ' 件 -- 手上没东西可交';
       return false;
     }
-    const tilt = gateTilt();                  // 这题偏什么，±1 的松紧
-    const score = (S.skill * coef) + (S.works.length * 3) + rnd + tilt;
+    const score = (S.skill * coef) + (S.works.length * 3) + rnd;   // 2026-09-16：题不再带 ±1
     S._gateLog = '技能 ' + S.skill + ' ×' + coef + ' + 作品 ' + S.works.length + ' ×3 + 运气 +' + rnd +
-                 (tilt ? ' + 这题 ' + (tilt > 0 ? '+' : '') + tilt : '') +
                  ' = ' + score + ' / 门槛 ' + req;
     return score >= req;
   }
@@ -6212,7 +6174,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     // 另外三个学期末关卡（大二评图 / 大三构造课 / 大四一草）：这一学年的题在开学时
     // 就抽过了（beginRound），这里直接按考核点评图。万一没抽过（测试入口直跳），补抽一屏。
     const gG = GATE_GRADE[id] || '大二';
-    if (!(S.coursePick && S.coursePick[gG])){ renderCourseDraw(gG, function(){ showGateAttitude(''); }); return; }
+    assignCourse(gG);
     showGateAttitude('');
   }
   // 关卡结束 → 进下一回合 / 结局

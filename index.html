@@ -2580,7 +2580,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       ]},
 
     sc_outdoor: { name:'下 乡 写 生', grade:[0,1,2,3,4], form:'choice', noChoice:true,
-      eff:{hair:30, skill:1},
+      eff:{hair:8, skill:1},
       talk:[
         '这学期的写生课，全班拉到一个村子，住两三周。',
         '村子在山坳里，白墙黑瓦，水塘边的石板路被踩得发亮。',
@@ -5594,9 +5594,11 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   //  它们是「必现卡」：不像去处卡池那样靠抽，落到对应学期一定上，且**不占行动点**
   //  （一学期开学时插一屏，演完照常回排程；actionsLeft 全程不动）。
   //  一学期最多一张、同局同一张不重复。
-  //  rounds＝能在哪几个回合（学年）出现；rescue＝头发见底时的回血卡，优先且额外判条件。
+  //  rounds＝能在哪几个回合（学年）出现。
+  //  2026-09-16 用户：**不要回血卡**——原来 sc_outdoor 标了 rescue，头发≤25 时被强制优先上、+30 头发，
+  //   玩家只觉得“莫名其妙回血”。现删掉整套 rescue 机制（标记/判定/优先/常量），写生回到普通副线卡，
+  //   eff 从 +30 降到 +8（三周不熬夜确实养头发，但 30 是救援量）。代价：头发见底不再被托底，≤3 直接休学。
   // ============================================================
-  const SIDE_HAIR_LOW = 25;                    // 头发见底线：低于它，老师把全班带出去写生
   const SIDE_CARDS = [
     { id:'sk_plaster', rounds:[0,1] },
     { id:'su_book',    rounds:[0,1] },
@@ -5606,7 +5608,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     { id:'hi_oral',    rounds:[1,2] },
     { id:'hi_column',  rounds:[2,3,4] },
     { id:'dj_node',    rounds:[2,3] },
-    { id:'sc_outdoor', rounds:[0,1,2,3,4], rescue:true }
+    { id:'sc_outdoor', rounds:[0,1,2,3,4] }
   ];
   // 这一学期该上哪张副线卡。peek=true 只查不改（验收探针用）。
   function drawSideCard(peek){
@@ -5617,12 +5619,9 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       if (e.rounds.indexOf(S.round) < 0) return false;        // 不是这个学年的课
       if (S._sideSeen.indexOf(e.id) >= 0) return false;       // 这一局上过了
       if (!CARDS[e.id]) return false;
-      if (e.rescue && !(S.hair <= SIDE_HAIR_LOW)) return false;  // 回血卡：头发不低就不上
       return true;
     });
     if (!ok.length) return null;
-    const rescue = ok.filter(function(e){ return e.rescue; });
-    const use = rescue.length ? rescue : ok;                  // 回血卡优先
     const e = use[Math.floor(Math.random() * use.length)];
     if (!peek){ S._sideSeen.push(e.id); S._sideRound = S.round; }
     return e.id;
@@ -7489,7 +7488,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       setOpenWhy: function(k){ S.openWhy = k; return S.openWhy; },
       // 非设计课副线（测试用）：这一学期该上哪张（peek，不改状态）/ 设头发 / 重走学期开头
       sidePick: function(){ return drawSideCard(true); },
-      sideList: function(){ return SIDE_CARDS.map(function(e){ return { id:e.id, rounds:e.rounds, rescue:!!e.rescue }; }); },
+      sideList: function(){ return SIDE_CARDS.map(function(e){ return { id:e.id, rounds:e.rounds }; }); },
       setHair: function(v){ S.hair = v; renderHUD(); return S.hair; },
       // 两个「首次」提示专项（测试用）：走真实的 apply()，验 flag 与浮层只出现一次
       applyEff: function(eff){ apply(eff); return { work:S.work, skill:S.skill, hair:S.hair,

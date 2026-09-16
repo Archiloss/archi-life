@@ -4787,7 +4787,6 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       '<div class="txt">老师把一叠题目条倒在讲台中间，一人抽一份。<br>抽到哪个，这一学期就做哪个--期末评图也照这一题评。</div>' +
       '<div class="big"><div class="lbl">你 抽 到 了</div>' +
       '<div class="num" id="tTitle" style="font-size:19px;line-height:1.6">…</div></div>' +
-      '<div class="txt" id="tSign" style="margin-top:8px;color:var(--dim2);font-size:13px;line-height:1.8"></div>' +
       '<div id="tBtn"></div>';
     if (S.courseRedraws == null) S.courseRedraws = 0;
     let cur = drawCourse(grade, null);
@@ -4797,11 +4796,10 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     //   现在只上屏题名与题签两行（场地/要求）；「这关紧」由评图台词与数值传达。
     const paint = function(){
       el('tTitle').textContent = courseLabel(cur);
-      // 2026-09-16 用户：题签那些「场地/要求」是无关信息，容易误导（玩家以为是要遵守的规则）。
-      //   改成这道题真正影响过关的透镜——head/tail 与评图台词同源（AREA_LENS），说清松紧不说数值。
-      //   只上「这题看的是什么」；松紧（tail）是内部判定，上屏会被当成生硬说明（用户 2026-09-13 已否）。
+      // 2026-09-16 用户定：抽题屏不放题签。这一屏玩家只决定「接受 / 再抽一次」，
+      //   而重抽不限次、免费——任何关于这题的评价都不作用于这个决定，只添噪音。
+      //   历史：先是「场地/要求」规格（被指无关、易被当成规则）；再试「看的是X」（仍与选项无关）。
       const lensD = AREA_LENS[cur.area] || null;
-      el('tSign').innerHTML = lensD ? ('期末评图，' + lensD.head.replace(/^(考|看)的是/, '看的是') + '。') : '';
     };
     paint();
     const b = document.createElement('button');
@@ -6076,11 +6074,11 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     el('stage').innerHTML =
       '<div class="ttl">' + gateName + ' · 学期末</div>' +
       '<div class="txt">' + c.text.replace(/\n/g, '<br>') +
-        // 2026-09-13（清单第 22 项 · M 类）：lens.tail（「这一关紧一点 / 这一关就松一点」）
-        //   是设计者旁白，不再上屏；只留老师说的 head 与一句评语 says[0]。
-        //   松紧靠数值更狠 + 台词更短更冷来传（tilt 照旧加在判定分上）。
-        (lens ? '<br>「《' + gp.name + '》这一题，' + lens.head + '。」<br>' +
-                lens.says[0] : '') +
+        // 2026-09-13（清单第 22 项 · M 类）：lens.tail（「这一关紧一点 / 这一关就松一点」）是设计者旁白，不上屏。
+        // 2026-09-16 用户：lens.head（「看的是换乘」）也不上屏——它跟玩家在评图屏的选择毫无关系，
+        //   属于系统的解读而不是发生的事；该让玩家从老师的具体批评里自己听出来。
+        //   现在只上 says[0]（老师指着方案说的那句人话）；tilt 照旧加在判定分上，只是不再说出来。
+        (lens ? '<br>' + lens.says[0] : '') +
         (gw ? '<br>你作品集里之前做的那件--也讲讲。' : '') + '</div>' +
       (resultText ? '<div class="warn">结果：' + resultText + '</div>' : '') +
       '<div class="opts" id="opts"></div>';

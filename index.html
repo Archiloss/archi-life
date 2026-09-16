@@ -7487,6 +7487,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       // 测试用：直接跳到第 N 回合（0 基）并（可选）锁定毕业线，便于验"毕设抽题"这类只在大五出现的屏
       devJump: function(round, line){
         S.round = round;
+        if (!S.school) S.school = '建筑学';   // 同 jumpTo('fork')：补学历，否则 HUD 显示「高中生」（2026-09-16）
         if (line) S.line = line;
         if (S.hair < 30) S.hair = 60;
         if ((S.works || []).length < 2) S.works = [{ from: '测试', round: 0 }, { from: '测试', round: 1 }];

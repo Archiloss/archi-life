@@ -2430,15 +2430,15 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         {t:'追上去问哪里不对', eff:{skill:2,hair:-4}, r:'他讲了二十分钟。前五分钟有用。'}
       ]},
 
-    seat: { name:'专教 · 抢座', form:'seat',
-      text: '专教一共 34 个座位，班里有 41 个人。\n你来得早，工具盒往桌上一放，靠窗那张就是你的。',
+    seat: { name:'专教 · 选工位', form:'seat',
+      text: '专教一个班一间，工位自己做主。\n你来得早，工具盒往桌上一放，靠窗那张就是你的。',
       cols:7, rows:5, void:['4,3'],
       pick:function(r, col){
-        // 2026-09-14：第二次起指回上学期坐过哪儿（开学「又得重抢一遍」但位置会挪）
+        // 2026-09-16 用户：专教是固定工位，不存在「每学期重抢」。第二次来只说还是那张（桌角多了道刻痕）。
         const revisit = function(o){
           const prev = S._seatLast;
           S._seatLast = o.t;                       // 记下这学期坐哪，供下学期指回
-          if (prev) o.r = '上学期你坐的是' + prev + '。这学期重排，位置全变了。' + o.r;
+          if (prev) o.r = '上学期你坐的是' + prev + '。桌角又多了道刻痕。' + o.r;
           return o;
         };
         const near   = r <= 1;          // 前排，老师眼皮底下
@@ -6874,7 +6874,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     "normal": [
      "这学期，你把课表抄在了图板边上。",
      "新学期。工具盒的锁扣比上学期松了。",
-     "开学。专教的座位又得重抢一遍。"
+     "开学。专教窗台上还摆着上学期没带走的模型。"
     ],
     "works": [
      "这学期你手里已经攥着 {works} 件东西，还想再做一件。",

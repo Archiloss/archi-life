@@ -1087,7 +1087,11 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   </div>
 </div>
 <!-- 行业文案 · 行业背景插播十幕 112 条（逐字定稿，改文案改这里） -->
-<script id="interData" type="application/json">{
+<!-- 插播文案：十个学期 117 条 + 每幕固定一条「那年 · 行业」
+     源在 src/copy/inter.json，build.py 构建时注入到这里（别再往本文件里贴文案）
+     直接打开本文件（不经 build）时读不到插播，游戏其余流程不受影响 -->
+<script id="interData" type="application/json">
+{
  "大一上": [
   {
    "trigger": "专教·第一次领画板",
@@ -2182,8 +2186,10 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
    ]
   }
  }
-}</script>
+}
+</script>
 
+<!-- 长文本（食堂 / 通宵 / 转行面试）：源同 src/copy/inter.json，build.py 注入 -->
 <script id="longformData" type="application/json">
 {
  "canteen": {

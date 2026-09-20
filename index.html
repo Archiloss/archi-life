@@ -5622,7 +5622,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       return true;
     });
     if (!ok.length) return null;
-    const e = use[Math.floor(Math.random() * use.length)];
+    const e = ok[Math.floor(Math.random() * ok.length)];
     if (!peek){ S._sideSeen.push(e.id); S._sideRound = S.round; }
     return e.id;
   }

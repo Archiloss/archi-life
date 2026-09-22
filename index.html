@@ -387,7 +387,12 @@ html{ zoom:1.25; }
   .ending,.ending *{font-family:var(--font-ui);}
   /* 结局面板底部的「再来一局」常驻：窗口不高时（900/800 高）以前要滚到最底才看得见 */
   .ending .endbar{position:sticky;bottom:-26px;margin:6px 0 -26px;padding:10px 0 8px;
-                  background:var(--bg);border-top:1px solid var(--line-c);}
+                  background:var(--bg);border-top:1px solid var(--line-c);
+                  display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  /* 吸底条右侧的「下面还有……」：结局内容比舞台高一倍、滚动条又不显，
+     没有这句玩家会以为整屏就这些（2026-09-22）。滚到底由 JS 收起。 */
+  .ending .endbar .fold{font-size:11.5px;line-height:1.6;color:var(--dim);letter-spacing:1px;}
+  .ending .endbar .fold.off{visibility:hidden;}
   .ending .lab{font-size:11px;line-height:1.9;color:var(--dim);letter-spacing:3px;}
   .ending .big-t{font-size:24px;color:var(--ink);line-height:1.5;}
   .ending .body{font-size:13.5px;line-height:1.9;color:var(--ink);white-space:pre-wrap;}
@@ -869,6 +874,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   .ending .body,.ending .claim,.ending .one,.ending .verdict,
   .ending .hair,.ending .wlist .wl,.ending .scene-txt,.ending .big-t,.ending .body-txt{ overflow-wrap:anywhere; }
   .ending .endbar{ position:sticky; bottom:-16px; margin:6px 0 -16px; padding:10px 0 8px; }
+  .ending .endbar .fold{ font-size:11px; }
   .ending .badge{ font-size:12px; }
 
   /* ⑩ 图鉴弹层（fixed 全屏）：能滚、关得掉，关闭按钮钉在屏内 */
@@ -2208,14 +2214,12 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
    "「那些现在在裁人。」",
    "「裁人也比我们这边强吧。」",
    "「你怎么知道我们这边裁不裁。」",
-   "这句话说完，就没有人接着说了。",
    "筷子碰到盘子的声音很清楚。",
    "坐斜对面那个把话拉回来。",
    "「其实也不一定，我再看看。」",
    "「我们这届这么多人呢，总有人能进。」",
    "「进哪儿？」",
-   "「不知道。总有人能进去。」",
-   "后来又聊别的：谁保研了，谁签三方了，谁对象已经上班了。每个人都假装这顿饭还是在聊别的。",
+   "后来又聊别的：谁保研了，谁签三方了，谁对象已经上班了。",
    "说到最后一个，有人笑了。笑完又低头吃饭。",
    "最后散场的时候，那个一直挑菜的人说：「我再看看。」",
    "他把旁边那人落下的饭卡推过去：「卡。」",
@@ -2230,7 +2234,6 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     "三点四十，你站起来去接水。",
     "站起来那两秒，眼前黑了一下。",
     "像有人顺手把亮度调低了一格，很快又调回来。",
-    "你站着没动，等眼前那一下黑过去。",
     "水房的水是温的。",
     "你端着杯子往回走，走到一半停下来。",
     "你能听见自己的心跳。",
@@ -2252,7 +2255,6 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     "鸟是突然开始叫的。",
     "先是两三声，然后一片。",
     "叫声很密，很急，好像它们也要交图。",
-    "你想：这个点已经这么吵了。",
     "五点二十，你饿了。",
     "你下楼，便利店刚开门，第一个包子还是热的。",
     "你买了两个，站在门口的台阶上吃。",
@@ -2272,7 +2274,6 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     "甲方下午五点发来一条语音，六十秒。",
     "你听了三遍才听清核心诉求。",
     "入口要「再大气一点」。",
-    "什么叫「再大气一点」，没人解释。",
     "你试了四个方案，都不够大气。",
     "三点十分，心跳了一下，跳得不太对。",
     "不是疼，是重。",
@@ -2284,7 +2285,6 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     "你在黑暗里站了一会儿。",
     "这儿没人要求大气。",
     "天边慢慢亮起来，灰一点点变少。",
-    "你看了很久。",
     "远处过了辆环卫车。",
     "更远的地方有只鸟叫了一声。",
     "然后是第二只，然后一片。",
@@ -2308,10 +2308,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   "talk": [
    "面试间很白。",
    "桌子对面坐着两个人，一个中年，一个年轻。",
-   "年轻的那位负责提问。",
    "「本科建筑？」——「对。」——「五年制？」——「对。」——「为什么五年？」",
    "这套问题你有话术。",
-   "五年制是因为课程容量大，设计课贯穿全程，还有实习和毕设。",
    "你脑子里把标准答案过一遍，熟得像平法标注。",
    "「因为建筑学的培养体系里，设计实践占比很高，所以学制比一般专业长一年。」",
    "年轻的面试官点点头，在本子上写了什么。",
@@ -2335,7 +2333,6 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
    "「其实我们那儿，也有几个从你们那行过来的，都挺好的。」",
    "电梯下行，十二楼到一楼，二十六秒。",
    "你看着楼层数字一层层减下去。",
-   "心里把四十秒的话术又过了一遍。",
    "电梯里就你一个人。",
    "「我画了五年图。我其实画得挺好的。」",
    "电梯到了，门开了，你走出去。"
@@ -4013,7 +4010,10 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   //   三篇长文本原本一句一屏 = 24 / 32 / 33 次空格连打，实测是全局最长的「纯空格段」。
   //   现在按句分组上屏（同一屏内用换行分开，见 renderTalk/talkBR），屏数降到原来的 1/3。
   //   注意：只作用在长文本上；卡片的对话（通常 2~4 句）保持一句一屏的演出节奏不变。
-  const LONGFORM_PER_SCREEN = 3;
+  // 每屏句数（2026-09-22 用户口径：长文本"点太多"）——3 → 5。
+  //   实测四篇：食堂 24 句 8→5 屏、通宵 34 句 12→7 屏、通宵B 32 句 11→7 屏、面试 33 句 11→7 屏；
+  //   一局里长文本的点击量 20 → 12。句均 13~18 字，5 句一屏约 70~90 字（4~6 行），一屏读得完。
+  const LONGFORM_PER_SCREEN = 5;
   function showLongform(title, talk, done){
     const raw = (talk || []).filter(function(s){ return s && String(s).length; });
     if (!raw.length){ done(); return; }
@@ -4170,9 +4170,11 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
           eggEgg +
         '</div>' +
         (eggAtlas ? '<div class="atlas">你走过了 ' + eggAtlas + ' / ' + ENDING_TOTAL + ' 个结局</div>' : '') +
-        '<div class="endbar"><button class="act" id="again">再 来 一 局</button></div>' +
+        '<div class="endbar"><button class="act" id="again">再 来 一 局</button>' +
+          '<span class="fold" id="foldHint">' + UI('ending.fold', {}, '↓ 下面还有 成绩单 · 判词') + '</span></div>' +
       '</div>';
     el('again').onclick = reset;
+    bindFoldHint();
   }
 
   // ========== 工具 ==========
@@ -4266,9 +4268,15 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     if (n.tal) for (const tag in n.tal) out.push(talItem(tag, n.tal[tag]));
     if (n.talAny) {
       const groups = n.talAny.map(function(g){
-        return Object.keys(g).map(function(k){ return talItem(k, g[k]); }).join('，且 ');
+        const one = Object.keys(g).map(function(k){ return talItem(k, g[k]); }).join('，且 ');
+        // 组内有多条（AND）时给这一组单加一层括号：以前全塞进同一个括号里，
+        // 「（理论 1 级（6 点） 或 做模型 1 级（6 点），且 作品 4 件）」被读成"做模型和作品都要"，
+        // 而真判据是「理论 1 级，或（做模型 1 级 且 作品 4 件）」（2026-09-22 复核发现）。
+        return (Object.keys(g).length > 1) ? ('（' + one + '）') : one;
       });
-      out.push(groups.length > 1 ? ('（' + groups.join(' 或 ') + '）') : groups[0]);
+      // 只有一组就不再套外层括号；和别的必达项并排时（' + '）才需要括号把 OR 块圈起来
+      if (groups.length === 1) out.push(groups[0]);
+      else out.push(out.length ? ('（' + groups.join(' 或 ') + '）') : groups.join(' 或 '));
     }
     return out.join(' + ');
   }
@@ -4912,8 +4920,17 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     const tl = S._dlg;
     const who = (tl.card && (tl.card.dlgName || tl.card.name)) || '';
     const upto = tl.idx;
-    const from = Math.max(0, upto - 4);                 // 最多显示最近 5 条
-    const show = tl.list.slice(from, upto + 1);
+    // 窗口：最多 5 条、且总字数不超过 150（越旧越淡）。
+    //   长文本改成每屏 5 句后，还照旧留 5 条就会把 25 句糊满一屏（2026-09-22）；
+    //   卡牌台词本来就 1~2 条，这条上限对它们没有影响。
+    const show = [];
+    let acc = 0;
+    for (let i = upto; i >= 0 && show.length < 5; i--){
+      const s = String(tl.list[i] == null ? '' : tl.list[i]);
+      if (show.length && acc + s.length > 150) break;
+      show.unshift(s);
+      acc += s.length;
+    }
     const grad = [0.28, 0.42, 0.58, 0.78, 1];           // 越旧越淡
     const base = grad.length - show.length;
     const html = show.map(function(s, i){
@@ -6435,10 +6452,12 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         '</div>' +
         '<div class="verdict">' + E.verdict + '</div>' +
         (atlasN ? '<div class="atlas">图鉴 ' + galCount() + ' / ' + ENDING_TOTAL + ' 个结局</div>' : '') +
-        '<div class="endbar"><button class="act" id="again">' + UI('ending.again', {}, '再 来 一 局') + '</button></div>' +
+        '<div class="endbar"><button class="act" id="again">' + UI('ending.again', {}, '再 来 一 局') + '</button>' +
+          '<span class="fold" id="foldHint">' + UI('ending.fold', {}, '↓ 下面还有 成绩单 · 判词') + '</span></div>' +
       '</div>';
     log('-- 一局结束 --', 'p');
     el('again').onclick = reset;
+    bindFoldHint();
   }
 
   // ============================================================
@@ -6932,6 +6951,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
    "lab": "你 现 在",
    "earlyLab": "早 结 局",
    "again": "再 来 一 局",
+   "fold": "↓ 下面还有 成绩单 · 判词",
    "resultTitle": "你 选 了",
    "cont": "继 续",
    "drawLbl": "你 抽 到 了",
@@ -7039,8 +7059,9 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     const w = el('galwrap'); if (w) w.remove();
     showGallery();
   }
-  const ENDING_TOTAL = 47;      // 图鉴分母：7 线 × 5 画像（留学分回国/留下）= 40 + 早结局 4 + 彩蛋 3
-                                // （秃了/空手/全都要 已降级成结局页徽章，不再占格 -- 否则谁降级谁成死格）
+  // 图鉴分母见下方 ENDING_TOTAL（2026-09-22 改成按格位实算，不再手写数字：
+  //   以前写死 47 = 40 + 早结局 4 + 彩蛋 3，但早结局实际有 5 条 → 屏上永远到不了「满」。）
+  // （秃了/空手/全都要 已降级成结局页徽章，不再占格 -- 否则谁降级谁成死格）
 
   // 界面文案取值：ENDING_TEXT.ui.<path>，缺了就用兜底；数组随机取一条；{n} 之类占位替换
   function UI(path, vars, fallback){
@@ -7212,11 +7233,13 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
             }).join('') + '</div>'
           : '') +
         (atlasN ? '<div class="atlas">图鉴 ' + galCount() + ' / ' + ENDING_TOTAL + ' 个结局</div>' : '') +
-        '<div class="endbar"><button class="act" id="again">' + UI('ending.again', {}, '再 来 一 局') + '</button></div>' +
+        '<div class="endbar"><button class="act" id="again">' + UI('ending.again', {}, '再 来 一 局') + '</button>' +
+          '<span class="fold" id="foldHint">' + UI('ending.fold', {}, '↓ 下面还有 成绩单 · 判词') + '</span></div>' +
       '</div>';
 
     log('-- 一局结束 --', 'p');
     el('again').onclick = reset;
+    bindFoldHint();
 
 
     // 徽章点开：展开同一 key 的那段说明（一次只开一个，再点收起）
@@ -7330,6 +7353,27 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     });
     return out;
   }
+  // 图鉴分母 = 实际格位数（7 线 × 5 画像，留学分回国/留下 = 40，+ 早结局 5 + 彩蛋 3 = 48）。
+  //   不手写数字：早结局曾经从 4 条加到 5 条，分母没跟着改，玩家集满也到不了「48 / 48」。
+  //   位置必须在 GAL_LINES / GAL_EARLY / EGG 之后（那些是 const，提前引用会踩 TDZ）。
+  const ENDING_TOTAL = galSlots().length;
+
+  // 结局屏吸底条上的「下面还有」提示：屏内还有内容时亮着，滚到底自动收起。
+  //   为什么要有它：结局那一屏的内容（成绩单 / 判词 / 图鉴）差不多是舞台高度的两倍，
+  //   macOS 的滚动条又是覆盖式的、不显；再配上一个吸底的「再来一局」，
+  //   玩家会以为这一屏已经到底了（2026-09-22 实测：1440×900 首屏只到"回望"那句，
+  //   判词与图鉴都落在首屏外；375×667 上连回望都在外）。
+  function bindFoldHint(){
+    const st = el('stage'), fh = el('foldHint');
+    if (!st || !fh) return;
+    const upd = function(){
+      const rest = st.scrollHeight - st.clientHeight - st.scrollTop;
+      fh.classList.toggle('off', rest <= 12);
+    };
+    st.onscroll = upd;          // 单一赋值：舞台没有别的 onscroll，避免每局结局叠一层监听
+    upd();
+  }
+
   function galCount(){
     const seen = seenEndings();
     return galSlots().filter(function(r){ return seen.indexOf(r.key) >= 0; }).length;

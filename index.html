@@ -380,7 +380,10 @@ html{ zoom:1.25; }
                     vertical-align:-2px;animation:blink 1.05s steps(1) infinite;}
   @keyframes blink{50%{opacity:0;}}
 
-  .ending{padding:26px 22px;display:flex;flex-direction:column;gap:16px;position:relative;z-index:4;}
+  /* 2026-09-23：padding/gap 各收一档（26→18 / 16→12），为把判词顶进首屏——
+     实测 900 高窗口可视 720，判词原落在 749（屏外），收完 563，完整站在吸底条上方。 */
+  /* 底部 84px = 吸底条（sticky）高度：不给它留位，滚到底时最后几行会被压住。 */
+  .ending{padding:18px 22px 84px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:4;}
   /* 结局页字体收口（2026-09-13 · 清单第 34 项）：
      这一屏的文字节点**全部显式**跟 --font-ui，不再靠 body 继承 —— 以前谁漏声明就掉回
      浏览器默认字体（表单控件还会默认一套 system-ui），同一屏两种字。现在整屏一个源。 */
@@ -610,6 +613,9 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   .ending .claim{font-family:var(--font-ui);font-size:13.5px;line-height:1.9;color:var(--ink);margin-bottom:10px;}
   .ending .wlist{margin:0 0 12px 0;padding-left:2px;border-left:2px solid var(--line-c);}
   .ending .wlist .wl{font-family:var(--font-ui);font-size:12.5px;line-height:1.9;color:var(--ink2);padding-left:9px;letter-spacing:.02em;}
+  /* 2026-09-23：作品清单从「一件一行」压成一行——workRowLabel 只有序号+年级（名字已停用），
+     四行占 292px 却零信息，把判词挤到折叠线下。一个字没删，只换行法。 */
+  .ending .wlist.one-line{font-family:var(--font-ui);font-size:12.5px;line-height:1.9;color:var(--ink2);padding-left:9px;letter-spacing:.02em;margin-bottom:10px;}
   .ending .hair{font-family:var(--font-ui);font-size:12.5px;line-height:1.9;color:var(--dim);margin-bottom:14px;}
   /* 中文没有真斜体：以前这里的 font-style:italic 是浏览器**合成斜体**（把 PingFang 硬掰斜）。
      实测（tools/capture-ending-snapshot.js）：整屏 32 个文字节点里**只有 .one 这两行**不是 normal 字形，
@@ -617,8 +623,10 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
      语气改用左边那条竖线（border-left）表达，字形一律正体。 */
   .ending .one{font-family:var(--font-ui);font-size:12.5px;line-height:1.9;color:var(--dim);
                margin-bottom:0;padding-left:10px;border-left:2px solid var(--line);}
-  .ending .verdict{font-family:var(--font-ui);font-size:16px;line-height:1.9;color:var(--ink);font-weight:600;
-                   letter-spacing:.02em;margin:22px 0 20px;padding-top:16px;
+  /* 2026-09-23：判词 16→18px。它是整局的收束句，原来只比正文大一档（13.5→16），
+     和上面的灰色回望句拉不开。同时它已从成绩单之后提到首屏底部（见 game.js ending()）。 */
+  .ending .verdict{font-family:var(--font-ui);font-size:18px;line-height:1.9;color:var(--ink);font-weight:600;
+                   letter-spacing:.02em;margin:4px 0 6px;padding-top:14px;
                    border-top:1px solid var(--line-c);}
   .ending .atlas{font-family:var(--font-ui);font-size:11px;line-height:1.9;color:var(--dim2);letter-spacing:1.2px;margin:-8px 0 14px;}
 
@@ -982,9 +990,15 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
 
 /* 2026-09-13 · 恶趣味主线：结局回望句（落点 3）＋图鉴批注（落点 5）
    回望句与结局小字同族：12.5→13.5px 那档留给正文，回望句算小字族的外沿，行高与全屏统一 1.9。 */
-.ending .retro{font-family:var(--font-ui);font-size:13.5px;line-height:1.9;color:var(--dim2);margin-top:10px;
+.ending .retro{font-family:var(--font-ui);font-size:13.5px;line-height:1.9;color:var(--dim2);margin-top:0;
                padding-top:8px;border-top:1px dashed rgba(138,138,138,.35);}
 .ending .retro + .retro{margin-top:4px;padding-top:0;border-top:0;}
+  /* 「同学那一笔」与上面两句自我回望拉开：它不是「你」的事，是外面的人。 */
+  .ending .retro.peers{margin-top:10px;}
+  /* 判词被吸底条压住时才加的一档（由 ending() 里量一次决定）：收 gap、判词上留白、同学句间距。 */
+  .ending.tighter{gap:6px;}
+  .ending.tighter .verdict{margin-top:0;padding-top:8px;}
+  .ending.tighter .retro.peers{margin-top:6px;}
 .galwrap .grow .gn{grid-column:1 / -1;color:var(--accent);font-size:11px;letter-spacing:1px;opacity:.9;}
 @media (max-width:700px){ .galwrap .grow .gn{font-size:11px;} }
 
@@ -1155,10 +1169,10 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   },
   {
    "trigger": "周末·同学相约出行",
-   "text": "隔壁城市有座坂茂的新馆开了，你们专程坐车去看。\n建筑摄影爱好者们举着相机排队找角度，你们排队找角度。\n回程车上你把照片发家族群：「以后我也做这个。」\n二姨回了三个大拇指。",
+   "text": "隔壁城市有座坂茂的新馆开了，你们专程坐车去看。\n建筑摄影爱好者们举着相机排队找角度，你们挤在队伍里，手里是手机。\n回程车上你把照片发家族群：「以后我也做这个。」\n二姨回了三个大拇指。",
    "keys": [
     "坂茂的新馆",
-    "排队找角度",
+    "手里是手机",
     "家族群里的三个大拇指"
    ]
   },
@@ -1497,6 +1511,15 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     "白板上的 37 份",
     "换纸的老板",
     "「那更吓人」"
+   ]
+  },
+  {
+   "trigger": "宿舍·深夜，群里",
+   "text": "群里有人发：「做了四个小时的模型，崩了，没存。」\n底下跟了一串 +1。\n第三条是：「我现在每两分钟按一次 Ctrl+S。」\n再下面有人发了张照片，是他键盘那排键——Ctrl 已经看不出字了。",
+   "keys": [
+    "崩掉的那版模型",
+    "一串 +1",
+    "磨得看不出字的 Ctrl 键"
    ]
   }
  ],
@@ -1995,6 +2018,15 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
    "keys": [
     "周末电话",
     "「实在不行」"
+   ]
+  },
+  {
+   "trigger": "手机上·秋招",
+   "text": "群里有人发了张截图：一家设计院这个月到账 2740。\n底下有人问：是基本工资还是全部。\n发图的回：全部。\n有人接着问：那绩效呢。\n那张图被撤回了。",
+   "keys": [
+    "那张到账截图",
+    "「全部」",
+    "被撤回的图"
    ]
   }
  ],
@@ -3008,7 +3040,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     st_lib3: { name:'借 书', noChoice:true, eff:{skill:1,hair:2}, talk: ['你抱了十二本书去自助机，下巴压着最上面那本。','机器响了十二次，像在数你。','你一本本放回书车，回头又续了一本。','门口老师问你是不是把整个书架搬空了。','你说没有，只搬了半排。他把你的借期划到了学期末。']},
     st_lib4: { name:'小 人', noChoice:true, eff:{skill:1,hair:2}, talk: ['你在规范旁边的空白处画了个睡觉的小人，把椅子改成躺椅。','用的是自动铅笔，笔芯一按就断，小人越描越黑。','画完自己困得不行，真想躺进那本书里。你决定陪它睡五分钟。','再睁眼，管理员已经把书合上了。小人被压成一条线。','后来你还画小人，但只敢画在笔记本边上——主图已经够吓人了。']},
     st_lib5: { name:'占 座', noChoice:true, eff:{skill:2,hair:1}, talk: ['一楼靠暖气那排是抢手货。你派了本书去占。','派的是最厚那本--占得住位，翻不动页。','回来书还在，座没了。它被挪到边上，压在人家的笔记底下。','你认栽，在备忘录里记一笔。第二天回来，你的书又被挪了。','第二天同一时间，你的书被挪到了二楼。它升级了。']},
-    st_sleep1: { name:'室 友', noChoice:true, eff:{skill:0,hair:5}, talk: ['你躺下时室友在打游戏，外放对面队的阵亡音效。','你数羊数到一千只。床头那副耳机，线缠成一个结，你摸黑解到第三只羊。','解开你戴上，反手开满音量。','室友问：「你今晚还敲吗？」','你说十一点。他十一点半睡了，你敲到三点。']},
+    st_sleep1: { name:'室 友', noChoice:true, eff:{skill:0,hair:5}, talk: ['你躺下时室友在打游戏，外放对面队的阵亡音效。','你数羊数到一千只。床头那副耳机，线缠成一个结，你摸黑解到第三只羊。','解开你戴上，反手开满音量。','室友问：「你今晚还画吗？」','你说十一点。他十一点半睡了，你的台灯亮到三点。']},
     st_sleep2: { name:'闹 表', noChoice:true, eff:{skill:0,hair:5}, talk: ['闹钟你按了三次，每次都顺手延长十分钟。','手机压在枕头底下，连着充电线。第四次你摸黑划过去的时候，线缠住了手腕。','再睁眼，天花板上的影子和睡前换了位置。','你划掉今天上午的日程。','下午你按这个作息过。']},
     st_sleep3: { name:'电 话', noChoice:true, eff:{skill:0,hair:4}, talk: ['午睡正深。你梦见在一条清水混凝土的走廊里走，接缝一道不差；走到底，前面又是一条一样的。\n一个电话把你拽出来，家里问饭吃了没。','你说吃了，挂了，躺回去--那个梦的位置已经没了。','翻个身，第二个电话。驿站让你带取件码下楼。','你趿着拖鞋下去，在货架上翻了半天，纸箱有一个角是湿的。','回宿舍一躺全是清醒，只好改晚上补觉。']},
     st_sleep4: { name:'灯 灭', noChoice:true, eff:{skill:1,hair:4}, talk: ['十一点熄灯，你还在床上看手机，屏幕照出半张黑眼圈。','被子底下压着白天那支笔，笔杆硌在你腰上。','室友说：「你把亮度调低点，明早我还得起。」','你调暗一格。他那边也灭了。','后来你学会把手机扣在枕头下。']},
@@ -3016,6 +3048,14 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     st_mat2: { name:'搬 纸', noChoice:true, eff:{skill:1,hair:-1}, talk: ['这周的描图纸你一个人搬回专教，卷成一筒，皮筋扎两道。','一路磕了三个门槛。老板娘在后面喊：小心点，别蹭破了。','你回身看，皮筋没断，纸角破了一道。','你把破角那面朝里，压着画了一天。','画完才发现破的是正面。']},
     st_mat3: { name:'胶 味', noChoice:true, eff:{skill:1,hair:0}, talk: ['店里那桶胶你凑近闻，闻不出型号，只觉得有点呛。','桶盖边上结了一圈干胶，你用指甲抠了半天。','老板娘说这就是好胶，呛的才粘得牢。','你买回来试，果然撕不下来了。','后来为撕下来你把整张图重画一遍。']},
     st_mat4: { name:'薄 纸', noChoice:true, eff:{skill:1,hair:-1}, talk: ['你要买薄一点的描图纸。老板娘翻出最薄那沓，举到门口的光里，能看见对面楼的窗格。','她用指肚捻捻，说这纸一使劲就穿。','你拎着纸转身走，她喊住你塞了把压纸角铁。','她说：省着点画，我进一次用一年。']},
+    // 2026-09-23 用户点名加的典型内容：建模软件崩溃 / 没保存 / Ctrl+S 成习惯。
+    // 落点：专教池的亲历卡（有代价的选择）+ 大二下插播（群里的共鸣）。不解释、不升华。
+    soft_crash: { name:'未 响 应', grade:[1,2,3], form:'choice',
+      text: '你转到第三视角，屏幕就白了。\n标题栏多了四个字：程序未响应。\n你按了两次 Ctrl+S，字还是白的。\n上次保存是四十分钟前。',
+      opts:[
+        {t:'当晚重做', eff:{skill:2,hair:-3}, r:'你重做到凌晨两点半。从那以后每拉两个体块，你就按一次 Ctrl+S。'},
+        {t:'先睡，明天早点来', eff:{skill:1,hair:1}, r:'第二天你六点半到专教，重做用了三个小时。手停下来，还是先按一次 Ctrl+S。'}
+      ]},
 
     
   
@@ -3735,7 +3775,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   const INTER_YEAR = ['大一', '大二', '大三', '大四', '大五'];
   const INTER_P_TWO = 0.45;         // 一学期出 2 条的概率（否则 1 条）--调这一个数就够
   // 数据本体逐字放在 src/index.html 的 <script id="interData" type="application/json"> 里
-  // （十幕 112 条定稿，约 45KB；放 HTML 里 build.py 原样内联，single-file 不破）。
+  // （十幕 118 条定稿，约 45KB；放 HTML 里 build.py 原样内联，single-file 不破）。
   // 读不到就退化成空池：插播不出现，游戏其余流程完全不受影响。
   const INTER_POOLS = (function(){
     try {
@@ -3856,7 +3896,8 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     '七月一号早上八点五十，你到了设计院七楼的方案三所，人事带你坐进靠窗那排的工位。',
     '所长把一册住宅小区的施工图拍在你桌上，说先照着这套把建施底图描一遍，明天上午要。',
     '你在天正里描到六点半，交了图，所长翻了翻，说门垛的尺寸再核一遍，明早改完发组里。',
-    '下班你把工牌收进兜里，在楼下便利店买了个饭团，想想明天这张图总算有名字了。'
+    '下班你把工牌收进兜里，在楼下便利店买了个饭团，想想明天这张图总算有名字了。',
+    '第一个月工资到账 2740。你查了一下，这个城市的最低工资标准是 2740。'
   ];
   const CLIENT_TALK = [
     '入职第三天早上九点，你被叫进七号会议室，桌上摆着一份报建总图和一叠便签。',
@@ -4171,7 +4212,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         '</div>' +
         (eggAtlas ? '<div class="atlas">你走过了 ' + eggAtlas + ' / ' + ENDING_TOTAL + ' 个结局</div>' : '') +
         '<div class="endbar"><button class="act" id="again">再 来 一 局</button>' +
-          '<span class="fold" id="foldHint">' + UI('ending.fold', {}, '↓ 下面还有 成绩单 · 判词') + '</span></div>' +
+          '<span class="fold" id="foldHint">' + UI('ending.fold', {}, '↓ 下面还有 成绩单') + '</span></div>' +
       '</div>';
     el('again').onclick = reset;
     bindFoldHint();
@@ -5389,6 +5430,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     { id:'studio', name:'专 教', eff:{skill:2, hair:-4},
       cards:['ink','model','allnight','structure','sketch','seat','st_dev','st_flow','st_desk1','st_desk2','st_desk3','st_desk4','st_desk5','defense','bs_tutor','bs_mid',
              'k2_machine','k2_cut','k2_dust','k3_redo','k3_scale','k3_foot','k3_site','k3_site_fail','k3_case','k3_cite','k3_read','st_mat1','st_mat2','st_mat3','st_mat4',
+             'soft_crash',
              'dm_carry','construct'],
       // 去处连续性+进展（2026-09-14，清单 32/32-2/32-3）：6 套反馈 = 学年档（大一二/大三四/大五）
       //   × 次数档（初识 _count===0 / 熟了 _count≥1）。g 是学年档；again:1 是熟了档；
@@ -6381,7 +6423,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     if (S.hair <= 10)                                      q = '你现在照镜子会先看头顶。';
     else if (S.hair >= 95 && S.round >= 2)                 q = '头发还在。别高兴太早，它掉得比图快。';
     else if ((S.works || []).length === 0 && S.round >= 3) q = '你手上还是空的，楼里已经开始贴简历了。';
-    else if (S.skill >= 28)                                q = '你画得比同届利索--名字还是没过别人的嘴。';
+    else if (S.skill >= 28)                                q = '你画得比同届利索，没人念过你的名字。';
     else if (S._allNight)                                  q = '你以后会习惯的。这不是好话。';
     if (!q) return;
     S._quipDone = true;
@@ -6395,7 +6437,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
   // ========== 结局状态：从数值算出来，不写死 ==========
   // 以前结局标题只有一个 LINES[line].end（写死的），18 次选择改不动它。
   // 现在 = ① 落点句（走的线决定）+ ② 状态句（数值落点决定）。
-  // 五种状态不是"好坏"，是"什么样的人"--守「不排名不比人」。
+  // 五种状态不是"好坏"，是"什么样的人"--守「不比人」。
   const STATE = {
     spent:  '你把自己用完了。活都干得不错。',
     steady: '你按时下班。在这个行业里，这是本事。',
@@ -6453,7 +6495,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         '<div class="verdict">' + E.verdict + '</div>' +
         (atlasN ? '<div class="atlas">图鉴 ' + galCount() + ' / ' + ENDING_TOTAL + ' 个结局</div>' : '') +
         '<div class="endbar"><button class="act" id="again">' + UI('ending.again', {}, '再 来 一 局') + '</button>' +
-          '<span class="fold" id="foldHint">' + UI('ending.fold', {}, '↓ 下面还有 成绩单 · 判词') + '</span></div>' +
+          '<span class="fold" id="foldHint">' + UI('ending.fold', {}, '↓ 下面还有 成绩单') + '</span></div>' +
       '</div>';
     log('-- 一局结束 --', 'p');
     el('again').onclick = reset;
@@ -6951,7 +6993,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
    "lab": "你 现 在",
    "earlyLab": "早 结 局",
    "again": "再 来 一 局",
-   "fold": "↓ 下面还有 成绩单 · 判词",
+   "fold": "↓ 下面还有 成绩单",
    "resultTitle": "你 选 了",
    "cont": "继 续",
    "drawLbl": "你 抽 到 了",
@@ -7140,6 +7182,10 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       retro.splice(Math.min(1, retro.length), 0, leaveGagLine());
     }
     const retroText = retro.slice(0, 2).map(function(l){ return '<div class="retro">' + l + '</div>'; }).join('');
+    // 「同学去哪了」（2026-09-23 用户口径）：不明说谁进了甲方谁转了行，只给两个画面，
+    //   让玩家自己去想自己班里那些人现在在哪。绿植不是新意象——插播池里早有一条
+    //   「转行的校友 · 新工位 · 桌上那盆绿植」（inter.json），这里只借物件，不提「转行」两个字。
+    const peersText = '<div class="retro peers">朋友圈里，有人晒竣工照片，有人晒工位上的绿植。</div>';
     const atlasKey = (pick.kind === 'line')
       ? (pick.key + (pick.key === 'liuxue' && S.sub ? '.' + S.sub : '') + '·' + (pick.mood || ''))
       : ('special·' + pick.key);
@@ -7202,14 +7248,20 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
         '<div class="lab">' + UI('ending.lab', {}, '你 现 在') + '</div>' +
         '<div class="big-t">' + end + '。</div>' +
         (sceneText ? '<div class="scene-txt">' + sceneText.replace(/\n/g, '<br>') + '</div>' : '') +
-        (bodyText ? '<div class="body-txt">' + bodyText + '</div>' : '') +
         retroText +
+        peersText +
+        // 2026-09-23 用户口径「结局保持一屏，但要够有力」：
+        //   ① 判词原排在成绩单之后，实测落在折叠线下（top 1062 / 可视 720），玩家要滚动才看见；
+        //   ② 「正文」（进院前你收藏过…）整段挪到判词之后——它是交代，不是收束，
+        //      挡在场景和判词中间会把那口气拖长。首屏只留：标题 → 场景 → 回望 → 同学那一笔 → 判词。
+        '<div class="verdict">' + verdict + '</div>' +
+        (bodyText ? '<div class="body-txt">' + bodyText + '</div>' : '') +
         '<div class="body">' +
           '<div class="claim">' + claim + '</div>' +
           (works.length
-            ? '<div class="wlist">' + works.map(function(w, i){
-                return '<div class="wl">' + workRowLabel(w, i) + '</div>';
-              }).join('') + '</div>'
+            ? '<div class="wlist one-line">' + works.map(function(w, i){
+                return workRowLabel(w, i);
+              }).join('　｜　') + '</div>'
             : '') +
           '<div class="hair">' + hairLine + '</div>' +
           (one ? '<div class="one">' + one + '</div>' : '') +
@@ -7217,7 +7269,6 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
           (creditLine ? '<div class="one" style="margin-top:6px">' + creditLine + '</div>' : '') +
           (titleEcho ? '<div class="one" style="margin-top:6px">' + titleEcho + '</div>' : '') +
         '</div>' +
-        '<div class="verdict">' + verdict + '</div>' +
         (pick.badges && pick.badges.length
           ? '<div class="badges">' + pick.badges.map(function(b){
               return '<span class="badge" data-spec="' + esc(b.key) + '" role="button" tabindex="0">' + esc(b.label) + '</span>';
@@ -7234,12 +7285,23 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
           : '') +
         (atlasN ? '<div class="atlas">图鉴 ' + galCount() + ' / ' + ENDING_TOTAL + ' 个结局</div>' : '') +
         '<div class="endbar"><button class="act" id="again">' + UI('ending.again', {}, '再 来 一 局') + '</button>' +
-          '<span class="fold" id="foldHint">' + UI('ending.fold', {}, '↓ 下面还有 成绩单 · 判词') + '</span></div>' +
+          '<span class="fold" id="foldHint">' + UI('ending.fold', {}, '↓ 下面还有 成绩单') + '</span></div>' +
       '</div>';
 
     log('-- 一局结束 --', 'p');
     el('again').onclick = reset;
     bindFoldHint();
+
+    // 首屏收束自适应（2026-09-23）：各线场景/回望长度不一（先锋工作室那条场景多一行），
+    //   判词会被顶到吸底条底下。渲完量一次：判词底压到底条上沿以内就不动，超出才加 .tighter 收一档。
+    requestAnimationFrame(function(){
+      const end = stage.querySelector('.ending');
+      if (!end) return;
+      const bar = end.querySelector('.endbar');
+      const v = end.querySelector('.verdict');
+      if (!bar || !v) return;
+      if (v.getBoundingClientRect().bottom > bar.getBoundingClientRect().top - 4) end.classList.add('tighter');
+    });
 
 
     // 徽章点开：展开同一 key 的那段说明（一次只开一个，再点收起）

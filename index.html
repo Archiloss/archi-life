@@ -4711,7 +4711,7 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
       '</div>' +
       '<h3>图幅</h3><div class="grid">' + figs + '</div>' +
       '<h3>图签</h3><div class="grp">' +
-        row('图号', 'YZ-01') +
+        row('图号', 'JY-01') +
         row('版次', 'REV.A') +
         row('比例', '1:100') +
       '</div>';
@@ -7453,16 +7453,18 @@ body.skin-rhino .crosshair .pick{ border-color:var(--dim2); }
     let html = '<div class="galwrap" id="galwrap"><div class="galbox">' +
       '<div class="galhead"><div class="galt">结 局 画 廊</div>' +
       '<div class="galn">你已经走过 <b>' + galCount() + '</b> / ' + ENDING_TOTAL + '</div></div>' +
-      '<div class="galnote">存在这台机器上（换浏览器／清缓存会清空）。没解锁的只给条件，不剧透。</div>';
+      '<div class="galnote">存在这台机器上（换浏览器／清缓存会清空）。没解锁的不给条件，只留去向和画像。</div>';
     let sec = '';
     rows.forEach(function(r){
       if (r.sec !== sec){ sec = r.sec; html += '<div class="gsec">' + sec + '</div>'; }
       const got = seen.indexOf(r.key) >= 0;
       const ann = got ? annFor(r.key, HIST[r.key]) : '';
+      // 2026-09-23 用户口径「图鉴 达成条件应隐藏」：没解锁的格子连条件都不给（原来给「怎么拿到」），
+      //   只留去向 + 画像 + 六个点，收集靠自己去撞。已解锁的照旧给判词。
       html += '<div class="grow' + (got ? ' got' : '') + '">' +
                 '<span class="gm">' + r.mood + '</span>' +
                 '<span class="gt">' + (got && r.title ? r.title + '。' : '· · · · · · ·') + '</span>' +
-                '<span class="gd">' + (got ? (r.verdict || '') : r.hint) + '</span>' +
+                '<span class="gd">' + (got ? (r.verdict || '') : '') + '</span>' +
                 (ann ? '<span class="gn">' + ann + '</span>' : '') +
               '</div>';
     });
